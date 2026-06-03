@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0d0f12" />
+<title>RC Flight Coach</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.x/dist/tabler-icons.min.css" />
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0d0f12;--surface:#151820;--surface2:#1c2030;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#e8eaf0;--muted:#6a7488;--muted2:#4a5268;
+  --accent:#4af0b0;--adim:rgba(74,240,176,0.1);--aborder:rgba(74,240,176,0.28);
+  --blue:#5eadf7;--bdim:rgba(94,173,247,0.1);--bborder:rgba(94,173,247,0.28);
+  --gold:#f0c44a;--gdim:rgba(240,196,74,0.1);--gborder:rgba(240,196,74,0.28);
+  --warn:#f0b44a;--danger:#f05a4a;--ddim:rgba(240,90,74,0.1);
+  --r:8px;--r2:12px;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font-size:14px;display:flex;flex-direction:column;}
+.header{flex-shrink:0;padding:12px 16px 0;border-bottom:1px solid var(--border);background:var(--surface);}
+.header-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.logo-icon{width:36px;height:36px;background:var(--adim);border:1px solid var(--aborder);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--accent);flex-shrink:0;}
+.logo-text{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;line-height:1;}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:0.4px;font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;}
+.header-badge{margin-left:auto;font-size:10px;padding:3px 8px;border-radius:99px;border:1px solid var(--gborder);background:var(--gdim);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.5px;white-space:nowrap;}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:9px 14px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:5px;transition:all 0.15s;flex-shrink:0;}
+.tab:hover{color:var(--text);}
+.tab.ag{color:var(--accent);border-bottom-color:var(--accent);}
+.tab.ab{color:var(--blue);border-bottom-color:var(--blue);}
+.tab.au{color:var(--gold);border-bottom-color:var(--gold);}
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.panel{display:none;padding:14px 16px;flex-direction:column;gap:14px;}
+.panel.active{display:flex;}
+.slabel{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.9px;color:var(--muted);margin-bottom:7px;}
+.toggle-row{display:flex;gap:6px;}
+.tbtn{flex:1;padding:8px 4px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.4px;cursor:pointer;color:var(--muted);transition:all 0.12s;display:flex;align-items:center;justify-content:center;gap:4px;text-transform:uppercase;}
+.tbtn.on{background:var(--adim);border-color:var(--aborder);color:var(--accent);}
+.tbtn.ob{background:var(--bdim);border-color:var(--bborder);color:var(--blue);}
+.row-input{width:100%;font-size:13px;padding:9px 12px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'Barlow',sans-serif;outline:none;}
+.row-input:focus{border-color:var(--aborder);}
+.row-input::placeholder{color:var(--muted2);}
+.hint{font-size:11px;color:var(--muted);margin-top:5px;line-height:1.5;}
+.info-note{font-size:12px;color:var(--muted);line-height:1.65;padding:10px 13px;background:var(--surface);border-radius:var(--r);border:1px solid var(--border);}
+.info-note a{color:var(--blue);}
+.info-note strong{color:var(--text);font-weight:500;}
+.chip-row{display:flex;gap:5px;flex-wrap:wrap;}
+.chip{padding:5px 10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.3px;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:4px;text-transform:uppercase;}
+.chip.on{background:var(--adim);border-color:var(--aborder);color:var(--accent);}
+.upload-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.upload-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+.ubox{border:1.5px dashed var(--border2);border-radius:var(--r2);padding:12px 6px;text-align:center;cursor:pointer;position:relative;min-height:88px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
+.ubox.done{border-style:solid;border-color:var(--aborder);background:var(--adim);}
+.ubox input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.u-icon{font-size:18px;color:var(--muted);}
+.ubox.done .u-icon{color:var(--accent);}
+.u-title{font-size:11px;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;color:var(--muted);}
+.ubox.done .u-title{color:var(--accent);}
+.u-sub{font-size:10px;color:var(--muted2);}
+.u-fname{font-size:10px;color:var(--accent);font-weight:600;max-width:95%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.abtn{width:100%;padding:12px;border-radius:var(--r2);border:1px solid var(--aborder);background:var(--adim);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;color:var(--accent);display:flex;align-items:center;justify-content:center;gap:7px;}
+.abtn:active:not(:disabled){opacity:0.7;}
+.abtn:disabled{opacity:0.3;cursor:not-allowed;}
+.bbtn{border-color:var(--bborder);background:var(--bdim);color:var(--blue);}
+.gbtn{border-color:var(--gborder);background:var(--gdim);color:var(--gold);}
+.results-wrap{background:var(--surface);border-radius:var(--r2);border:1px solid var(--border2);overflow:hidden;}
+.rhead{padding:10px 14px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:7px;color:var(--accent);}
+.rhead.bl{color:var(--blue);}.rhead.go{color:var(--gold);}
+.rbody{padding:14px;font-size:13px;line-height:1.75;}
+.rbody h3{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.7px;text-transform:uppercase;color:var(--text);margin:1rem 0 0.4rem;display:flex;align-items:center;gap:5px;padding-bottom:5px;border-bottom:1px solid var(--border);}
+.rbody ul{padding-left:0;list-style:none;margin:6px 0;color:#9aa3b5;}
+.rbody ul li{margin-bottom:5px;padding-left:14px;position:relative;}
+.rbody ul li::before{content:'›';position:absolute;left:0;color:var(--accent);font-weight:700;}
+.score-row{display:grid;gap:7px;margin-bottom:12px;}
+.sr3{grid-template-columns:repeat(3,1fr);}.sr4{grid-template-columns:repeat(4,1fr);}
+.scard{background:var(--bg);border:1px solid var(--border2);border-radius:var(--r);padding:9px 4px;text-align:center;}
+.slbl2{font-family:'Barlow Condensed',sans-serif;font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:3px;}
+.sval{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;line-height:1;}
+.sval.g{color:var(--accent);}.sval.y{color:var(--warn);}.sval.r{color:var(--danger);}
+.pbar-wrap{height:2px;background:var(--border2);border-radius:2px;overflow:hidden;margin:8px 0 2px;}
+.pbar{height:100%;background:var(--accent);border-radius:2px;transition:width 0.5s ease;}
+.pbar.b{background:var(--blue);}.pbar.g2{background:var(--gold);}
+.spin{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:sp 0.7s linear infinite;flex-shrink:0;display:inline-block;}
+.spin.b{border-top-color:var(--blue);}.spin.g2{border-top-color:var(--gold);}
+@keyframes sp{to{transform:rotate(360deg);}}
+.api-bar{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;}
+.api-toggle{width:100%;padding:10px 14px;background:transparent;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.api-inner{display:none;padding:10px 14px;border-top:1px solid var(--border);flex-direction:column;gap:8px;}
+.api-row{display:flex;align-items:center;gap:8px;}
+.api-lbl{font-size:11px;color:var(--muted);white-space:nowrap;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;min-width:60px;}
+.api-input{flex:1;font-size:12px;padding:6px 10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;outline:none;}
+.api-input:focus{border-color:var(--aborder);}
+.ktag{font-size:10px;padding:2px 7px;border-radius:99px;border:1px solid;white-space:nowrap;font-weight:700;font-family:'Barlow Condensed',sans-serif;}
+.ks{background:var(--adim);color:var(--accent);border-color:var(--aborder);}
+.ku{background:transparent;color:var(--muted2);border-color:var(--border2);}
+.kb{background:var(--bdim);color:var(--blue);border-color:var(--bborder);}
+
+/* REFERENCE */
+.ref-search{position:relative;}
+.ref-search input{width:100%;font-size:14px;padding:10px 12px 10px 38px;border-radius:var(--r2);border:1px solid var(--border2);background:var(--surface);color:var(--text);font-family:'Barlow',sans-serif;outline:none;}
+.ref-search input:focus{border-color:var(--gborder);}
+.ref-search input::placeholder{color:var(--muted2);}
+.ref-search .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;}
+.cf-row{display:flex;gap:6px;}
+.cfb{flex:1;padding:7px 4px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);font-size:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:4px;}
+.cfb.on{background:var(--gdim);border-color:var(--gborder);color:var(--gold);}
+.dfb{flex:1;padding:6px 4px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;cursor:pointer;color:var(--muted);}
+.dfb.on{background:var(--gdim);border-color:var(--gborder);color:var(--gold);}
+.move-count{font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.move-list{display:flex;flex-direction:column;gap:6px;}
+.move-row{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;}
+.move-row:active{background:var(--surface2);}
+.mri{font-size:18px;color:var(--muted);flex-shrink:0;}
+.mr-info{flex:1;}
+.mr-name{font-size:14px;font-weight:500;color:var(--text);}
+.mr-meta{display:flex;gap:6px;margin-top:2px;align-items:center;flex-wrap:wrap;}
+.dbadge{font-size:10px;padding:1px 7px;border-radius:99px;border:1px solid;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.3px;}
+.db-beg{background:rgba(74,240,176,0.08);color:var(--accent);border-color:var(--aborder);}
+.db-int{background:rgba(240,196,74,0.08);color:var(--gold);border-color:var(--gborder);}
+.db-adv{background:rgba(240,90,74,0.08);color:var(--danger);border-color:rgba(240,90,74,0.3);}
+.mr-craft{font-size:10px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.mr-arr{color:var(--muted2);font-size:16px;flex-shrink:0;}
+.no-results{text-align:center;padding:40px 20px;color:var(--muted);}
+.no-results i{font-size:40px;opacity:0.3;display:block;margin-bottom:12px;}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;flex-direction:column;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);}
+.overlay.open{transform:translateX(0);}
+.ov-header{flex-shrink:0;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;}
+.back-btn{background:transparent;border:1px solid var(--border2);border-radius:var(--r);padding:7px 10px;color:var(--muted);cursor:pointer;font-size:12px;display:flex;align-items:center;gap:5px;font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;flex-shrink:0;}
+.ov-title{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ov-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px;}
+.ref-sec{margin-bottom:18px;}
+.ref-sec-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:6px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.ref-sec-body{font-size:13px;line-height:1.75;color:#9aa3b5;}
+.ref-sec-body strong{color:var(--text);font-weight:500;}
+.ref-sec-body ul{padding-left:0;list-style:none;margin:6px 0;}
+.ref-sec-body ul li{padding-left:14px;position:relative;margin-bottom:5px;}
+.ref-sec-body ul li::before{content:'›';position:absolute;left:0;color:var(--gold);font-weight:700;}
+.phase-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:11px 13px;margin-bottom:8px;}
+.ph-header{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.ph-num{width:24px;height:24px;border-radius:5px;background:var(--gdim);border:1px solid var(--gborder);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;color:var(--gold);flex-shrink:0;}
+.ph-name{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;color:var(--text);}
+.ph-goal{font-size:11px;color:var(--gold);font-style:italic;margin-bottom:6px;opacity:0.8;}
+.ph-body{font-size:12px;color:#8a93a5;line-height:1.7;}
+.ph-body ul{padding-left:0;list-style:none;margin:5px 0;}
+.ph-body ul li{padding-left:13px;position:relative;margin-bottom:4px;}
+.ph-body ul li::before{content:'›';position:absolute;left:0;color:var(--gold);font-weight:700;}
+.stick-tbl{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0;}
+.stick-tbl th{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);padding:5px 8px;border-bottom:1px solid var(--border);text-align:left;}
+.stick-tbl td{padding:6px 8px;border-bottom:1px solid var(--border);color:#9aa3b5;vertical-align:top;}
+.stick-tbl tr:last-child td{border-bottom:none;}
+.sk{background:var(--surface2);border:1px solid var(--border2);border-radius:4px;padding:2px 7px;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--text);display:inline-block;}
+.warn-box{background:var(--ddim);border:1px solid rgba(240,90,74,0.25);border-radius:var(--r);padding:10px 12px;font-size:12px;color:#d09090;line-height:1.6;margin-top:8px;}
+.ai-btn{width:100%;padding:11px;border-radius:var(--r2);border:1px solid var(--bborder);background:var(--bdim);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;color:var(--blue);display:flex;align-items:center;justify-content:center;gap:7px;margin-top:10px;}
+
+/* LEARN GRID */
+.move-grid-learn{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;}
+.mc{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 11px;cursor:pointer;display:flex;align-items:center;gap:8px;}
+.mc:active{opacity:0.7;}
+.mc.sel{background:var(--bdim);border-color:var(--bborder);}
+.mc i{font-size:15px;color:var(--muted);}
+.mc.sel i{color:var(--blue);}
+.mc-name{font-size:12px;font-weight:500;color:var(--muted);}
+.mc.sel .mc-name{color:var(--blue);}
+.mc-diff{font-size:10px;color:var(--muted2);font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-icon"><i class="ti ti-propeller"></i></div>
+    <div>
+      <div class="logo-text">RC Flight Coach</div>
+      <div class="logo-sub">AI-powered · Gemini + Claude</div>
+    </div>
+    <div class="header-badge"><i class="ti ti-wifi-off" style="font-size:10px"></i> Field-ready</div>
+  </div>
+  <div class="tabs">
+    <button class="tab au" id="tab-ref" onclick="switchTab('ref','au')"><i class="ti ti-book"></i> Reference</button>
+    <button class="tab" id="tab-learn" onclick="switchTab('learn','ab')"><i class="ti ti-school"></i> Learn</button>
+    <button class="tab" id="tab-general" onclick="switchTab('general','ag')"><i class="ti ti-certificate"></i> Coach</button>
+    <button class="tab" id="tab-compare" onclick="switchTab('compare','ag')"><i class="ti ti-git-compare"></i> Compare</button>
+  </div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="ov">
+  <div class="ov-header">
+    <button class="back-btn" onclick="closeOv()"><i class="ti ti-arrow-left"></i> Back</button>
+    <div class="ov-title" id="ov-title"></div>
+    <span class="dbadge" id="ov-badge"></span>
+  </div>
+  <div class="ov-scroll"><div id="ov-body"></div></div>
+</div>
+
+<div class="scroll-area">
+
+<!-- REFERENCE -->
+<div class="panel active" id="panel-ref">
+  <div class="info-note" style="border-color:var(--gborder)"><strong style="color:var(--gold)">Field reference — no internet needed.</strong> Browse all maneuvers, stick guides and phase progressions. Tap any move for the full breakdown. Works at the field without WiFi.</div>
+  <div class="ref-search"><i class="ti ti-search si"></i><input type="text" id="ref-q" placeholder="Search maneuvers..." oninput="filterMoves()" /></div>
+  <div>
+    <div class="slabel">Craft</div>
+    <div class="cf-row">
+      <button class="cfb on" id="cf-all" onclick="setCF('all',this)"><i class="ti ti-list"></i> All</button>
+      <button class="cfb" id="cf-heli" onclick="setCF('helicopter',this)"><i class="ti ti-propeller"></i> Heli</button>
+      <button class="cfb" id="cf-plane" onclick="setCF('plane',this)"><i class="ti ti-plane"></i> Plane</button>
+      <button class="cfb" id="cf-quad" onclick="setCF('quadcopter',this)"><i class="ti ti-drone"></i> Quad</button>
+    </div>
+  </div>
+  <div>
+    <div class="slabel">Difficulty</div>
+    <div class="cf-row">
+      <button class="dfb on" id="df-all" onclick="setDF('all',this)">All</button>
+      <button class="dfb" id="df-beg" onclick="setDF('Beginner',this)">Beginner</button>
+      <button class="dfb" id="df-int" onclick="setDF('Intermediate',this)">Intermediate</button>
+      <button class="dfb" id="df-adv" onclick="setDF('Advanced',this)">Advanced</button>
+    </div>
+  </div>
+  <div class="move-count" id="move-count"></div>
+  <div class="move-list" id="move-list"></div>
+</div>
+
+<!-- LEARN -->
+<div class="panel" id="panel-learn">
+  <div class="info-note" style="border-color:var(--bborder)"><strong style="color:var(--blue)">AI lesson + video feedback.</strong> Pick a move → Claude builds a step-by-step plan in plain English → upload your simulator attempt → Gemini tells you which phase you're at and what to fix next.</div>
+  <div>
+    <div class="slabel">Craft</div>
+    <div class="toggle-row">
+      <button class="tbtn ob" id="l-heli" onclick="setLS('l-craft','helicopter',this,'l-heli,l-plane,l-quad',true)"><i class="ti ti-propeller"></i> Heli</button>
+      <button class="tbtn" id="l-plane" onclick="setLS('l-craft','plane',this,'l-heli,l-plane,l-quad',true)"><i class="ti ti-plane"></i> Plane</button>
+      <button class="tbtn" id="l-quad" onclick="setLS('l-craft','quadcopter',this,'l-heli,l-plane,l-quad',true)"><i class="ti ti-drone"></i> Quad</button>
+    </div>
+  </div>
+  <div>
+    <div class="slabel">Your level</div>
+    <div class="toggle-row">
+      <button class="tbtn ob" id="l-beg" onclick="setLS('l-level','beginner',this,'l-beg,l-int,l-adv',false)"><i class="ti ti-seedling"></i> Beginner</button>
+      <button class="tbtn" id="l-int" onclick="setLS('l-level','intermediate',this,'l-beg,l-int,l-adv',false)"><i class="ti ti-trending-up"></i> Intermediate</button>
+      <button class="tbtn" id="l-adv" onclick="setLS('l-level','advanced',this,'l-beg,l-int,l-adv',false)"><i class="ti ti-star"></i> Advanced</button>
+    </div>
+  </div>
+  <div>
+    <div class="slabel">Pick a maneuver</div>
+    <div class="move-grid-learn" id="learn-grid"></div>
+    <input class="row-input" type="text" id="l-custom" placeholder="Or type any move..." style="margin-top:8px" />
+  </div>
+  <div class="api-bar">
+    <button class="api-toggle" onclick="toggleAPI('l')"><span><i class="ti ti-key" style="margin-right:5px"></i> API Keys</span><i class="ti ti-chevron-down" id="api-arr-l"></i></button>
+    <div class="api-inner" id="api-inner-l">
+      <div class="api-row"><div class="api-lbl" style="color:var(--blue)">Claude</div><input type="password" class="api-input" id="claude-key" placeholder="console.anthropic.com" oninput="syncK('claude')" /><span class="ktag ku" id="ck-status">Not set</span></div>
+      <div class="api-row"><div class="api-lbl">Gemini</div><input type="password" class="api-input" id="gemini-key" placeholder="aistudio.google.com" oninput="syncK('gemini')" /><span class="ktag ku" id="gk-status">Not set</span></div>
+    </div>
+  </div>
+  <button class="abtn bbtn" id="l-teach-btn" onclick="teachMove()"><i class="ti ti-school"></i> Build my lesson plan</button>
+  <div id="l-lesson" style="display:none"></div>
+  <div id="l-attempt-wrap" style="display:none">
+    <div class="results-wrap">
+      <div class="rhead bl"><i class="ti ti-video"></i> Upload your attempt</div>
+      <div style="padding:12px">
+        <div class="upload-grid" style="margin-bottom:10px">
+          <div class="ubox" id="lmb1"><input type="file" accept="video/*" onchange="handleFile('l',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 1</div><div class="u-sub" id="lms1">Tap to upload</div></div>
+          <div class="ubox" id="lmb2"><input type="file" accept="video/*" onchange="handleFile('l',this,2)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 2</div><div class="u-sub" id="lms2">Optional</div></div>
+        </div>
+        <div class="hint" style="margin-bottom:10px">Even a messy attempt is fine — the AI tells you exactly which phase you're at.</div>
+        <button class="abtn bbtn" id="l-analyze-btn" onclick="analyzeAttempt()"><i class="ti ti-eye"></i> Analyze my attempt</button>
+      </div>
+    </div>
+    <div id="l-results" style="display:none;margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- GENERAL COACH -->
+<div class="panel" id="panel-general">
+  <div class="info-note">Upload your flying clips for a full AI coaching report — no reference video needed.</div>
+  <div><div class="slabel">Craft</div><div class="toggle-row">
+    <button class="tbtn on" id="g-heli" onclick="setSt('g-craft','helicopter',this,'g-heli,g-plane,g-quad')"><i class="ti ti-propeller"></i> Heli</button>
+    <button class="tbtn" id="g-plane" onclick="setSt('g-craft','plane',this,'g-heli,g-plane,g-quad')"><i class="ti ti-plane"></i> Plane</button>
+    <button class="tbtn" id="g-quad" onclick="setSt('g-craft','quadcopter',this,'g-heli,g-plane,g-quad')"><i class="ti ti-drone"></i> Quad</button>
+  </div></div>
+  <div><div class="slabel">Level</div><div class="toggle-row">
+    <button class="tbtn on" id="g-beg" onclick="setSt('g-level','beginner',this,'g-beg,g-int,g-adv')"><i class="ti ti-seedling"></i> Beginner</button>
+    <button class="tbtn" id="g-int" onclick="setSt('g-level','intermediate',this,'g-beg,g-int,g-adv')"><i class="ti ti-trending-up"></i> Intermediate</button>
+    <button class="tbtn" id="g-adv" onclick="setSt('g-level','advanced',this,'g-beg,g-int,g-adv')"><i class="ti ti-star"></i> Advanced</button>
+  </div></div>
+  <div><div class="slabel">Clips (up to 3)</div><div class="upload-grid-3">
+    <div class="ubox" id="gmb1"><input type="file" accept="video/*" onchange="handleFile('g',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Clip 1</div><div class="u-sub" id="gms1">Tap</div></div>
+    <div class="ubox" id="gmb2"><input type="file" accept="video/*" onchange="handleFile('g',this,2)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Clip 2</div><div class="u-sub" id="gms2">Optional</div></div>
+    <div class="ubox" id="gmb3"><input type="file" accept="video/*" onchange="handleFile('g',this,3)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Clip 3</div><div class="u-sub" id="gms3">Optional</div></div>
+  </div></div>
+  <div><div class="slabel">Goals / struggles</div><input class="row-input" type="text" id="g-goals" placeholder="e.g. smoother hovering, nose-in, pirouettes..."/></div>
+  <div><div class="slabel">Focus</div><div class="chip-row">
+    <button class="chip on" onclick="toggleChip('g-focuses','overall',this)"><i class="ti ti-layout-dashboard"></i> Overall</button>
+    <button class="chip" onclick="toggleChip('g-focuses','inputs',this)"><i class="ti ti-hand-two-fingers"></i> Sticks</button>
+    <button class="chip" onclick="toggleChip('g-focuses','smoothness',this)"><i class="ti ti-wave-sine"></i> Smooth</button>
+    <button class="chip" onclick="toggleChip('g-focuses','orientation',this)"><i class="ti ti-compass"></i> Orientation</button>
+    <button class="chip" onclick="toggleChip('g-focuses','habits',this)"><i class="ti ti-repeat"></i> Habits</button>
+    <button class="chip" onclick="toggleChip('g-focuses','drills',this)"><i class="ti ti-list-check"></i> Drills</button>
+  </div></div>
+  <div class="api-bar">
+    <button class="api-toggle" onclick="toggleAPI('g')"><span><i class="ti ti-key" style="margin-right:5px"></i> API Keys</span><i class="ti ti-chevron-down" id="api-arr-g"></i></button>
+    <div class="api-inner" id="api-inner-g">
+      <div class="api-row"><div class="api-lbl">Gemini</div><input type="password" class="api-input" id="gk-g" placeholder="aistudio.google.com" oninput="syncK('gemini')" /><span class="ktag ku" id="gk-g-status">Not set</span></div>
+    </div>
+  </div>
+  <button class="abtn" id="g-abtn" onclick="analyzeGeneral()"><i class="ti ti-brain"></i> Get coaching feedback</button>
+  <div id="g-results" style="display:none"></div>
+</div>
+
+<!-- COMPARE -->
+<div class="panel" id="panel-compare">
+  <div class="info-note">Upload your attempt + a YouTube reference URL. The AI compares them and tells you exactly what to fix.</div>
+  <div><div class="slabel">Craft</div><div class="toggle-row">
+    <button class="tbtn on" id="c-heli" onclick="setSt('c-craft','helicopter',this,'c-heli,c-plane,c-quad')"><i class="ti ti-propeller"></i> Heli</button>
+    <button class="tbtn" id="c-plane" onclick="setSt('c-craft','plane',this,'c-heli,c-plane,c-quad')"><i class="ti ti-plane"></i> Plane</button>
+    <button class="tbtn" id="c-quad" onclick="setSt('c-craft','quadcopter',this,'c-heli,c-plane,c-quad')"><i class="ti ti-drone"></i> Quad</button>
+  </div></div>
+  <div><div class="slabel">Maneuver</div><input class="row-input" type="text" id="c-maneuver" placeholder="e.g. pirouette, inverted hover, loop..."/></div>
+  <div><div class="slabel">Your attempts</div><div class="upload-grid">
+    <div class="ubox" id="cmb1"><input type="file" accept="video/*" onchange="handleFile('c',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 1</div><div class="u-sub" id="cms1">Tap</div></div>
+    <div class="ubox" id="cmb2"><input type="file" accept="video/*" onchange="handleFile('c',this,2)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 2</div><div class="u-sub" id="cms2">Optional</div></div>
+  </div></div>
+  <div><div class="slabel">Reference YouTube URL</div><input class="row-input" type="text" id="c-yturl" placeholder="https://www.youtube.com/watch?v=..."/></div>
+  <div><div class="slabel">Focus</div><div class="chip-row">
+    <button class="chip" onclick="toggleChip('c-focuses','hands',this)"><i class="ti ti-hand-two-fingers"></i> Sticks</button>
+    <button class="chip" onclick="toggleChip('c-focuses','path',this)"><i class="ti ti-route"></i> Path</button>
+    <button class="chip" onclick="toggleChip('c-focuses','timing',this)"><i class="ti ti-clock"></i> Timing</button>
+    <button class="chip" onclick="toggleChip('c-focuses','altitude',this)"><i class="ti ti-trending-up"></i> Altitude</button>
+    <button class="chip" onclick="toggleChip('c-focuses','recovery',this)"><i class="ti ti-refresh"></i> Recovery</button>
+  </div></div>
+  <div class="api-bar">
+    <button class="api-toggle" onclick="toggleAPI('c')"><span><i class="ti ti-key" style="margin-right:5px"></i> API Keys</span><i class="ti ti-chevron-down" id="api-arr-c"></i></button>
+    <div class="api-inner" id="api-inner-c">
+      <div class="api-row"><div class="api-lbl">Gemini</div><input type="password" class="api-input" id="gk-c" placeholder="aistudio.google.com" oninput="syncK('gemini')" /><span class="ktag ku" id="gk-c-status">Not set</span></div>
+    </div>
+  </div>
+  <button class="abtn" id="c-abtn" onclick="analyzeCompare()"><i class="ti ti-git-compare"></i> Compare and analyze</button>
+  <div id="c-results" style="display:none"></div>
+</div>
+
+</div><!-- scroll-area -->
+
+<script>
+// ── MOVE DATABASE ─────────────────────────────
+const MOVES=[
+  {id:'h1',craft:'helicopter',name:'Tail-in hover',icon:'ti-square',diff:'Beginner',what:'Flying with the tail facing you — the default beginner orientation. Controls feel natural because stick directions match aircraft movement.',why:'The foundation of all helicopter flying. Requires coordinating all four channels simultaneously.',prereqs:'None — this is where everyone starts.',sticks:[{i:'Left stick up/down',a:'Throttle — climb or descend'},{i:'Left stick left/right',a:'Yaw — spin nose left or right'},{i:'Right stick up',a:'Pitch forward — flies away from you'},{i:'Right stick down',a:'Pitch back — flies toward you'},{i:'Right stick left/right',a:'Roll — banks and moves sideways'}],phases:[{n:'Throttle feel',g:'Feel throttle response without lifting off',s:['Slowly increase throttle until blades spin but heli stays grounded','Feel how it wants to lift — then reduce','Repeat 20+ times for muscle memory'],m:'Slamming throttle — always be smooth'},{n:'6-inch hover',g:'Lift and land again cleanly',s:['Bring throttle up until just lifting','Hold 3 seconds','Reduce slowly and land'],m:'Climbing too high before you are stable — stay low'},{n:'3-foot stable hover',g:'Hold position 30 seconds with small corrections',s:['Lift to 3 feet','Make only tiny corrections','Input then release — do not hold'],m:'Over-correcting — input, wait, then react'},{n:'Hover and translate',g:'Move deliberately in each direction',s:['From stable hover, push right stick slightly right','Move 3 feet, stop, return','Repeat each direction'],m:'Moving too fast — use tiny inputs'},{n:'Box pattern',g:'Fly a square at constant altitude',s:['Forward 10 feet, stop','Right 10 feet, stop','Backward, then left — back to start'],m:'Changing altitude while translating'}],warnings:['Still over-correcting after 20 sessions','Climbing or descending without intending to'],tips:['Fly as low as safely possible — 2-3 feet is plenty','Set sim to easy/stable mode initially','Record yourself — it looks different on screen than it feels','5 minute focused sessions beat marathon sessions']},
+  {id:'h2',craft:'helicopter',name:'Nose-in hover',icon:'ti-compass',diff:'Beginner',what:'Hovering with the nose pointing toward you. Now left stick goes right and right goes left — everything is reversed.',why:'The #1 stumbling block for new pilots. Your brain is wired for tail-in. Nose-in requires completely overriding that instinct.',prereqs:'Solid tail-in hover — must be able to hover 2+ minutes without thinking about it.',sticks:[{i:'Right stick left',a:'YOUR left — but heli moves RIGHT'},{i:'Right stick right',a:'YOUR right — but heli moves LEFT'},{i:'Right stick up',a:'Heli flies toward you (same as before)'},{i:'Right stick down',a:'Heli flies away from you (same as before)'},{i:'Left stick left/right',a:'Yaw — still works same way'}],phases:[{n:'Mental preparation',g:'Build the mental map before you fly',s:['Sit with transmitter — imagine heli is nose-in','Say out loud "drift right = push left" 20 times','Do this before every practice session'],m:'Skipping this step — your brain needs the rewiring'},{n:'Rotate and return',g:'Get comfortable with the orientation flip',s:['Hover tail-in at 6 feet','Yaw 180° so nose faces you','Immediately yaw back to tail-in','Repeat 20 times — do not correct drift'],m:'Trying to hold nose-in before you are comfortable — just rotate and return'},{n:'Hold nose-in 5 seconds',g:'Survive 5 seconds nose-in with minimal correction',s:['Rotate to nose-in','Count 5 seconds','Rotate back — let it drift, do not panic'],m:'Panicking and over-correcting into a crash'},{n:'Nose-in corrections',g:'Make deliberate corrections nose-in',s:['Rotate to nose-in','Practice intentional left/right corrections','Remember: reversed cyclic'],m:'Correcting the wrong direction — go slow and think'},{n:'Full nose-in hover 30s',g:'Hold steady nose-in for 30 seconds',s:['Rotate to nose-in','Hold position with small corrections','Commit to the nose-in perspective'],m:'Still thinking tail-in — fully commit to the new viewpoint'}],warnings:['Still correcting wrong direction after many sessions','Pulse stays high throughout nose-in','Taking over 1 second to decide correction direction'],tips:['All inputs at 20% speed — slow motion learning','Imagine sitting in the cockpit looking forward','Some pilots put colored tape on the nose','This can take weeks — completely normal']},
+  {id:'h3',craft:'helicopter',name:'Side-in hover',icon:'ti-arrows-left-right',diff:'Beginner',what:'Hovering with the side of the helicopter facing you. A step between tail-in and nose-in — each side has its own control mapping.',why:'Prepares your brain for all orientations needed for pirouettes and advanced flying.',prereqs:'Solid tail-in hover. Nose-in hover exposure helps.',sticks:[{i:'Right stick left (left side-in)',a:'Heli flies toward you'},{i:'Right stick right (left side-in)',a:'Heli flies away from you'},{i:'Right stick up (left side-in)',a:'Heli flies to your left'},{i:'Right stick down (left side-in)',a:'Heli flies to your right'}],phases:[{n:'Left side-in rotate & return',g:'Get comfortable with 90° orientation',s:['Hover tail-in','Yaw 90° left so left side faces you','Immediately yaw back','Repeat 20 times'],m:'Not committing to a full 90°'},{n:'Hold left side-in 10s',g:'Maintain position for 10 seconds',s:['Yaw to left side-in','Count to 10','Yaw back — focus on altitude too'],m:'Letting altitude drift while focusing on orientation'},{n:'Left side-in corrections',g:'Deliberate corrections in all directions',s:['Hold left side-in','Intentionally drift, then correct each axis'],m:'Mixing up which stick does what — go very slow'},{n:'Right side-in',g:'Repeat all phases for right side-in',s:['Repeat phases 1-3 but yaw right','Controls mirror left side-in'],m:'Assuming same as left side-in — it is mirrored'}],warnings:['Confusing left and right side-in inputs','Altitude creeping during orientation changes'],tips:['Learn left side-in fully before starting right','Mark sides with colored tape','Practice yawing to each orientation and back before hovering']},
+  {id:'h4',craft:'helicopter',name:'Pirouette',icon:'ti-360',diff:'Intermediate',what:'The helicopter spins continuously on its yaw axis while maintaining a fixed position. Rotates like a top while hovering in one spot — passing through every orientation continuously.',why:'Requires correcting for drift in every orientation simultaneously as the heli rotates. Your corrections must anticipate the constantly changing orientation.',prereqs:'Solid nose-in and side-in hovers. Must be comfortable in all four cardinal orientations.',sticks:[{i:'Left stick left or right',a:'Continuous yaw — determines spin direction and speed'},{i:'Right stick',a:'Cyclic corrections — direction constantly changes as heli rotates'},{i:'Key insight',a:'Tail-in: normal corrections. Nose-in: reversed. Side-in: rotated 90°. All happening continuously.'}],phases:[{n:'Slow pirouette, no corrections',g:'Get comfortable watching a spinning heli without panicking',s:['Set low yaw rate in sim','Apply gentle yaw input','Just watch — do not try to correct, let it drift','Only maintain altitude'],m:'Correcting too early — watch and learn the pattern first'},{n:'Stop at each cardinal',g:'Pirouette and stop at each of 4 orientations',s:['Spin slowly','Stop at nose-in, hover 5 seconds','Continue to each side-in and tail-in','Master each stop point'],m:'Not stopping cleanly — sloppy orientation changes'},{n:'Altitude only during pirouette',g:'Maintain altitude through a full slow pirouette',s:['Pirouette slowly','Focus only on keeping altitude constant','Ignore position drift for now'],m:'Forgetting throttle while trying to fix drift'},{n:'Slow pirouette in a box',g:'Keep drift within a 6-foot area',s:['Pirouette slowly','When heli drifts outside the box, gently correct','Corrections will feel awkward — normal'],m:'Over-correcting each drift — small inputs only'},{n:'Full pirouette hold',g:'Maintain position within 3 feet while pirouetting',s:['Increase yaw rate slightly','Make continuous small corrections as orientation changes','Stay relaxed — tense hands mean big inputs'],m:'Trying to be perfect too soon — smooth is more important than precise'}],warnings:['Not comfortable in all four cardinal orientations','Correction lag more than half a rotation behind','Altitude varying more than 2 feet during spin'],tips:['Slow yaw rate first — learn it slow then speed up','Focus on where the tail is — it tells you the orientation','Some pilots fix gaze on the nose only','This takes months to master — be patient']},
+  {id:'h5',craft:'helicopter',name:'Inverted hover',icon:'ti-flip-vertical',diff:'Advanced',what:'Flying the helicopter upside down. Rotor thrust now pushes DOWN so you fly with reversed throttle and reversed pitch. One of the most counter-intuitive things in RC.',why:'Everything is backwards. Throttle up descends. Pitch forward pitches differently. Requires complete rewiring of all reflexes.',prereqs:'Solid pirouette. Comfortable all-orientation flying. Do NOT attempt on real helicopter without extensive sim practice first.',sticks:[{i:'Throttle up (left stick up)',a:'DESCENDS when inverted — reversed from normal'},{i:'Throttle down (left stick down)',a:'CLIMBS when inverted — hold here to maintain altitude'},{i:'Right stick up/down',a:'Pitch — direction feels different inverted'},{i:'Roll',a:'Feels reversed — visual result opposite to input'}],phases:[{n:'Theory first',g:'Know exactly what each control does before flying',s:['Read this section multiple times','Test yourself: "if I push throttle up inverted, what happens?"','Do not skip this step'],m:'Jumping in without theory — you will crash immediately'},{n:'High altitude inverted attempts',g:'First attempts with 50+ feet of altitude to recover',s:['Fly to 50 feet in sim','Enter inverted attitude','Try to hold 3 seconds','Recover even if messy'],m:'Flying low for first inverted attempts'},{n:'Inverted hover close to ground',g:'Eventually stable inverted hover at low altitude',s:['Only after 50-foot inverted is solid','Bring down slowly over many sessions — 3 feet first'],m:'Rushing to low altitude before stable at height'},{n:'Inverted nose-in',g:'Combine inverted with nose-in orientation',s:['Master tail-in inverted first','Then add nose-in — everything is double-reversed'],m:'Attempting before tail-in inverted is rock solid'}],warnings:['Any hesitation about what each control does inverted','Cannot hold inverted for 10 seconds at altitude'],tips:['Many pilots spend 6+ months in sim before first real inverted','Wrong move here = destroyed helicopter — take your time','Video yourself to see what is actually happening']},
+  {id:'h6',craft:'helicopter',name:'Tic-toc',icon:'ti-arrows-up-down',diff:'Advanced',what:'The helicopter rocks between upright and inverted repeatedly like a pendulum — alternating between normal and inverted hover. One of the most visually striking 3D maneuvers.',why:'Requires rapid throttle and collective reversals while maintaining lateral position. Hands must instantly reverse all inputs.',prereqs:'Solid inverted hover in all orientations. Comfortable with rapid inverted transitions.',sticks:[{i:'Right stick forward/back rapidly',a:'Flips between upright and inverted'},{i:'Throttle',a:'Must reverse direction rapidly — positive for upright, negative for inverted'}],phases:[{n:'Upright to inverted and hold',g:'Flip and hold inverted for 3 seconds',s:['Hover upright','Apply rapid forward cyclic','Catch in inverted attitude','Hold 3 seconds, flip back'],m:'Not fully committing — halfway is a crash'},{n:'Two tic-tocs',g:'Flip upright-inverted-upright in sequence',s:['Hover stable','Flip inverted','Immediately flip back upright','Stabilize'],m:'Losing lateral position through each flip'},{n:'Continuous tic-toc',g:'Five or more consecutive flips maintaining position',s:['Develop a rhythm','Each flip is one smooth motion','Position is secondary to rhythm initially'],m:'Chasing position before rhythm is established'}],warnings:['Not solid on inverted hover before attempting','Any confusion about throttle reversal timing'],tips:['Rhythm matters more than perfection early on','Rotor head speed matters — low head speed makes this harder','This is a crowd-pleaser — worth the practice time']},
+  {id:'h7',craft:'helicopter',name:'Stall turn',icon:'ti-arrow-up',diff:'Intermediate',what:'Climbs vertically, reaches the top, applies yaw to spin 180°, then descends vertically the opposite direction. Creates a clean U-shape in the sky.',why:'Tests vertical climb line, yaw authority at near-zero speed, and vertical descent control.',prereqs:'Confident forward flight and vertical climbs.',sticks:[{i:'Entry',a:'Level flight then pull to vertical climb'},{i:'Vertical climb',a:'Maintain heading going straight up'},{i:'At top',a:'Full rudder — yaw 180° while speed is near zero'},{i:'Vertical descent',a:'Maintain straight line going down'}],phases:[{n:'Vertical climb practice',g:'Climb straight up and hold at the top',s:['Pull to vertical from forward flight','Climb to altitude','Stop and hover at top maintaining vertical line'],m:'Losing the vertical line — drifting forward or back'},{n:'Add the yaw',g:'Yaw 180° cleanly at the top',s:['Climb vertically','At top, apply full yaw quickly','Establish vertical descent'],m:'Yawing too slowly — heli stalls instead of pirouetting cleanly'},{n:'Clean stall turn',g:'Smooth vertical up, clean 180° yaw, clean vertical down',s:['Dial in entry speed','Yaw at right moment','Maintain vertical descent line'],m:'Yawing too early (too much speed) or too late (stalled)'}],warnings:['Yaw timing varies by aircraft — find your sweet spot','Insufficient throttle on vertical climb'],tips:['More entry speed = more margin at the top','Clean vertical lines are what makes this look impressive','Practice yaw timing in level flight first']},
+  {id:'h8',craft:'helicopter',name:'Auto-rotation',icon:'ti-player-play',diff:'Advanced',what:'Simulated engine failure landing. Rotor disconnected from engine, spins freely from descending airflow. Land using stored rotor energy. A real-world emergency skill.',why:'Timing of the flare at the bottom is critical — too early or late means a hard landing or crash.',prereqs:'Solid forward flight and landing. Understanding of rotor RPM management.',sticks:[{i:'Throttle (left down immediately)',a:'Lower collective — descend to build rotor RPM from airflow'},{i:'Pitch/cyclic',a:'Maintain glide speed — not too fast or slow'},{i:'Flare timing',a:'At 20-30 feet, pull back cyclic — slows descent, builds RPM'},{i:'Final cushion',a:'Pull collective at 3-5 feet to cushion landing'}],phases:[{n:'High-altitude auto',g:'Practice from 200 feet with time to correct',s:['Cut throttle at altitude','Lower collective immediately','Establish glide','Flare at 30 feet','Cushion at 5 feet'],m:'Forgetting to lower collective — rotor overspeeds'},{n:'Consistent flare height',g:'Flare at same height every time',s:['Practice 20+ autos','Note flare height each time','Dial in the 20-30 foot flare point'],m:'Flaring too late (hard landing) or too early (stall and drop)'}],warnings:['Inconsistent flare timing across attempts','Rotor RPM bleeding off before landing'],tips:['Sim autos are essential practice for this skill','Real autos have very little time for error','Always have your landing zone picked before entering auto']},
+  {id:'h9',craft:'helicopter',name:'Loop',icon:'ti-circle',diff:'Intermediate',what:'Flies a vertical circle — nose goes up, over the top inverted, back down completing a full 360° loop in the vertical plane.',why:'Requires managing pitch, throttle, and orientation through an inverted section at the top.',prereqs:'Comfortable with inverted flight. Forward flight control solid.',sticks:[{i:'Entry speed',a:'Need good forward speed for energy at top'},{i:'Right stick back (pull)',a:'Continuous back pressure throughout the loop'},{i:'Throttle',a:'Reduce slightly at top, maintain through bottom'}],phases:[{n:'High entry loose loop',g:'Complete a full loop without worrying about shape',s:['Forward at moderate speed','Pull back firmly','Continue pulling all the way around','Recover from dive at bottom'],m:'Not enough entry speed — stalls at the top'},{n:'Round shape',g:'Circular not egg-shaped',s:['Consistent back-pressure throughout','Throttle at top to avoid stall','Reduce at bottom to avoid speed buildup'],m:'Oval shape — uneven pull rate'},{n:'Size control',g:'Same size loop every time',s:['Consistent entry speed','Consistent pull force','Exit same altitude as entry'],m:'Loops getting bigger or smaller — inconsistent setup'}],warnings:['Stalling at the top — need more entry speed','Losing altitude overall through loops'],tips:['More entry speed = easier loops','Practice half-loops first','Consistent throttle management is the key skill']},
+  {id:'h10',craft:'helicopter',name:'Pirouetting circle',icon:'ti-circles-relation',diff:'Advanced',what:'Pirouettes continuously while simultaneously flying in a horizontal circle. Two complex motions combined — spinning on yaw axis while banking around a circle.',why:'One of the hardest helicopter maneuvers. Coordinating pirouette corrections WITH banked circle corrections simultaneously.',prereqs:'Clean pirouette. Confident circles in all orientations. No shortcuts to this one.',sticks:[{i:'Yaw',a:'Continuous pirouette input'},{i:'Cyclic',a:'Constantly changing — corrections for both spin AND circle simultaneously'},{i:'Throttle',a:'Must maintain altitude through changing bank angles'}],phases:[{n:'Each component separately',g:'Master pirouette and circle independently first',s:['Clean pirouette in one spot — 5 minutes','Clean banked circle — 5 minutes'],m:'Combining before each is solid on its own'},{n:'Slow pirouette + large circle',g:'Add slow pirouette to a large slow circle',s:['Large circle (50 foot diameter)','Add slow pirouette','Do not crash — position accuracy is secondary'],m:'Circle too small or pirouette too fast initially'},{n:'Tighten and synchronize',g:'Gradually tighten and increase rate',s:['Over many sessions reduce circle size','Increase pirouette rate as you are ready'],m:'Rushing — this takes months to perfect'}],warnings:['Either component not solid individually','Getting dizzy watching the spinning heli'],tips:['Competition pilots practice this for years','Start with very large circle and very slow pirouette','Record video — it looks very different on screen vs real life']},
+  {id:'h11',craft:'helicopter',name:'Inverted circuits',icon:'ti-route',diff:'Advanced',what:'Flying the helicopter upside down in circuits — inverted figure-8s, circles, squares. All normal circuits but sustained inverted.',why:'Sustaining inverted through turns and direction changes requires total inverted control mastery.',prereqs:'Solid inverted hover in all orientations. Zero hesitation with inverted controls.',sticks:[{i:'All controls',a:'All inverted — same as inverted hover but in motion'},{i:'Banking inverted',a:'Banking in a turn feels reversed compared to upright'}],phases:[{n:'Inverted straight line',g:'Fly inverted in a straight line for 50 feet',s:['Enter inverted','Fly straight ahead 50 feet','Maintain altitude'],m:'Altitude creeping — throttle management harder in motion'},{n:'Inverted circle',g:'Complete a full circle inverted',s:['Large circle first — 100 feet','Altitude first, shape second'],m:'Too tight a circle before altitude is stable'},{n:'Inverted figure-8',g:'Smooth figure-8 inverted',s:['Two joined circles inverted','The crossover transition is hardest'],m:'Losing orientation at the figure-8 crossover point'}],warnings:['Any hesitation inverted before attempting circuits','Altitude unstable in inverted straight flight'],tips:['Inverted circuits are competition-level skills','Many hours of inverted hover required before this','The sim is essential — this destroys real helis regularly']},
+  {id:'h12',craft:'helicopter',name:'Flip / roll',icon:'ti-refresh',diff:'Intermediate',what:'A rapid full 360° rotation around the roll axis. The helicopter rolls completely sideways in about a second. Requires enough altitude and a decisive input.',why:'Must commit fully — a half-completed roll is dangerous. Input must be fast and deliberate.',prereqs:'Comfortable inverted hover helps greatly. Solid all-orientation flying.',sticks:[{i:'Right stick hard left or right',a:'Initiates the roll — must be definitive and fast'},{i:'Timing',a:'The roll happens very fast — entry and exit setup matters more than flying through'}],phases:[{n:'High altitude rolls',g:'Complete full roll and maintain heading',s:['40+ feet in sim','Full aileron input','Watch the full rotation','Recover cleanly'],m:'Starting too low — need 30+ feet minimum'},{n:'Altitude neutral roll',g:'Exit roll at same altitude as entry',s:['Note entry altitude','Manage power through roll','Check exit altitude'],m:'Losing altitude through bottom — add power'}],warnings:['Inconsistent altitude loss through roll','Hesitating mid-roll'],tips:['Commit fully — no half rolls','Speed through the rotation point is key','Master in sim before real aircraft']},
+  // PLANE
+  {id:'p1',craft:'plane',name:'Coordinated turn',icon:'ti-rotate-clockwise',diff:'Beginner',what:'A banked turn where no skidding or slipping occurs. The plane turns smoothly without side forces. The foundation of all aerobatics.',why:'Most beginner turns are uncoordinated — too much or too little rudder. Coordinated turns are efficient and smooth.',prereqs:'Basic straight and level flight. Understanding of ailerons, elevator, and rudder.',sticks:[{i:'Aileron (roll)',a:'Banks the plane — initiates the turn'},{i:'Rudder',a:'Coordinates the turn — same direction as bank'},{i:'Back pressure (elevator)',a:'Maintains altitude — more bank requires more back pressure'}],phases:[{n:'Shallow turns 20°',g:'Coordinated turn maintaining altitude',s:['Gentle aileron right','Add gentle right rudder','Slight back pressure','Roll out with opposite inputs'],m:'Forgetting rudder — uncoordinated turn skids'},{n:'Medium turns 45°',g:'45° bank coordinated, altitude within 50 feet',s:['More aileron and rudder','Noticeably more back pressure'],m:'Losing altitude — insufficient back pressure in bank'},{n:'Steep turns 60°',g:'60° bank coordinated, altitude within 100 feet',s:['Significant bank, back pressure, and rudder'],m:'Overbanking past 60° — load factor increases rapidly'}],warnings:['Nose dropping in turns — need more back pressure','Skidding or slipping — check rudder coordination'],tips:['Most RC planes lack ball indicator — use visual cues','Rudder in the direction of bank is the rule','Practice level 360s until effortless before aerobatics']},
+  {id:'p2',craft:'plane',name:'Loop',icon:'ti-circle',diff:'Intermediate',what:'A vertical circle — climbs, goes inverted over the top, descends, pulls back to level. The classic aerobatic maneuver.',why:'Tests pitch throughout, throttle management, and maintaining a round shape.',prereqs:'Comfortable inverted flight. Confident steep turns.',sticks:[{i:'Entry speed',a:'Need enough speed for energy at the top'},{i:'Pull back (elevator)',a:'Continuous back pressure all the way around'},{i:'Throttle',a:'Reduce slightly at top, maintain power elsewhere'}],phases:[{n:'High altitude first loop',g:'Complete a full loop without worrying about shape',s:['Full power, level flight','Pull firmly back','Continue all the way around','Release pressure when back level'],m:'Insufficient entry speed — stalls at the top'},{n:'Round loop',g:'Circular not oval',s:['Consistent pull force throughout','Power reduction at top','Power addition at bottom'],m:'Oval shape — uneven pull rate'},{n:'Size control',g:'Same size every time',s:['Consistent entry speed','Consistent pull force'],m:'Variable sizes — inconsistent entry setup'}],warnings:['Stalling at top — need more entry speed','Losing altitude overall through loops'],tips:['Speed at entry = energy for the whole loop','Master inside loops before outside','Trim for level flight first']},
+  {id:'p3',craft:'plane',name:'Stall & recovery',icon:'ti-alert-triangle',diff:'Beginner',what:'Deliberately fly to a stall and recover to normal flight. Essential safety skill every pilot must know.',why:'Every pilot must recognize and recover from a stall. In aerobatics, knowing the stall point is critical.',prereqs:'Basic straight and level flight.',sticks:[{i:'Reduce throttle',a:'Reduce to idle power'},{i:'Pull back',a:'Hold nose-high attitude as speed drops to stall'},{i:'Recovery',a:'Nose down, add power, level wings'}],phases:[{n:'Straight ahead stall',g:'Stall and recover without bank',s:['Reduce to idle','Pull back to maintain altitude as speed drops','Feel the stall break','Push forward, add power, level'],m:'Pulling back harder at the stall — deepens it'},{n:'Stall with bank',g:'Recognize and recover from stall in a turn',s:['Steep turn, reduce power','Hold back pressure until stall','Level wings, nose down, add power'],m:'Adding more bank during recovery — causes spin entry'}],warnings:['Not recognizing stall symptoms early enough','Pulling back during recovery'],tips:['In a stall: nose down FIRST, then power, then level wings','Bank makes stalls more aggressive — respect it','Know your aircraft stall characteristics in sim first']},
+  {id:'p4',craft:'plane',name:'Roll',icon:'ti-refresh',diff:'Intermediate',what:'360° rotation around the roll axis while maintaining heading and altitude. The plane rotates like a barrel flying straight ahead.',why:'Tests aileron authority and ability to maintain heading through all roll attitudes.',prereqs:'Comfortable with inverted flight.',sticks:[{i:'Full aileron input',a:'Drives the roll — decisive and fast'},{i:'Elevator/rudder through rotation',a:'Brief inputs to maintain heading'}],phases:[{n:'High altitude rolls',g:'Complete roll maintaining heading',s:['High altitude','Full aileron input','Watch for heading deviation','Correct as needed'],m:'Too slow — plane loses altitude through the roll'},{n:'Altitude neutral roll',g:'Exit at same altitude as entry',s:['Note entry altitude','Power management through roll','Check exit altitude'],m:'Altitude loss through bottom — add power'}],warnings:['Heading deviating more than 30°','Altitude loss more than 50 feet'],tips:['Speed is your friend for clean rolls','Decide direction before you roll — commit fully','High altitude practice first']},
+  {id:'p5',craft:'plane',name:'Split-S',icon:'ti-arrows-split-2',diff:'Intermediate',what:'Roll inverted then pull through to level flight heading opposite direction. Half a loop from inverted — efficient direction reversal losing altitude.',why:'Tests inverted comfort and pull-through from inverted attitude. Altitude management is critical.',prereqs:'Comfortable inverted flight. Comfortable loops.',sticks:[{i:'Roll inverted',a:'Full aileron roll to inverted'},{i:'Pull back from inverted',a:'Elevator back — takes you downward through half-loop'},{i:'Exit',a:'Level flight heading opposite direction'}],phases:[{n:'High altitude Split-S',g:'Complete with lots of altitude',s:['High altitude — you lose significant altitude in this maneuver','Roll inverted','Pull through smoothly','Level at bottom'],m:'Starting too low — you will hit the ground'},{n:'Altitude management',g:'Know exactly how much altitude you use',s:['Note entry and exit altitude','Adjust entry for desired exit altitude'],m:'Not accounting for altitude loss'}],warnings:['Insufficient altitude for the pull-through','Pulling too hard at bottom — high G and more altitude loss'],tips:['Needs lots of altitude — start at 500 feet sim altitude','Harder pull at bottom = more G and more altitude lost','Pairs naturally with Immelmann for direction reversals']},
+  {id:'p6',craft:'plane',name:'Immelmann turn',icon:'ti-arrow-up',diff:'Intermediate',what:'Half a loop upward then a half roll at the top — level out heading opposite direction at higher altitude. The opposite of a Split-S.',why:'Tests pull-up from level, attitude at the top, and roll-out timing.',prereqs:'Comfortable loops. Coordinated turns.',sticks:[{i:'Entry speed',a:'Need good speed — energy intensive maneuver'},{i:'Pull back',a:'Pull up over the top into half loop'},{i:'Half roll at top',a:'When nearly inverted at top — roll half to come level'},{i:'Exit',a:'Level flight heading opposite direction at higher altitude'}],phases:[{n:'Half loop with half roll',g:'Combine pull-up and roll-out smoothly',s:['Full power entry','Pull to vertical and over the top','When nose pointing down, roll half','Exit level'],m:'Rolling too early or too late — timing the half roll is the key'},{n:'Consistent exit altitude',g:'Exit at same altitude relative to entry every time',s:['Note entry vs exit altitude','Adjust entry speed to control exit'],m:'Losing speed at top — insufficient entry speed'}],warnings:['Stalling at top of Immelmann','Roll timing off — exits in wrong heading'],tips:['More speed = more margin','The half roll at top must be decisive','Practice the half loop first then add the half roll']},
+  {id:'p7',craft:'plane',name:'Hammerhead',icon:'ti-arrow-up-down',diff:'Advanced',what:'Vertical climb, yaw 180° at top while speed is near zero, vertical descent in opposite direction. The fixed-wing equivalent of the helicopter stall turn.',why:'Precise timing of the yaw at near-zero speed. Too early or late ruins the maneuver.',prereqs:'Comfortable vertical climbs. Stall knowledge.',sticks:[{i:'Pull to vertical',a:'Climb straight up maintaining heading'},{i:'Rudder at top',a:'Full rudder — just before the stall'},{i:'Descent',a:'Vertical down in opposite direction'}],phases:[{n:'Vertical climb practice',g:'Clean vertical climb and hold at top',s:['Pull to vertical','Maintain vertical with small corrections','Feel the deceleration to near-zero speed'],m:'Not truly vertical — lean ruins the yaw pivot'},{n:'Add the yaw',g:'Pivot 180° cleanly at top',s:['Climb vertically','At 20-30 mph feel the right moment','Full rudder applied'],m:'Yawing too early (plane swings wide) or too late (stalls and drops)'}],warnings:['Not maintaining vertical line','Inconsistent yaw timing'],tips:['Rudder authority at low speed is key — some aircraft handle this better','Clean vertical lines are the signature of a good hammerhead','Practice by feeling the deceleration rhythm']},
+  {id:'p8',craft:'plane',name:'Knife edge',icon:'ti-minus',diff:'Advanced',what:'Flying with wings vertical — 90° banked — sustained in straight level flight. The fuselage must generate lift to maintain altitude.',why:'Requires significant rudder to prevent nose drop and careful throttle to maintain altitude and heading.',prereqs:'Comfortable rolls. Understanding of adverse yaw.',sticks:[{i:'Roll to 90°',a:'Bank to knife edge — wings vertical'},{i:'Rudder toward sky',a:'Top rudder must be applied immediately to prevent nose drop'},{i:'Aileron',a:'Small corrections to maintain 90° bank'},{i:'Throttle',a:'Usually need more power to maintain altitude'}],phases:[{n:'Knife edge pass 3s',g:'Maintain knife edge for 3 seconds',s:['Roll to 90° bank','Apply top rudder immediately','Maintain with throttle','Roll out'],m:'Not enough rudder — nose drops immediately'},{n:'Extended knife edge 10s',g:'Straight line for 10+ seconds',s:['Enter at good speed','Constant rudder and throttle','Focus on maintaining heading'],m:'Hunting for right rudder amount — find it and hold it'}],warnings:['Nose dropping immediately — insufficient top rudder','Altitude loss despite rudder — need more throttle'],tips:['Fuselage shape affects this greatly — some planes excel at knife edge','It is harder than it looks','The right rudder amount is the whole trick']},
+  // QUAD
+  {id:'q1',craft:'quadcopter',name:'Stable hover',icon:'ti-square',diff:'Beginner',what:'Maintaining a stationary position in the air. Angle mode self-levels. Acro mode requires active stabilization.',why:'The absolute foundation. Everything else builds on stable position control.',prereqs:'None for angle mode. Simulator time recommended for acro.',sticks:[{i:'Throttle (left up)',a:'Increases thrust — climbs'},{i:'Yaw (left left/right)',a:'Rotates on vertical axis'},{i:'Pitch (right up/down)',a:'Tilts forward/back — forward/backward movement'},{i:'Roll (right left/right)',a:'Tilts side to side — lateral movement'}],phases:[{n:'Angle mode hover',g:'Stable hover in stabilized mode for 1 minute',s:['Use angle/stabilized mode','Hover at 3 feet','Small corrections only'],m:'Over-correcting — let the stabilizer assist you'},{n:'Acro mode hover',g:'Stable hover in acro/rate mode',s:['Significantly harder — quad does not self-level','Start very low','Constant small corrections'],m:'Large inputs in acro — always ends in a crash'}],warnings:['Not stable in angle mode before attempting acro'],tips:['Angle mode first — always','Outdoor vs sim feels different due to wind','Record flights to analyze after']},
+  {id:'q2',craft:'quadcopter',name:'Power loop',icon:'ti-circle',diff:'Intermediate',what:'A forward flip at speed — flies forward, flips 360°, continues on same trajectory. Throttle management through the inverted section makes it smooth.',why:'Mastering throttle timing through the inverted section is the key skill.',prereqs:'Comfortable with flips. Confident forward flight in acro.',sticks:[{i:'Entry',a:'Good forward speed'},{i:'Pull back hard',a:'Initiates the loop — rapid elevator input'},{i:'Throttle management',a:'Maintain through inverted section'}],phases:[{n:'High altitude power loop',g:'Complete loop with altitude to spare',s:['Speed and altitude','Hard pull back','Throttle through inverted','Exit level'],m:'Throttle cut at top — drops out of the loop'},{n:'Low altitude power loop',g:'Clean tight loop near obstacles',s:['Precise entry speed and altitude','Tight radius','Exit exactly where intended'],m:'Too large a radius — clips ground or obstacles on exit'}],warnings:['Throttle management inconsistent through top','Inconsistent entry speed'],tips:['Throttle timing is everything — smooth not abrupt','Consistent entry setup is key','Gate flying and power loops complement each other well']},
+  {id:'q3',craft:'quadcopter',name:'Figure-8',icon:'ti-infinity',diff:'Beginner',what:'Flying in a figure-8 pattern — two linked circles in opposite directions. Tests banked turns and direction reversal.',why:'The most fundamental circuit pattern. Develops smooth banking and coordinated input.',prereqs:'Stable hover. Basic forward flight.',sticks:[{i:'Throttle',a:'More in banked turns to maintain altitude'},{i:'Roll',a:'Bank into each circle'},{i:'Pitch',a:'Forward speed maintenance'},{i:'Yaw',a:'Coordinates the turn'}],phases:[{n:'Large loose figure-8',g:'Complete pattern without altitude loss',s:['Large circles — 50+ feet','Focus on altitude only'],m:'Too tight initially — causes altitude loss'},{n:'Consistent size',g:'Both circles same size',s:['Pick visual reference for size','Match each circle to reference'],m:'One circle larger — uneven bank angle'},{n:'Tight figure-8',g:'Crisp small figure-8',s:['Reduce circle size gradually','Maintain altitude and speed'],m:'Rushing to tight before large is clean'}],warnings:['Altitude varying more than 10 feet','Circle shapes very different from each other'],tips:['Figure-8s reveal your weakest turning direction','Practice each direction separately first then combine','Speed consistency is the key to size consistency']},
+  {id:'q4',craft:'quadcopter',name:'Split-S',icon:'ti-arrows-split-2',diff:'Intermediate',what:'Roll inverted and pull through — same concept as fixed wing. Roll to inverted then pull through a half loop to level flight heading opposite direction.',why:'Efficient direction reversal losing altitude. Speed management through the pull is critical.',prereqs:'Comfortable inverted flight.',sticks:[{i:'Roll to inverted',a:'Hard aileron roll to inverted position'},{i:'Pull back',a:'From inverted, pull back loops you downward'},{i:'Power',a:'Need power through the pull to maintain speed'}],phases:[{n:'High Split-S',g:'Complete with plenty of altitude',s:['High altitude','Roll inverted','Pull through smoothly'],m:'Insufficient altitude — hits ground at bottom'},{n:'Controlled exit',g:'Exit at known altitude every time',s:['Note entry and exit altitude ratio','Adjust entry for desired exit'],m:'Unpredictable exit altitude — know your numbers'}],warnings:['Not enough altitude for pull-through'],tips:['Same rules as fixed wing — altitude is critical','Pairs with power loop for flowing freestyle lines','Speed at inverted point determines loop crispness']},
+  {id:'q5',craft:'quadcopter',name:'Orbit',icon:'ti-rotate-clockwise',diff:'Intermediate',what:'Flying in a circle around a subject while keeping the nose pointed at it throughout. Requires coordinated yaw and roll.',why:'Used in cinematography. Requires constant yaw to track subject while rolling to maintain the circle.',prereqs:'Comfortable figure-8 and banked turns.',sticks:[{i:'Yaw',a:'Continuously points nose at subject as you circle'},{i:'Roll',a:'Maintains the circular path'},{i:'Throttle',a:'Altitude maintenance through banked orbit'}],phases:[{n:'Manual orbit',g:'Circle a point keeping nose on it for full 360°',s:['Pick a stationary point','Begin circling','Add continuous yaw to keep nose on point'],m:'Forgetting to add yaw — nose drifts off subject'},{n:'Smooth orbit',g:'Consistent speed and altitude throughout',s:['Consistent roll angle','Consistent yaw rate matching circle speed','Throttle for altitude in the bank'],m:'Speeding up and slowing down — uneven roll angle'}],warnings:['Losing subject tracking halfway through','Altitude loss in banked orbit'],tips:['Learn manual before GPS orbit modes','Practice with a stationary ground marker first','Slow orbits first — speed makes tracking harder']},
+  {id:'q6',craft:'quadcopter',name:'Matty flip',icon:'ti-flip-vertical',diff:'Advanced',what:'A back flip while simultaneously yawing — creating a spinning backwards flip. Very visual in freestyle flying.',why:'Requires coordinating two rotation axes simultaneously with precise throttle.',prereqs:'Comfortable with flips and rolls. Comfortable with yaw spins.',sticks:[{i:'Pull back (elevator)',a:'Initiates the backflip component'},{i:'Yaw',a:'Added simultaneously — creates the spin'},{i:'Throttle',a:'Managed through rotation to maintain altitude'}],phases:[{n:'Backflip alone',g:'Clean backflip with no yaw',s:['Hover','Hard pull back — complete full backflip','Recover'],m:'Not completing the flip — half flip and drop'},{n:'Add yaw simultaneously',g:'Add yaw at same time as flip',s:['Hover','Pull back and add yaw together','Watch the combined motion'],m:'Adding yaw too late — looks like flip then spin rather than combined'},{n:'Clean recovery',g:'Exit in a controlled attitude every time',s:['Complete the rotation','Be ready for exit attitude','Small correction to stabilize'],m:'Unexpected exit attitude — know your rotation result'}],warnings:['Not comfortable with backflip alone first','Throttle not managed through rotation'],tips:['Slow motion video helps understand the rotation','Entry hover stability is critical','A signature freestyle move — worth perfecting']},
+];
+
+// ── STATE ─────────────────────────────────────
+const S={
+  cf:'all',df:'all',
+  'g-craft':'helicopter','g-level':'beginner','g-focuses':new Set(['overall']),
+  'c-craft':'helicopter','c-focuses':new Set(),
+  'l-craft':'helicopter','l-level':'beginner','l-selected':'','l-lesson':'',
+  'g-files':{1:null,2:null,3:null},
+  'c-files':{1:null,2:null},
+  'l-files':{1:null,2:null},
+};
+
+// ── TABS ──────────────────────────────────────
+function switchTab(id,cls){
+  document.querySelectorAll('.tab').forEach(b=>b.className='tab');
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add(cls);
+  document.getElementById('panel-'+id).classList.add('active');
+}
+
+// ── API KEYS ──────────────────────────────────
+function toggleAPI(which){
+  const inner=document.getElementById('api-inner-'+which);
+  const arr=document.getElementById('api-arr-'+which);
+  const open=inner.style.display==='flex';
+  inner.style.display=open?'none':'flex';
+  inner.style.flexDirection='column';
+  inner.style.gap='8px';
+  arr.className='ti ti-chevron-'+(open?'down':'up');
+}
+function syncK(which){
+  if(which==='claude'){
+    const v=document.getElementById('claude-key').value.trim();
+    const ok=v.length>10;
+    document.getElementById('ck-status').textContent=ok?'✓ Set':'Not set';
+    document.getElementById('ck-status').className='ktag '+(ok?'kb':'ku');
+  } else {
+    const ids=['gemini-key','gk-g','gk-c'];
+    ids.forEach(id=>{
+      const el=document.getElementById(id);
+      const stat=document.getElementById(id+'-status')||document.getElementById('gk-status');
+      if(!el)return;
+      const ok=el.value.trim().length>10;
+      if(stat){stat.textContent=ok?'✓ Set':'Not set';stat.className='ktag '+(ok?'ks':'ku');}
+    });
+  }
+}
+function getGKey(){
+  for(const id of['gemini-key','gk-g','gk-c']){
+    const el=document.getElementById(id);
+    if(el&&el.value.trim().length>10)return el.value.trim();
+  }
+  return '';
+}
+function getCKey(){
+  const el=document.getElementById('claude-key');
+  return el?el.value.trim():'';
+}
+
+// ── REFERENCE ────────────────────────────────
+function filterMoves(){
+  const q=document.getElementById('ref-q').value.toLowerCase().trim();
+  const moves=MOVES.filter(m=>{
+    const cok=S.cf==='all'||m.craft===S.cf;
+    const dok=S.df==='all'||m.diff===S.df;
+    const sok=!q||m.name.toLowerCase().includes(q)||m.craft.includes(q)||m.diff.toLowerCase().includes(q);
+    return cok&&dok&&sok;
+  });
+  const list=document.getElementById('move-list');
+  document.getElementById('move-count').textContent=moves.length+' maneuver'+(moves.length!==1?'s':'');
+  if(!moves.length){list.innerHTML='<div class="no-results"><i class="ti ti-search"></i><p>No maneuvers match your filters</p></div>';return;}
+  list.innerHTML=moves.map(m=>`<div class="move-row" onclick="openMove('${m.id}')">
+    <i class="ti ${m.icon} mri"></i>
+    <div class="mr-info"><div class="mr-name">${m.name}</div>
+    <div class="mr-meta"><span class="dbadge db-${m.diff.toLowerCase()}">${m.diff}</span><span class="mr-craft">${m.craft}</span></div></div>
+    <i class="ti ti-chevron-right mr-arr"></i></div>`).join('');
+}
+function setCF(v,btn){S.cf=v;document.querySelectorAll('.cfb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');filterMoves();}
+function setDF(v,btn){S.df=v;document.querySelectorAll('.dfb').forEach(b=>b.classList.remove('on'));btn.classList.add('on');filterMoves();}
+
+function openMove(id){
+  const m=MOVES.find(x=>x.id===id);if(!m)return;
+  document.getElementById('ov-title').textContent=m.name;
+  const badge=document.getElementById('ov-badge');
+  badge.textContent=m.diff;badge.className='dbadge db-'+m.diff.toLowerCase();
+  document.getElementById('ov-body').innerHTML=buildDetail(m);
+  document.getElementById('ov').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeOv(){document.getElementById('ov').classList.remove('open');document.body.style.overflow='';}
+
+function buildDetail(m){
+  let h='';
+  h+=`<div class="ref-sec"><div class="ref-sec-title"><i class="ti ti-info-circle"></i> What it is</div><div class="ref-sec-body">${m.what}</div></div>`;
+  h+=`<div class="ref-sec"><div class="ref-sec-title"><i class="ti ti-alert-triangle"></i> Why it's challenging</div><div class="ref-sec-body">${m.why}</div></div>`;
+  h+=`<div class="ref-sec"><div class="ref-sec-title"><i class="ti ti-check-list"></i> Prerequisites</div><div class="ref-sec-body">${m.prereqs}</div></div>`;
+  h+=`<div class="ref-sec"><div class="ref-sec-title"><i class="ti ti-hand-two-fingers"></i> Stick guide</div>
+    <table class="stick-tbl"><thead><tr><th>Input</th><th>What it does</th></tr></thead><tbody>
+    ${m.sticks.map(s=>`<tr><td><span class="sk">${s.i}</span></td><td>${s.a}</td></tr>`).join('')}
+    </tbody></table></div>`;
+  h+=`<div class="ref-sec"><div class="ref-sec-title"><i class="ti ti-stairs"></i> Step-by-step progression</div>`;
+  m.phases.forEach((p,i)=>{
+    h+=`<div class="phase-card"><div class="ph-header"><div class="ph-num">${i+1}</div><div class="ph-name">${p.n}</div></div>
+    <div class="ph-goal">Goal: ${p.g}</div>
+    <div class="ph-body"><ul>${p.s.map(s=>`<li>${s}</li>`).join('')}</ul>
+    <div style="margin-top:6px;font-size:11px;color:var(--danger)"><strong>Common mistake:</strong> ${p.m}</div></div></div>`;
+  });
+  h+=`</div>`;
+  h+=`<div class="ref-sec"><div class="ref-sec-title"><i class="ti ti-eye"></i> Warning signs — not ready to progress</div>
+    <div class="ref-sec-body"><ul>${m.warnings.map(w=>`<li>${w}</li>`).join('')}</ul></div></div>`;
+  h+=`<div class="ref-sec"><div class="ref-sec-title"><i class="ti ti-bulb"></i> Sim tips</div>
+    <div class="ref-sec-body"><ul>${m.tips.map(t=>`<li>${t}</li>`).join('')}</ul></div></div>`;
+  h+=`<button class="ai-btn" onclick="aiDeepDive('${m.id}')"><i class="ti ti-wand"></i> AI deep-dive lesson (needs Claude key)</button>
+    <div id="ai-result-${m.id}" style="margin-top:10px"></div>`;
+  return h;
+}
+
+async function aiDeepDive(id){
+  const m=MOVES.find(x=>x.id===id);
+  const key=getCKey();
+  if(!key){document.getElementById('ai-result-'+id).innerHTML='<div class="warn-box"><strong>Claude API key needed.</strong> Enter it in the Learn tab API Keys section.</div>';return;}
+  const btn=document.querySelector('.ai-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin b"></div> Building AI lesson...';}
+  const el=document.getElementById('ai-result-'+id);
+  el.innerHTML=`<div class="results-wrap"><div class="rhead bl"><div class="spin b"></div> Building extended lesson...</div><div style="padding:12px;color:var(--muted);font-size:12px">~15 seconds...<div class="pbar-wrap"><div class="pbar b" id="aip-${id}" style="width:8%"></div></div></div></div>`;
+  let p=8;const pi=setInterval(()=>{p=Math.min(p+8,85);const e=document.getElementById('aip-'+id);if(e)e.style.width=p+'%';},1000);
+  try{
+    const text=await callClaude(
+      `Expert RC ${m.craft} instructor. Concise, practical, specific.`,
+      `Extended lesson on "${m.name}" for an RC ${m.craft} pilot. Include: mental preparation techniques, detailed stick timing, what the aircraft should look/feel like at each phase, the most common mistake and how to diagnose it from video, 3 specific sim exercises for muscle memory. Direct and practical. Max 400 words.`,
+      800
+    );
+    clearInterval(pi);
+    el.innerHTML=`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-wand"></i> AI lesson — ${m.name}</div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`;
+  }catch(err){clearInterval(pi);el.innerHTML=`<div class="warn-box"><strong>Error:</strong> ${err.message}</div>`;}
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-wand"></i> AI deep-dive lesson (needs Claude key)';}
+}
+
+// ── LEARN ─────────────────────────────────────
+function renderLearnGrid(){
+  const moves=MOVES.filter(m=>m.craft===S['l-craft']);
+  document.getElementById('learn-grid').innerHTML=moves.map(m=>
+    `<div class="mc ${S['l-selected']===m.id?'sel':''}" onclick="selMove('${m.id}',this)">
+      <i class="ti ${m.icon}"></i>
+      <div><div class="mc-name">${m.name}</div><div class="mc-diff">${m.diff}</div></div>
+    </div>`
+  ).join('');
+}
+function selMove(id,el){S['l-selected']=id;document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('l-custom').value='';}
+function setLS(k,v,btn,ids,rerender){S[k]=v;ids.split(',').forEach(id=>{const e=document.getElementById(id);if(e){e.classList.remove('ob');e.classList.remove('on');}});btn.classList.add('ob');if(rerender){S['l-selected']='';renderLearnGrid();}}
+
+// ── GENERIC SETTERS ───────────────────────────
+function setSt(k,v,btn,ids){S[k]=v;ids.split(',').forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});btn.classList.add('on');}
+function toggleChip(k,v,btn){const s=S[k];s.has(v)?(s.delete(v),btn.classList.remove('on')):(s.add(v),btn.classList.add('on'));}
+function handleFile(p,input,slot){const f=input.files[0];if(!f)return;S[p+'-files'][slot]=f;document.getElementById(p+'mb'+slot).classList.add('done');document.getElementById(p+'ms'+slot).innerHTML='<span class="u-fname">✓ '+(f.size/1024/1024).toFixed(1)+' MB</span>';}
+
+// ── API UTILS ─────────────────────────────────
+function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});}
+async function callGemini(parts,max){
+  const k=getGKey();if(!k)throw new Error('Gemini API key not set. Tap API Keys to enter it.');
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${k}`,
+    {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.7,maxOutputTokens:max}})});
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Gemini error '+res.status);}
+  const d=await res.json();const t=d.candidates?.[0]?.content?.parts?.[0]?.text;if(!t)throw new Error('No response from Gemini');return t;
+}
+async function callClaude(sys,usr,max){
+  const k=getCKey();if(!k)throw new Error('Claude API key not set. Enter it in Learn tab API Keys.');
+  const res=await fetch('https://api.anthropic.com/v1/messages',
+    {method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
+     body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max,system:sys,messages:[{role:'user',content:usr}]})});
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Claude error '+res.status);}
+  const d=await res.json();return d.content?.[0]?.text||'';
+}
+
+function rMD(t,c='g'){
+  const ac=c==='b'?'var(--blue)':c==='g2'?'var(--gold)':'var(--accent)';
+  return t
+    .replace(/## (.+)/g,`<h3 style="font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:0.7px;text-transform:uppercase;color:var(--text);margin:1rem 0 0.4rem;display:flex;align-items:center;gap:5px;padding-bottom:5px;border-bottom:1px solid var(--border)"><i class='ti ti-chevron-right' style='font-size:11px;color:${ac}'></i>$1</h3>`)
+    .replace(/\*\*(.+?)\*\*/g,'<strong style="color:var(--text)">$1</strong>')
+    .replace(/^[-•] (.+)$/gm,`<li style="margin-bottom:5px;padding-left:14px;position:relative"><span style="position:absolute;left:0;color:${ac};font-weight:700">›</span>$1</li>`)
+    .replace(/^(\d+)\. (.+)$/gm,`<li style="margin-bottom:5px;padding-left:18px;position:relative"><span style="position:absolute;left:0;font-size:11px;font-weight:700;font-family:'Barlow Condensed';color:${ac}">$1.</span>$2</li>`)
+    .replace(/(<li[\s\S]*?<\/li>\n?)+/g,s=>`<ul style="padding-left:0;list-style:none;margin:6px 0;color:#9aa3b5">${s}</ul>`)
+    .replace(/\n\n/g,'<br>');
+}
+function sc(s){return s>=7?'g':s>=5?'y':'r';}
+function setBtn(id,loading,label){const b=document.getElementById(id);if(!b)return;b.disabled=loading;b.innerHTML=loading?'<div class="spin"></div> Working...':label;}
+function showEl(id,html){const e=document.getElementById(id);if(!e)return;e.style.display='block';e.innerHTML=html;}
+function hideEl(id){const e=document.getElementById(id);if(e)e.style.display='none';}
+function ldHTML(aid,msg,c='g'){const cl=c==='b'?'b':c==='g2'?'g2':'';return `<div class="results-wrap"><div class="rhead${c==='b'?' bl':c==='g2'?' go':''}"><div class="spin ${cl}"></div> ${msg}</div><div style="padding:12px;color:var(--muted);font-size:12px">Please wait...<div class="pbar-wrap"><div class="pbar ${cl}" id="prog-${aid}" style="width:8%"></div></div></div></div>`;}
+function tickP(id){let p=8;return setInterval(()=>{p=Math.min(p+5,82);const e=document.getElementById('prog-'+id);if(e)e.style.width=p+'%';},1000);}
+function stopP(pi,id){clearInterval(pi);const e=document.getElementById('prog-'+id);if(e)e.style.width='100%';}
+function errHTML(msg){return `<div class="results-wrap"><div class="rhead" style="color:var(--danger)"><i class="ti ti-alert-circle"></i> Failed</div><div style="padding:12px;color:var(--muted);font-size:12px">${msg}<br><br>· Check API key &nbsp;· Clips under 50MB &nbsp;· Try 30-60 sec clips</div></div>`;}
+
+// ── TEACH MOVE ────────────────────────────────
+async function teachMove(){
+  const custom=document.getElementById('l-custom').value.trim();
+  const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  if(!move){alert('Pick a maneuver from the grid or type one in.');return;}
+  const craft=S['l-craft'],level=S['l-level'];
+  setBtn('l-teach-btn',true,'<i class="ti ti-school"></i> Build my lesson plan');
+  showEl('l-lesson',ldHTML('l-lesson','Building your lesson plan...','b'));
+  hideEl('l-attempt-wrap');S['l-files']={1:null,2:null};
+  const pi=tickP('l-lesson');
+  try{
+    const text=await callClaude(
+      `You are the world's best RC ${craft} instructor. Break complex maneuvers into simple logical steps. Explain stick inputs in plain English. The student practices in a simulator — crashing is fine, building real muscle memory is the goal.`,
+      `Teach me "${move}" on an RC ${craft}. I am ${level} — I can fly well but don't know how to start this specific maneuver.\n\n## What this maneuver is\nPlain-English description.\n## Why it's challenging\nWhat brain and hands must do differently.\n## Before you start\nPrerequisite skills.\n## The stick movements\nEach control and exactly what it does — plain English like "left stick right = tail goes left".\n## Step-by-step progression (5-6 phases)\nEach phase: name, goal (what success looks like), what to do, what correct feels like, one common mistake and fix, when to advance.\n## Warning signs you need more practice\nSpecific signs you are not ready to progress.\n## Sim tips\n3-4 specific simulator tips.\n\nBe direct and specific. Max 500 words.`,
+      1200
+    );
+    stopP(pi,'l-lesson');S['l-lesson']=text;
+    showEl('l-lesson',`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-school"></i> Lesson — ${move}</div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`);
+    document.getElementById('l-attempt-wrap').style.display='block';
+  }catch(err){stopP(pi,'l-lesson');showEl('l-lesson',errHTML(err.message));}
+  setBtn('l-teach-btn',false,'<i class="ti ti-school"></i> Build my lesson plan');
+}
+
+async function analyzeAttempt(){
+  const files=S['l-files'];if(!files[1]){alert('Upload your attempt video first.');return;}
+  const move=document.getElementById('l-custom').value.trim()||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'the maneuver');
+  const craft=S['l-craft'];
+  const btn=document.getElementById('l-analyze-btn');
+  if(btn){btn.disabled=true;btn.innerHTML='<div class="spin b"></div> Analyzing...';}
+  showEl('l-results',ldHTML('l-results','Watching your attempt...','b'));
+  const pi=tickP('l-results');
+  const prompt=`Expert RC ${craft} instructor. Student learned "${move}" from this lesson:\n\n${S['l-lesson'].substring(0,1500)}\n\n---\nAnalyze my attempt video:\n\n## Which phase\nWhich phase from the lesson does this attempt show?\n\n## What you got right\nSpecific correct technique elements.\n\n## Top 2-3 things to fix now\nFor this phase only — not advanced corrections yet.\n\n## Focus for next session\nOne single clear actionable thing.\n\n## Encouragement\nOne specific genuine sentence based on what you see.\n\nReference actual video content. Current phase only.`;
+  try{
+    const parts=[];
+    for(let s=1;s<=2;s++){if(!files[s])continue;parts.push({inline_data:{mime_type:files[s].type||'video/mp4',data:await toB64(files[s])}});parts.push({text:`[Attempt ${s}]`});}
+    parts.push({text:prompt});
+    const text=await callGemini(parts,1200);
+    stopP(pi,'l-results');
+    showEl('l-results',`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-eye"></i> Your attempt</div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`);
+  }catch(err){stopP(pi,'l-results');showEl('l-results',errHTML(err.message));}
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-eye"></i> Analyze my attempt';}
+}
+
+// ── GENERAL COACH ─────────────────────────────
+async function analyzeGeneral(){
+  const files=S['g-files'];if(!files[1]){alert('Upload at least one clip.');return;}
+  const craft=S['g-craft'],level=S['g-level'],fs=[...S['g-focuses']].join(', ')||'overall';
+  const goals=document.getElementById('g-goals').value.trim();
+  const count=Object.values(files).filter(Boolean).length;
+  setBtn('g-abtn',true,'<i class="ti ti-brain"></i> Get coaching feedback');
+  showEl('g-results',ldHTML('g-results','Watching your flying...'));
+  const pi=tickP('g-results');
+  const prompt=`Expert RC ${craft} instructor. ${level} pilot. ${count} clip(s).${goals?'\nGoals: '+goals:''}\nFocus: ${fs}.\n\n## Overall assessment\n## Scores (out of 10)\n- Smoothness: X/10\n- Precision: X/10\n- Orientation: X/10\n- Consistency: X/10\n## Strengths\n2-3 positives.\n## Key weaknesses\n3-4 most critical — what I do wrong, what to do instead.\n## Bad habits to break\n## Practice plan\n5 sim drills in priority order.\n## Next 2-4 weeks focus\n\nSpecific and direct. Reference what you actually see.`;
+  try{
+    const parts=[];
+    for(let s=1;s<=3;s++){if(!files[s])continue;parts.push({inline_data:{mime_type:files[s].type||'video/mp4',data:await toB64(files[s])}});parts.push({text:`[Clip ${s}]`});}
+    parts.push({text:prompt});
+    const text=await callGemini(parts,2000);
+    stopP(pi,'g-results');
+    const scores=[...text.matchAll(/:\s*(\d+)\/10/g)].slice(0,4).map(m=>parseInt(m[1]));
+    const lbls=['Smooth','Precision','Orient.','Consist.'];
+    let html='<div class="results-wrap"><div class="rhead"><i class="ti ti-report-analytics"></i> Coaching report</div><div class="rbody">';
+    if(scores.length>=4){html+='<div class="score-row sr4">';scores.forEach((s,i)=>html+=`<div class="scard"><div class="slbl2">${lbls[i]}</div><div class="sval ${sc(s)}">${s}<span style="font-size:11px;font-weight:400">/10</span></div></div>`);html+='</div>';}
+    html+=rMD(text)+'</div></div>';
+    showEl('g-results',html);
+  }catch(err){stopP(pi,'g-results');showEl('g-results',errHTML(err.message));}
+  setBtn('g-abtn',false,'<i class="ti ti-brain"></i> Get coaching feedback');
+}
+
+// ── COMPARE ───────────────────────────────────
+async function analyzeCompare(){
+  const files=S['c-files'];if(!files[1]){alert('Upload at least one attempt video.');return;}
+  const craft=S['c-craft'],maneuver=document.getElementById('c-maneuver').value.trim()||'the maneuver shown';
+  const ytUrl=document.getElementById('c-yturl').value.trim();
+  const fs=[...S['c-focuses']].join(', ')||'all aspects';
+  setBtn('c-abtn',true,'<i class="ti ti-git-compare"></i> Compare and analyze');
+  showEl('c-results',ldHTML('c-results','Comparing your flying...'));
+  const pi=tickP('c-results');
+  let prompt=`Expert RC ${craft} instructor. Attempting "${maneuver}". `;
+  if(ytUrl)prompt+=`Reference: ${ytUrl}\nCompare my attempt. `;
+  prompt+=`Focus: ${fs}.\n\n## Scores (out of 10)\n- Stick inputs: X/10\n- Flight path: X/10\n- Timing: X/10\n## What I did well\n## Main issues\nTop 3 most critical.\n## Top priority fix\nOne actionable instruction.\n## Drill\nOne targeted sim drill.\n\nSpecific to what you see.`;
+  try{
+    const parts=[];
+    for(let s=1;s<=2;s++){if(!files[s])continue;parts.push({inline_data:{mime_type:files[s].type||'video/mp4',data:await toB64(files[s])}});parts.push({text:`[Attempt ${s}]`});}
+    parts.push({text:prompt});
+    const text=await callGemini(parts,1500);
+    stopP(pi,'c-results');
+    const scores=[...text.matchAll(/:\s*(\d+)\/10/g)].slice(0,3).map(m=>parseInt(m[1]));
+    const lbls=['Stick inputs','Flight path','Timing'];
+    let html='<div class="results-wrap"><div class="rhead"><i class="ti ti-chart-bar"></i> Comparison report</div><div class="rbody">';
+    if(scores.length>=3){html+='<div class="score-row sr3">';scores.forEach((s,i)=>html+=`<div class="scard"><div class="slbl2">${lbls[i]}</div><div class="sval ${sc(s)}">${s}<span style="font-size:11px;font-weight:400">/10</span></div></div>`);html+='</div>';}
+    html+=rMD(text)+'</div></div>';
+    showEl('c-results',html);
+  }catch(err){stopP(pi,'c-results');showEl('c-results',errHTML(err.message));}
+  setBtn('c-abtn',false,'<i class="ti ti-git-compare"></i> Compare and analyze');
+}
+
+// ── INIT ──────────────────────────────────────
+filterMoves();
+renderLearnGrid();
+</script>
+</body>
+</html>
