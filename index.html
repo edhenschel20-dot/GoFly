@@ -199,6 +199,16 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .sl-load-btn:active,.sl-del-btn:active{opacity:0.7;}
 .lesson-saved-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid var(--gborder);background:var(--gdim);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.3px;margin-left:8px;vertical-align:middle;}
 
+
+/* KEY PERSISTENCE */
+.key-remember-row{display:flex;align-items:center;gap:8px;padding:8px 0 2px;}
+.key-remember-label{font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;flex:1;}
+.key-toggle{position:relative;width:36px;height:20px;flex-shrink:0;cursor:pointer;}
+.key-toggle input{opacity:0;width:0;height:0;position:absolute;}
+.key-toggle-track{position:absolute;inset:0;background:var(--border2);border-radius:99px;transition:background 0.2s;}
+.key-toggle input:checked + .key-toggle-track{background:var(--accent);}
+.key-toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;transition:transform 0.2s;}
+.key-toggle input:checked ~ .key-toggle-thumb{transform:translateX(16px);}
 /* BACKUP / RESTORE */
 .backup-bar{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;}
 .backup-toggle{width:100%;padding:10px 14px;background:transparent;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -434,8 +444,11 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div class="api-bar">
     <button class="api-toggle" onclick="toggleAPI('l')"><span><i class="ti ti-key" style="margin-right:5px"></i> API Keys</span><i class="ti ti-chevron-down" id="api-arr-l"></i></button>
     <div class="api-inner" id="api-inner-l">
-      <div class="api-row"><div class="api-lbl" style="color:var(--blue)">Claude</div><input type="password" class="api-input" id="claude-key" placeholder="console.anthropic.com" oninput="syncK('claude')" /><span class="ktag ku" id="ck-status">Not set</span></div>
       <div class="api-row"><div class="api-lbl">Gemini</div><input type="password" class="api-input" id="gemini-key" placeholder="aistudio.google.com" oninput="syncK('gemini')" /><span class="ktag ku" id="gk-status">Not set</span></div>
+      <div class="key-remember-row">
+        <span class="key-remember-label"><i class="ti ti-lock" style="margin-right:4px"></i>Remember key on this device</span>
+        <label class="key-toggle"><input type="checkbox" id="keys-remember" onchange="toggleRememberKeys(this.checked)" /><div class="key-toggle-track"></div><div class="key-toggle-thumb"></div></label>
+      </div>
     </div>
   </div>
   <div id="l-saved-bar" style="display:none" class="saved-lesson-bar">
@@ -785,19 +798,18 @@ function buildDetail(m){
 
 async function aiDeepDive(id){
   const m=MOVES.find(x=>x.id===id);
-  const key=getCKey();
-  if(!key){document.getElementById('ai-result-'+id).innerHTML='<div class="warn-box"><strong>Claude API key needed.</strong> Enter it in the Learn tab API Keys section.</div>';return;}
+  const key=getGKey();
+  if(!key){document.getElementById('ai-result-'+id).innerHTML='<div class="warn-box"><strong>Gemini API key needed.</strong> Enter it in the API Keys section in any tab.</div>';return;}
   const btn=document.querySelector('.ai-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<div class="spin b"></div> Building AI lesson...';}
   const el=document.getElementById('ai-result-'+id);
   el.innerHTML=`<div class="results-wrap"><div class="rhead bl"><div class="spin b"></div> Building extended lesson...</div><div style="padding:12px;color:var(--muted);font-size:12px">~15 seconds...<div class="pbar-wrap"><div class="pbar b" id="aip-${id}" style="width:8%"></div></div></div></div>`;
   let p=8;const pi=setInterval(()=>{p=Math.min(p+8,85);const e=document.getElementById('aip-'+id);if(e)e.style.width=p+'%';},1000);
   try{
-    const text=await callClaude(
-      `Expert RC ${m.craft} instructor. Concise, practical, specific.`,
-      `Extended lesson on "${m.name}" for an RC ${m.craft} pilot. Include: mental preparation techniques, detailed stick timing, what the aircraft should look/feel like at each phase, the most common mistake and how to diagnose it from video, 3 specific sim exercises for muscle memory. Direct and practical. Max 400 words.`,
-      800
-    );
+    const ddPrompt=`You are an expert RC ${m.craft} flight instructor. Be concise, practical, specific.
+
+Give me an extended lesson on "${m.name}" for an RC ${m.craft} pilot. Include: mental preparation techniques, detailed stick timing, what the aircraft should look and feel like at each phase, the most common mistake and how to diagnose it from video, and 3 specific sim exercises for muscle memory. Max 400 words.`;
+    const text=await callGemini([{text:ddPrompt}],1000);
     clearInterval(pi);
     el.innerHTML=`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-wand"></i> AI lesson — ${m.name}</div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`;
   }catch(err){clearInterval(pi);el.innerHTML=`<div class="warn-box"><strong>Error:</strong> ${err.message}</div>`;}
@@ -806,13 +818,19 @@ async function aiDeepDive(id){
 
 // ── LEARN ─────────────────────────────────────
 function renderLearnGrid(){
-  const moves=MOVES.filter(m=>m.craft===S['l-craft']);
-  document.getElementById('learn-grid').innerHTML=moves.map(m=>
+  const lvl=S['l-level'];
+  const moves=MOVES.filter(m=>{
+    if(m.craft!==S['l-craft'])return false;
+    if(lvl==='beginner')return m.diff==='Beginner';
+    if(lvl==='intermediate')return m.diff==='Beginner'||m.diff==='Intermediate';
+    return true; // advanced shows all
+  });
+  document.getElementById('learn-grid').innerHTML=moves.length?moves.map(m=>
     `<div class="mc ${S['l-selected']===m.id?'sel':''}" onclick="selMove('${m.id}',this)">
       <i class="ti ${m.icon}"></i>
       <div><div class="mc-name">${m.name}</div><div class="mc-diff">${m.diff}</div></div>
     </div>`
-  ).join('');
+  ).join(''):'<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-size:12px">No moves for this level</div>';
 }
 function selMove(id,el){S['l-selected']=id;document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('l-custom').value='';checkSavedLesson();}
 function setLS(k,v,btn,ids,rerender){
@@ -879,11 +897,26 @@ async function teachMove(){
   hideEl('l-attempt-wrap');S['l-files']={1:null,2:null};
   const pi=tickP('l-lesson');
   try{
-    const text=await callClaude(
-      `You are the world's best RC ${craft} instructor. Break complex maneuvers into simple logical steps. Explain stick inputs in plain English. The student practices in a simulator — crashing is fine, building real muscle memory is the goal.`,
-      `Teach me "${move}" on an RC ${craft}. I am ${level} — I can fly well but don't know how to start this specific maneuver.\n\n## What this maneuver is\nPlain-English description.\n## Why it's challenging\nWhat brain and hands must do differently.\n## Before you start\nPrerequisite skills.\n## The stick movements\nEach control and exactly what it does — plain English like "left stick right = tail goes left".\n## Step-by-step progression (5-6 phases)\nEach phase: name, goal (what success looks like), what to do, what correct feels like, one common mistake and fix, when to advance.\n## Warning signs you need more practice\nSpecific signs you are not ready to progress.\n## Sim tips\n3-4 specific simulator tips.\n\nBe direct and specific. Max 500 words.`,
-      1200
-    );
+    const prompt=`You are the world's best RC ${craft} flight instructor. Break complex maneuvers into simple logical steps. Explain stick inputs in plain English. The student practices in a simulator.
+
+Teach me "${move}" on an RC ${craft}. I am ${level} level.
+
+## What this maneuver is
+Plain-English description.
+## Why it is challenging
+What brain and hands must do differently.
+## Before you start
+Prerequisite skills.
+## The stick movements
+Each control and exactly what it does.
+## Step-by-step progression (5-6 phases)
+Each phase: name, goal, what to do, one common mistake and fix, when to advance.
+## Warning signs you need more practice
+## Sim tips
+3-4 specific tips.
+
+Be direct and specific. Max 500 words.`;
+    const text=await callGemini([{text:prompt}],1500);
     stopP(pi,'l-lesson');S['l-lesson']=text;
     saveLesson(craft,move,level,text);
     checkSavedLesson();
@@ -1073,6 +1106,36 @@ function resetUsage(){
   updateUsagePill();
 }
 
+
+// ── KEY PERSISTENCE ──────────────────────────
+const KEYS_KEY='rcfc_keys';
+
+function loadSavedKeys(){
+  try{
+    const d=JSON.parse(localStorage.getItem(KEYS_KEY)||'{}');
+    if(d.remember&&d.gemini){
+      ['gemini-key','gk-g','gk-c'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el&&!el.value)el.value=d.gemini;
+      });
+      syncK('gemini');
+      const cb=document.getElementById('keys-remember');
+      if(cb)cb.checked=true;
+    }
+  }catch(e){}
+}
+
+function saveKeysIfEnabled(){
+  const cb=document.getElementById('keys-remember');
+  if(!cb||!cb.checked)return;
+  const k=getGKey();
+  if(k){try{localStorage.setItem(KEYS_KEY,JSON.stringify({remember:true,gemini:k}));}catch(e){}}
+}
+
+function toggleRememberKeys(checked){
+  if(checked){saveKeysIfEnabled();}
+  else{try{localStorage.removeItem(KEYS_KEY);}catch(e){}}
+}
 
 // ── LESSON PLAN PERSISTENCE ───────────────────
 const LESSON_KEY = 'rcfc_lessons';
@@ -1886,6 +1949,7 @@ filterMoves();
 renderLearnGrid();
 updateProgress();
 renderCurrList();
+loadSavedKeys();
 </script>
 </body>
 </html>
