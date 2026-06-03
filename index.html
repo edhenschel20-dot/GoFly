@@ -834,10 +834,15 @@ function renderLearnGrid(){
   const grid=document.getElementById('learn-grid');
   if(!grid)return;
   if(!moves.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-size:12px">No moves for this level</div>';return;}
-  grid.innerHTML=moves.map(function(m){
-    const sel=S['l-selected']===m.id?'sel':'';
-    return '<div class="mc '+sel+'" onclick="selMove(''+m.id+'',this)"><i class="ti '+m.icon+'"></i><div><div class="mc-name">'+m.name+'</div><div class="mc-diff">'+m.diff+'</div></div></div>';
-  }).join('');
+  var html='';
+  moves.forEach(function(m){
+    var sel=S['l-selected']===m.id?' sel':'';
+    html+='<div class="mc'+sel+'" data-mid="'+m.id+'"><i class="ti '+m.icon+'"></i><div><div class="mc-name">'+m.name+'</div><div class="mc-diff">'+m.diff+'</div></div></div>';
+  });
+  grid.innerHTML=html;
+  grid.querySelectorAll('.mc').forEach(function(el){
+    el.addEventListener('click',function(){selMove(this.getAttribute('data-mid'),this);});
+  });
 }
 function selMove(id,el){S['l-selected']=id;document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('l-custom').value='';checkSavedLesson();}
 function setLS(k,v,btn,ids,rerender){
