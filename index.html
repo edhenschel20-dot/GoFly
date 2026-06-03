@@ -185,6 +185,20 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .ci-ref{font-size:11px;color:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:700;flex-shrink:0;padding:2px 6px;border:1px solid var(--bborder);border-radius:4px;background:var(--bdim);white-space:nowrap;margin-top:1px;}
 .curr-list{padding-bottom:20px;}
 
+
+/* SAVED LESSONS */
+.saved-lesson-bar{background:var(--surface);border:1px solid var(--gborder);border-radius:var(--r2);overflow:hidden;margin-bottom:2px;}
+.saved-lesson-header{padding:10px 14px;display:flex;align-items:center;gap:8px;}
+.sl-icon{font-size:14px;color:var(--gold);}
+.sl-info{flex:1;}
+.sl-title{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:0.6px;text-transform:uppercase;color:var(--gold);}
+.sl-meta{font-size:10px;color:var(--muted);margin-top:1px;}
+.sl-btn-row{display:flex;gap:6px;}
+.sl-load-btn{padding:6px 10px;border-radius:var(--r);border:1px solid var(--gborder);background:var(--gdim);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;color:var(--gold);display:flex;align-items:center;gap:4px;}
+.sl-del-btn{padding:6px 10px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;color:var(--muted);display:flex;align-items:center;gap:4px;}
+.sl-load-btn:active,.sl-del-btn:active{opacity:0.7;}
+.lesson-saved-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:99px;border:1px solid var(--gborder);background:var(--gdim);color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.3px;margin-left:8px;vertical-align:middle;}
+
 /* BACKUP / RESTORE */
 .backup-bar{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;}
 .backup-toggle{width:100%;padding:10px 14px;background:transparent;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -415,7 +429,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div>
     <div class="slabel">Pick a maneuver</div>
     <div class="move-grid-learn" id="learn-grid"></div>
-    <input class="row-input" type="text" id="l-custom" placeholder="Or type any move..." style="margin-top:8px" />
+    <input class="row-input" type="text" id="l-custom" placeholder="Or type any move..." style="margin-top:8px" oninput="checkSavedLesson()" />
   </div>
   <div class="api-bar">
     <button class="api-toggle" onclick="toggleAPI('l')"><span><i class="ti ti-key" style="margin-right:5px"></i> API Keys</span><i class="ti ti-chevron-down" id="api-arr-l"></i></button>
@@ -424,7 +438,21 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
       <div class="api-row"><div class="api-lbl">Gemini</div><input type="password" class="api-input" id="gemini-key" placeholder="aistudio.google.com" oninput="syncK('gemini')" /><span class="ktag ku" id="gk-status">Not set</span></div>
     </div>
   </div>
-  <button class="abtn bbtn" id="l-teach-btn" onclick="teachMove()"><i class="ti ti-school"></i> Build my lesson plan</button>
+  <div id="l-saved-bar" style="display:none" class="saved-lesson-bar">
+    <div class="saved-lesson-header">
+      <i class="ti ti-device-floppy sl-icon"></i>
+      <div class="sl-info">
+        <div class="sl-title">Saved lesson plan <span id="sl-move-name"></span></div>
+        <div class="sl-meta" id="sl-meta">Saved on —</div>
+      </div>
+    </div>
+    <div style="padding:0 14px 12px;display:flex;gap:6px">
+      <button class="sl-load-btn" onclick="loadSavedLesson()"><i class="ti ti-player-play"></i> Load saved</button>
+      <button class="abtn bbtn" style="flex:1;padding:8px;font-size:11px" id="l-teach-btn" onclick="teachMove()"><i class="ti ti-refresh"></i> Regenerate</button>
+      <button class="sl-del-btn" onclick="deleteSavedLesson()"><i class="ti ti-trash"></i></button>
+    </div>
+  </div>
+  <button class="abtn bbtn" id="l-teach-btn-new" onclick="teachMove()"><i class="ti ti-school"></i> Build my lesson plan</button>
   <div id="l-lesson" style="display:none"></div>
   <div id="l-attempt-wrap" style="display:none">
     <div class="results-wrap">
@@ -786,8 +814,17 @@ function renderLearnGrid(){
     </div>`
   ).join('');
 }
-function selMove(id,el){S['l-selected']=id;document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('l-custom').value='';}
-function setLS(k,v,btn,ids,rerender){S[k]=v;ids.split(',').forEach(id=>{const e=document.getElementById(id);if(e){e.classList.remove('ob');e.classList.remove('on');}});btn.classList.add('ob');if(rerender){S['l-selected']='';renderLearnGrid();}}
+function selMove(id,el){S['l-selected']=id;document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('l-custom').value='';checkSavedLesson();}
+function setLS(k,v,btn,ids,rerender){
+  S[k]=v;
+  ids.split(',').forEach(id=>{
+    const e=document.getElementById(id);
+    if(e){e.className='tbtn';}
+  });
+  btn.className='tbtn ob';
+  if(rerender){S['l-selected']='';renderLearnGrid();}
+  checkSavedLesson();
+}
 
 // ── GENERIC SETTERS ───────────────────────────
 function setSt(k,v,btn,ids){S[k]=v;ids.split(',').forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});btn.classList.add('on');}
@@ -848,7 +885,9 @@ async function teachMove(){
       1200
     );
     stopP(pi,'l-lesson');S['l-lesson']=text;
-    showEl('l-lesson',`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-school"></i> Lesson — ${move}</div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`);
+    saveLesson(craft,move,level,text);
+    checkSavedLesson();
+    showEl('l-lesson',`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-school"></i> Lesson — ${move} <span class="lesson-saved-badge"><i class="ti ti-device-floppy" style="font-size:9px"></i> Saved</span></div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`);
     document.getElementById('l-attempt-wrap').style.display='block';
   }catch(err){stopP(pi,'l-lesson');showEl('l-lesson',errHTML(err.message));}
   setBtn('l-teach-btn',false,'<i class="ti ti-school"></i> Build my lesson plan');
@@ -1034,6 +1073,78 @@ function resetUsage(){
   updateUsagePill();
 }
 
+
+// ── LESSON PLAN PERSISTENCE ───────────────────
+const LESSON_KEY = 'rcfc_lessons';
+
+function loadLessons(){try{return JSON.parse(localStorage.getItem(LESSON_KEY)||'{}');}catch(e){return {};}}
+function saveLessons(d){try{localStorage.setItem(LESSON_KEY,JSON.stringify(d));}catch(e){}}
+
+function lessonStoreKey(craft, move){
+  return (craft+'__'+move).toLowerCase().replace(/[^a-z0-9_]/g,'_');
+}
+
+function saveLesson(craft, move, level, text){
+  const d=loadLessons();
+  const k=lessonStoreKey(craft,move);
+  d[k]={craft,move,level,text,saved:new Date().toISOString()};
+  saveLessons(d);
+}
+
+function getSavedLesson(craft, move){
+  const d=loadLessons();
+  return d[lessonStoreKey(craft,move)]||null;
+}
+
+function deleteSavedLesson(){
+  const move=document.getElementById('l-custom').value.trim()||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  if(!move)return;
+  const d=loadLessons();
+  delete d[lessonStoreKey(S['l-craft'],move)];
+  saveLessons(d);
+  checkSavedLesson();
+}
+
+function checkSavedLesson(){
+  const custom=document.getElementById('l-custom').value.trim();
+  const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  const bar=document.getElementById('l-saved-bar');
+  const newBtn=document.getElementById('l-teach-btn-new');
+  if(!move||!bar||!newBtn){if(bar)bar.style.display='none';if(newBtn)newBtn.style.display='flex';return;}
+  const saved=getSavedLesson(S['l-craft'],move);
+  if(saved){
+    bar.style.display='block';
+    newBtn.style.display='none';
+    document.getElementById('sl-move-name').textContent='— '+saved.move;
+    const d=new Date(saved.saved);
+    document.getElementById('sl-meta').textContent=saved.craft+' · '+saved.level+' · Saved '+d.toLocaleDateString();
+  } else {
+    bar.style.display='none';
+    newBtn.style.display='flex';
+  }
+}
+
+function loadSavedLesson(){
+  const custom=document.getElementById('l-custom').value.trim();
+  const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  if(!move)return;
+  const saved=getSavedLesson(S['l-craft'],move);
+  if(!saved)return;
+  S['l-lesson']=saved.text;
+  S['l-files']={1:null,2:null};
+  // Reset attempt boxes
+  for(let s=1;s<=2;s++){
+    const box=document.getElementById('lmb'+s);
+    const sub=document.getElementById('lms'+s);
+    if(box)box.classList.remove('done');
+    if(sub)sub.textContent=s===1?'Tap to upload':'Optional';
+  }
+  showEl('l-lesson',`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-device-floppy"></i> Saved lesson — ${saved.move} <span class="lesson-saved-badge"><i class="ti ti-check" style="font-size:9px"></i> Loaded from storage</span></div><div class="rbody" style="color:#9aa3b5">${rMD(saved.text,'b')}</div></div>`);
+  document.getElementById('l-attempt-wrap').style.display='block';
+  hideEl('l-results');
+}
+
+
 // ── BACKUP & RESTORE ─────────────────────────
 let _pendingImport = null;
 
@@ -1064,10 +1175,11 @@ function exportBackup(){
     version:1,
     exported:new Date().toISOString(),
     app:'RC Flight Coach',
-    summary:{moves_rated:total,notes_saved:noteCount},
+    summary:{moves_rated:total,notes_saved:noteCount,lessons_saved:Object.keys(loadLessons()).length},
     proficiency:profs,
     notes:notes,
-    curriculum:loadCurr()
+    curriculum:loadCurr(),
+    lessons:loadLessons()
   };
   const json=JSON.stringify(data,null,2);
   const blob=new Blob([json],{type:'application/json'});
@@ -1080,7 +1192,7 @@ function exportBackup(){
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
-  bkStatus('✓ Exported '+total+' ratings and '+noteCount+' notes','bs-ok');
+  bkStatus('✓ Exported '+total+' ratings, '+noteCount+' notes, '+Object.keys(loadLessons()).length+' lesson plans','bs-ok');
 }
 
 function importBackup(input){
@@ -1098,9 +1210,10 @@ function importBackup(input){
       _pendingImport=data;
       const total=Object.keys(data.proficiency).length;
       const noteCount=Object.values(data.notes||{}).filter(v=>v.trim()).length;
+      const lessonCount=Object.keys(data.lessons||{}).length;
       const exported=data.exported?new Date(data.exported).toLocaleDateString():'unknown date';
       document.getElementById('restore-msg').textContent=
-        'Restore backup from '+exported+'? This has '+total+' ratings and '+noteCount+' notes. Your current progress will be replaced.';
+        'Restore backup from '+exported+'? This has '+total+' ratings, '+noteCount+' notes, and '+lessonCount+' lesson plans. Your current progress will be replaced.';
       document.getElementById('restore-confirm').style.display='flex';
       document.getElementById('restore-confirm').style.flexDirection='column';
       document.getElementById('restore-confirm').style.gap='8px';
@@ -1116,7 +1229,9 @@ function confirmImport(){
   saveProfs(_pendingImport.proficiency||{});
   saveNotes(_pendingImport.notes||{});
   saveCurr(_pendingImport.curriculum||{});
+  saveLessons(_pendingImport.lessons||{});
   renderCurrList();
+  checkSavedLesson();
   _pendingImport=null;
   document.getElementById('restore-confirm').style.display='none';
   const total=Object.keys(loadProfs()).length;
@@ -1140,6 +1255,7 @@ function confirmClear(){
   saveProfs({});
   saveNotes({});
   saveCurr({});
+  saveLessons({});
   renderCurrList();
   document.getElementById('clear-confirm').style.display='none';
   filterMoves();
