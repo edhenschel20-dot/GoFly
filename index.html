@@ -431,9 +431,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div>
     <div class="slabel">Your level</div>
     <div class="toggle-row">
-      <button class="tbtn ob" id="l-beg" onclick="setLS('l-level','beginner',this,'l-beg,l-int,l-adv',false)"><i class="ti ti-seedling"></i> Beginner</button>
-      <button class="tbtn" id="l-int" onclick="setLS('l-level','intermediate',this,'l-beg,l-int,l-adv',false)"><i class="ti ti-trending-up"></i> Intermediate</button>
-      <button class="tbtn" id="l-adv" onclick="setLS('l-level','advanced',this,'l-beg,l-int,l-adv',false)"><i class="ti ti-star"></i> Advanced</button>
+      <button class="tbtn ob" id="l-beg" onclick="setLS('l-level','beginner',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-seedling"></i> Beginner</button>
+      <button class="tbtn" id="l-int" onclick="setLS('l-level','intermediate',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-trending-up"></i> Intermediate</button>
+      <button class="tbtn" id="l-adv" onclick="setLS('l-level','advanced',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-star"></i> Advanced</button>
     </div>
   </div>
   <div>
@@ -840,7 +840,10 @@ function setLS(k,v,btn,ids,rerender){
     if(e){e.className='tbtn';}
   });
   btn.className='tbtn ob';
-  if(rerender){S['l-selected']='';renderLearnGrid();}
+  if(rerender){
+    if(k==='l-craft')S['l-selected']='';
+    renderLearnGrid();
+  }
   checkSavedLesson();
 }
 
