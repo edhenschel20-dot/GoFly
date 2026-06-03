@@ -703,7 +703,6 @@ function syncK(which){
     const ok=v.length>10;
     document.getElementById('ck-status').textContent=ok?'✓ Set':'Not set';
     document.getElementById('ck-status').className='ktag '+(ok?'kb':'ku');
-    saveKeysIfEnabled();
   } else {
     const ids=['gemini-key','gk-g','gk-c'];
     ids.forEach(id=>{
