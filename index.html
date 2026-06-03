@@ -154,6 +154,37 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .us-close{width:100%;padding:11px;margin-top:14px;border-radius:var(--r2);border:1px solid var(--border2);background:var(--surface2);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:800;letter-spacing:1px;text-transform:uppercase;cursor:pointer;color:var(--muted);}
 .us-reset{width:100%;padding:8px;margin-top:6px;border-radius:var(--r);border:1px solid var(--border);background:transparent;font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;cursor:pointer;color:var(--muted2);}
 
+
+/* CURRICULUM TAB */
+.curr-craft-row{display:flex;gap:6px;margin-bottom:2px;}
+.curr-craft-btn{flex:1;padding:8px 4px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:4px;}
+.curr-craft-btn.on{background:var(--gdim);border-color:var(--gborder);color:var(--gold);}
+.curr-progress-wrap{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:10px 13px;}
+.curr-progress-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between;}
+.curr-prog-bar{height:6px;background:var(--border2);border-radius:4px;overflow:hidden;}
+.curr-prog-fill{height:100%;background:var(--gold);border-radius:4px;transition:width 0.4s ease;}
+.stage-card{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;margin-bottom:8px;}
+.stage-header{padding:11px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none;}
+.stage-header:active{background:var(--surface2);}
+.stage-num{width:26px;height:26px;border-radius:5px;background:var(--gdim);border:1px solid var(--gborder);display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;color:var(--gold);flex-shrink:0;}
+.stage-num.complete{background:var(--adim);border-color:var(--aborder);color:var(--accent);}
+.stage-info{flex:1;}
+.stage-title{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.4px;color:var(--text);}
+.stage-sub{font-size:10px;color:var(--muted);margin-top:1px;font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
+.stage-arrow{color:var(--muted2);font-size:15px;flex-shrink:0;transition:transform 0.2s;}
+.stage-arrow.open{transform:rotate(90deg);}
+.stage-items{display:none;border-top:1px solid var(--border);padding:6px 0;}
+.stage-items.open{display:block;}
+.curr-item{display:flex;align-items:flex-start;gap:10px;padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);}
+.curr-item:last-child{border-bottom:none;}
+.curr-item:active{background:var(--surface2);}
+.ci-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;}
+.ci-check.done{background:var(--accent);border-color:var(--accent);color:var(--bg);}
+.ci-text{flex:1;font-size:12px;color:#9aa3b5;line-height:1.55;}
+.ci-text.done{color:var(--muted2);text-decoration:line-through;}
+.ci-ref{font-size:11px;color:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:700;flex-shrink:0;padding:2px 6px;border:1px solid var(--bborder);border-radius:4px;background:var(--bdim);white-space:nowrap;margin-top:1px;}
+.curr-list{padding-bottom:20px;}
+
 /* BACKUP / RESTORE */
 .backup-bar{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;}
 .backup-toggle{width:100%;padding:10px 14px;background:transparent;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -268,6 +299,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
     <button class="tab" id="tab-learn" onclick="switchTab('learn','ab')"><i class="ti ti-school"></i> Learn</button>
     <button class="tab" id="tab-general" onclick="switchTab('general','ag')"><i class="ti ti-certificate"></i> Coach</button>
     <button class="tab" id="tab-compare" onclick="switchTab('compare','ag')"><i class="ti ti-git-compare"></i> Compare</button>
+    <button class="tab" id="tab-path" onclick="switchTab('path','au')"><i class="ti ti-list-check"></i> Path</button>
   </div>
 </div>
 
@@ -478,6 +510,24 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div id="c-results" style="display:none"></div>
 </div>
 
+
+<!-- PATH / CURRICULUM -->
+<div class="panel" id="panel-path">
+  <div class="info-note" style="border-color:var(--gborder)"><strong style="color:var(--gold)">Structured training path.</strong> Work through each stage in order. Tap any item to check it off. Tap the move badge to jump to the full reference breakdown.</div>
+  <div>
+    <div class="slabel">Craft</div>
+    <div class="curr-craft-row">
+      <button class="curr-craft-btn on" id="cc-helicopter" onclick="setCurrCraft('helicopter',this)"><i class="ti ti-propeller"></i> Heli</button>
+      <button class="curr-craft-btn" id="cc-plane" onclick="setCurrCraft('plane',this)"><i class="ti ti-plane"></i> Plane</button>
+      <button class="curr-craft-btn" id="cc-quadcopter" onclick="setCurrCraft('quadcopter',this)"><i class="ti ti-drone"></i> Quad</button>
+    </div>
+  </div>
+  <div class="curr-progress-wrap">
+    <div class="curr-progress-title"><span id="curr-prog-label">Progress</span><span id="curr-prog-pct">0%</span></div>
+    <div class="curr-prog-bar"><div class="curr-prog-fill" id="curr-prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="curr-list" id="curr-list"></div>
+</div>
 </div><!-- scroll-area -->
 
 <!-- USAGE MODAL -->
@@ -1016,7 +1066,8 @@ function exportBackup(){
     app:'RC Flight Coach',
     summary:{moves_rated:total,notes_saved:noteCount},
     proficiency:profs,
-    notes:notes
+    notes:notes,
+    curriculum:loadCurr()
   };
   const json=JSON.stringify(data,null,2);
   const blob=new Blob([json],{type:'application/json'});
@@ -1064,6 +1115,8 @@ function confirmImport(){
   if(!_pendingImport)return;
   saveProfs(_pendingImport.proficiency||{});
   saveNotes(_pendingImport.notes||{});
+  saveCurr(_pendingImport.curriculum||{});
+  renderCurrList();
   _pendingImport=null;
   document.getElementById('restore-confirm').style.display='none';
   const total=Object.keys(loadProfs()).length;
@@ -1086,6 +1139,8 @@ function showClearConfirm(){
 function confirmClear(){
   saveProfs({});
   saveNotes({});
+  saveCurr({});
+  renderCurrList();
   document.getElementById('clear-confirm').style.display='none';
   filterMoves();
   updateProgress();
@@ -1096,10 +1151,625 @@ function cancelClear(){
   document.getElementById('clear-confirm').style.display='none';
 }
 
+// ── CURRICULUM DATA ───────────────────────────
+const CURRICULUM = {
+
+helicopter: {
+  label: 'Helicopter',
+  icon: 'ti-propeller',
+  stages: [
+    { id:'hc1', title:'Hovering Basics', items:[
+      { id:'hc1a', text:'Tail-in hover — stable for 30 seconds', ref:'h1' },
+      { id:'hc1b', text:'Tail-in — left side-in hover', ref:'h3' },
+      { id:'hc1c', text:'Tail-in — right side-in hover', ref:'h3' },
+      { id:'hc1d', text:'Nose-in hover — stable for 30 seconds', ref:'h2' },
+      { id:'hc1e', text:'Transition Tail-in to Nose-in to Tail-in (30 sec, pause at each)', ref:'h2' },
+      { id:'hc1f', text:'Transition Tail-in to Left to Nose to Right to Tail (30 sec, pause at each)', ref:'h3' },
+    ]},
+    { id:'hc2', title:'Pirouettes', items:[
+      { id:'hc2a', text:'Slow clockwise pirouette in place', ref:'h5' },
+      { id:'hc2b', text:'Slow counterclockwise pirouette in place', ref:'h5' },
+      { id:'hc2c', text:'Five consecutive quick clockwise pirouettes', ref:'h5' },
+      { id:'hc2d', text:'Five consecutive quick counterclockwise pirouettes', ref:'h5' },
+      { id:'hc2e', text:'Five consecutive clockwise/counterclockwise alternating', ref:'h5' },
+      { id:'hc2f', text:'Five consecutive quick clockwise/counterclockwise', ref:'h5' },
+      { id:'hc2g', text:'Transition from Five Consecutive CW to Five Consecutive CCW', ref:'h5' },
+      { id:'hc2h', text:'Transition from Five Consecutive CCW to Five Consecutive CW', ref:'h5' },
+    ]},
+    { id:'hc3', title:'Forward Flight Basics — Circuits', items:[
+      { id:'hc3a', text:'Clockwise circuit', ref:'h22' },
+      { id:'hc3b', text:'Counterclockwise circuit', ref:'h22' },
+      { id:'hc3c', text:'Five consecutive clockwise circuits', ref:'h22' },
+      { id:'hc3d', text:'Five consecutive counterclockwise circuits', ref:'h22' },
+      { id:'hc3e', text:'Five CW then five CCW circuits back to back', ref:'h22' },
+      { id:'hc3f', text:'Transition from Five CW Clockwise to Five Counterclockwise', ref:'h22' },
+      { id:'hc3g', text:'Transition from Five Counterclockwise to Five Consecutive Clockwise', ref:'h22' },
+    ]},
+    { id:'hc4', title:'Forward Flight — Figure Eights', items:[
+      { id:'hc4a', text:'Turning Away From Pilot figure-8', ref:'h4' },
+      { id:'hc4b', text:'Turning Toward Pilot figure-8', ref:'h4' },
+      { id:'hc4c', text:'Five consecutive turning Away figure-8s', ref:'h4' },
+      { id:'hc4d', text:'Transition from five consecutive turning Away pilot to five consecutive Turning Toward', ref:'h4' },
+      { id:'hc4e', text:'Transition from five consecutive turning Toward pilot to five consecutive Turning Away', ref:'h4' },
+    ]},
+    { id:'hc5', title:'Forward Flight — Loops', items:[
+      { id:'hc5a', text:'Flying from Left to Right, loop, start from Right', ref:'h11' },
+      { id:'hc5b', text:'Flying from Right to Left, loop, start from Left', ref:'h11' },
+      { id:'hc5c', text:'Flying from Left to Right, start turn, loop, Repeat three times', ref:'h11' },
+      { id:'hc5d', text:'Flying from Right to Left, start turn, loop, Repeat three times', ref:'h11' },
+      { id:'hc5e', text:'Going Away From Pilot loop', ref:'h11' },
+      { id:'hc5f', text:'Coming Toward Pilot loop', ref:'h11' },
+    ]},
+    { id:'hc6', title:'Forward Flight — Rolls', items:[
+      { id:'hc6a', text:'Flying left to right aileron, roll left', ref:'h13' },
+      { id:'hc6b', text:'Flying right to left aileron, roll right', ref:'h13' },
+      { id:'hc6c', text:'Going Away From Pilot using right aileron', ref:'h13' },
+      { id:'hc6d', text:'Going Away From Pilot using left aileron', ref:'h13' },
+      { id:'hc6e', text:'Going Toward Pilot using right aileron', ref:'h13' },
+      { id:'hc6f', text:'Going Toward Pilot using left aileron', ref:'h13' },
+      { id:'hc6g', text:'Going Away From Pilot using right aileron — repeat three times', ref:'h13' },
+      { id:'hc6h', text:'Going Toward Pilot — start turn, roll, Repeat three times', ref:'h13' },
+    ]},
+    { id:'hc7', title:'Reverse Flight Basics', items:[
+      { id:'hc7a', text:'Flying left to right aileron', ref:'h20' },
+      { id:'hc7b', text:'Flying from right to left', ref:'h20' },
+      { id:'hc7c', text:'Going Away From Pilot', ref:'h20' },
+      { id:'hc7d', text:'Coming Toward Pilot', ref:'h20' },
+    ]},
+    { id:'hc8', title:'Reverse Flight — Figure Eights', items:[
+      { id:'hc8a', text:'Reverse flight — Clockwise', ref:'h20' },
+      { id:'hc8b', text:'Reverse flight — Counterclockwise', ref:'h20' },
+      { id:'hc8c', text:'Five consecutive CW reverse circuits', ref:'h20' },
+      { id:'hc8d', text:'Transition from Five CW Clockwise to Five Counterclockwise', ref:'h20' },
+      { id:'hc8e', text:'Five Counterclockwise to Five Consecutive Clockwise', ref:'h20' },
+    ]},
+    { id:'hc9', title:'Reverse Flight — Loops', items:[
+      { id:'hc9a', text:'Reverse loop from left to right', ref:'h11' },
+      { id:'hc9b', text:'Flying from right to Left, start turn, loop, Repeat', ref:'h11' },
+      { id:'hc9c', text:'Going Away From Pilot — reverse loop', ref:'h11' },
+      { id:'hc9d', text:'Going Away From Pilot — start turn, loop, Repeat three times', ref:'h11' },
+      { id:'hc9e', text:'Coming Toward Pilot — start turn, loop, Repeat three times', ref:'h11' },
+    ]},
+    { id:'hc10', title:'Reverse Flight — Rolls', items:[
+      { id:'hc10a', text:'Reverse rolling loop — Flying left to right, roll left', ref:'h13' },
+      { id:'hc10b', text:'Flying right to left using right aileron', ref:'h13' },
+      { id:'hc10c', text:'Going Away From Pilot — reverse roll right aileron', ref:'h13' },
+      { id:'hc10d', text:'Going Away From Pilot — reverse roll left aileron', ref:'h13' },
+      { id:'hc10e', text:'Flying away, start turn, roll, Repeat three times', ref:'h13' },
+      { id:'hc10f', text:'Coming Toward Pilot — start turn, roll, Repeat three times', ref:'h13' },
+      { id:'hc10g', text:'Perform all of the above in a ♦ pattern', ref:'h13' },
+    ]},
+    { id:'hc11', title:'Reverse Flight Circuits', items:[
+      { id:'hc11a', text:'Clockwise', ref:'h22' },
+      { id:'hc11b', text:'Counterclockwise', ref:'h22' },
+      { id:'hc11c', text:'Five consecutive clockwise reverse circuits', ref:'h22' },
+      { id:'hc11d', text:'Transition CW Five Consecutive Clockwise to Five Counterclockwise Clockwise', ref:'h22' },
+      { id:'hc11e', text:'Five Consecutive Clockwise to Five Counterclockwise', ref:'h22' },
+    ]},
+    { id:'hc12', title:'Reverse Flight Figure Eights', items:[
+      { id:'hc12a', text:'Turning Away From Pilot', ref:'h4' },
+      { id:'hc12b', text:'Turning Toward Pilot', ref:'h4' },
+      { id:'hc12c', text:'Transition from five consecutive turning Away pilot to five consecutive Turning Toward', ref:'h4' },
+      { id:'hc12d', text:'Transition from five Toward to five consecutive Turning Away', ref:'h4' },
+    ]},
+    { id:'hc13', title:'Reverse Forward Flight — Loops', items:[
+      { id:'hc13a', text:'Flying from Right to Left using right aileron', ref:'h11' },
+      { id:'hc13b', text:'Flying from Left to Right, start, Repeat three times', ref:'h11' },
+      { id:'hc13c', text:'Going Away From Pilot — start turn, Repeat three times', ref:'h11' },
+      { id:'hc13d', text:'Coming Toward Pilot — start turn, Repeat three times', ref:'h11' },
+    ]},
+    { id:'hc14', title:'Reverse Forward Flight — Rolls', items:[
+      { id:'hc14a', text:'Flying left to right using right aileron', ref:'h13' },
+      { id:'hc14b', text:'Flying right to left, start turn, Repeat three times', ref:'h13' },
+      { id:'hc14c', text:'Going Away From Pilot — start turn, Repeat three times', ref:'h13' },
+      { id:'hc14d', text:'Coming Toward Pilot — repeat three times', ref:'h13' },
+      { id:'hc14e', text:'Perform all of the above in a ♦ pattern', ref:'h13' },
+    ]},
+    { id:'hc15', title:'Inverted Hover', items:[
+      { id:'hc15a', text:'Tail-in inverted hover — stable', ref:'h23' },
+      { id:'hc15b', text:'Left side-in inverted', ref:'h7' },
+      { id:'hc15c', text:'Right side-in inverted', ref:'h7' },
+      { id:'hc15d', text:'Nose-in inverted hover', ref:'h8' },
+      { id:'hc15e', text:'Transition from Nose-in to Tail in to Nose-in (30 sec, pause at each)', ref:'h8' },
+      { id:'hc15f', text:'Transition from Nose in to Left to Nose to Right to Nose (20 sec, pause at each)', ref:'h8' },
+    ]},
+    { id:'hc16', title:'Inverted Pirouettes', items:[
+      { id:'hc16a', text:'Quick clockwise inverted pirouette', ref:'h19' },
+      { id:'hc16b', text:'Quick counterclockwise inverted pirouette', ref:'h19' },
+      { id:'hc16c', text:'Four consecutive quick clockwise pirouettes inverted', ref:'h19' },
+      { id:'hc16d', text:'Four consecutive quick counterclockwise pirouettes inverted', ref:'h19' },
+      { id:'hc16e', text:'Five Consecutive CW Clockwise to Five CCW Counterclockwise inverted', ref:'h19' },
+      { id:'hc16f', text:'Five Consecutive Slow Counterclockwise inverted', ref:'h19' },
+    ]},
+    { id:'hc17', title:'Flips', items:[
+      { id:'hc17a', text:'Upright Tail-in to Inverted Nose-in and back (Back Elevator)', ref:'h9' },
+      { id:'hc17b', text:'Upright Tail-in to Inverted Nose-in and back (Front Elevator)', ref:'h9' },
+      { id:'hc17c', text:'Upright Left to Inverted Left and back (Right Aileron)', ref:'h9' },
+      { id:'hc17d', text:'Upright Left to Inverted Left and back (Left Aileron)', ref:'h9' },
+      { id:'hc17e', text:'Upright Right to Inverted Right and back (Right Aileron)', ref:'h9' },
+      { id:'hc17f', text:'Upright Right to Inverted Right and back (Left Aileron)', ref:'h9' },
+      { id:'hc17g', text:'Upright Nose to Inverted Tail and back (Forward Elevator)', ref:'h9' },
+      { id:'hc17h', text:'Upright Nose to Inverted Tail and back (Back Elevator)', ref:'h9' },
+    ]},
+    { id:'hc18', title:'Rolls', items:[
+      { id:'hc18a', text:'Upright Tail to Inverted Tail and back (Right Aileron) Three times consecutively', ref:'h13' },
+      { id:'hc18b', text:'Upright Tail to Inverted Tail and back (Left Aileron) Three times', ref:'h13' },
+      { id:'hc18c', text:'Upright Tail to Inverted Nose and back (Right Aileron) Three times', ref:'h13' },
+      { id:'hc18d', text:'Upright Left to Inverted Right and back (Right Aileron) Three times', ref:'h13' },
+      { id:'hc18e', text:'Upright Left to Inverted Left and back (Left Aileron) Three times', ref:'h13' },
+      { id:'hc18f', text:'Upright Right to Inverted Left and back (Right Aileron) Three times', ref:'h13' },
+      { id:'hc18g', text:'Upright Right to Inverted Right and back (Left Aileron) Three times', ref:'h13' },
+      { id:'hc18h', text:'Upright Left to Inverted Right and back (Left Aileron) Three times', ref:'h13' },
+    ]},
+    { id:'hc19', title:'Continuous Roll Plan A', items:[
+      { id:'hc19a', text:'Upright Tail to Inverted Tail and back (Right Aileron) Three times consecutively', ref:'h13' },
+      { id:'hc19b', text:'Upright Tail to Inverted Nose and back (Forward Elevator) Three times consecutively', ref:'h13' },
+      { id:'hc19c', text:'Upright Tail to Inverted Nose and back (Right Aileron) Three times consecutively', ref:'h13' },
+      { id:'hc19d', text:'Upright Left to Inverted Right and back (Right Aileron) Three times consecutively', ref:'h13' },
+      { id:'hc19e', text:'Upright Nose to Inverted Tail and back (Left Aileron) Three times consecutively', ref:'h13' },
+      { id:'hc19f', text:'Upright Left to Inverted Left and back (Left Aileron) Three times consecutively', ref:'h13' },
+    ]},
+    { id:'hc20', title:'Inverted Circuits', items:[
+      { id:'hc20a', text:'Inverted clockwise circuit', ref:'h18' },
+      { id:'hc20b', text:'Inverted counterclockwise circuit', ref:'h18' },
+      { id:'hc20c', text:'Five consecutive inverted CW circuits', ref:'h18' },
+      { id:'hc20d', text:'Transition from Five CW to Five CCW inverted', ref:'h18' },
+      { id:'hc20e', text:'Five Consecutive Clockwise to Five Counterclockwise inverted', ref:'h18' },
+    ]},
+    { id:'hc21', title:'Inverted Forward Flight', items:[
+      { id:'hc21a', text:'Inverted clockwise circuit', ref:'h18' },
+      { id:'hc21b', text:'Inverted counterclockwise circuit', ref:'h18' },
+      { id:'hc21c', text:'Transition from Five Consecutive CW to Five CCW inverted forward', ref:'h18' },
+      { id:'hc21d', text:'Transition from Five CCW to Five Consecutive Clockwise inverted forward', ref:'h18' },
+    ]},
+    { id:'hc22', title:'Inverted Forward Flight — Figure Eights', items:[
+      { id:'hc22a', text:'Turning Away From Pilot — inverted', ref:'h18' },
+      { id:'hc22b', text:'Turning Toward Pilot — inverted', ref:'h18' },
+      { id:'hc22c', text:'Transition from five consecutive turning Away to five consecutive Turning Toward — inverted', ref:'h18' },
+      { id:'hc22d', text:'Transition from five Toward to five consecutive Turning Away — inverted', ref:'h18' },
+    ]},
+    { id:'hc23', title:'Inverted Stall Turns', items:[
+      { id:'hc23a', text:'Flying from Right to Left, start turn', ref:'h10' },
+      { id:'hc23b', text:'Flying from Left to Right, start turn — Repeat three times', ref:'h10' },
+      { id:'hc23c', text:'Flying Right, start Inverted, Repeat three times', ref:'h10' },
+      { id:'hc23d', text:'Coming Toward Pilot — inverted stall turn, Repeat three times', ref:'h10' },
+    ]},
+    { id:'hc24', title:'Inverted Forward — Loops', items:[
+      { id:'hc24a', text:'Flying left to Right using right aileron — inverted', ref:'h12' },
+      { id:'hc24b', text:'Flying left to Right, start loop, Repeat three times — inverted', ref:'h12' },
+      { id:'hc24c', text:'Going Away From Pilot, start loop, Repeat three times', ref:'h12' },
+      { id:'hc24d', text:'Coming Toward Pilot, start loop, Repeat three times', ref:'h12' },
+    ]},
+    { id:'hc25', title:'Inverted Forward — Rolls', items:[
+      { id:'hc25a', text:'Flying left to Right using right aileron — inverted roll', ref:'h13' },
+      { id:'hc25b', text:'Flying right to Left, start, Repeat three times', ref:'h13' },
+      { id:'hc25c', text:'Going Away From Pilot using right aileron — inverted', ref:'h13' },
+      { id:'hc25d', text:'Going Away From Pilot using left aileron — inverted', ref:'h13' },
+      { id:'hc25e', text:'Perform all of the above in a ♦ pattern', ref:'h13' },
+    ]},
+    { id:'hc26', title:'Inverted Reverse Flight Basics', items:[
+      { id:'hc26a', text:'Clockwise inverted reverse circuit', ref:'h18' },
+      { id:'hc26b', text:'Counterclockwise inverted reverse circuit', ref:'h18' },
+      { id:'hc26c', text:'Five consecutive CW inverted reverse circuits', ref:'h18' },
+      { id:'hc26d', text:'Transition CW to CCW inverted reverse', ref:'h18' },
+      { id:'hc26e', text:'Five consecutive Clockwise to Five Counterclockwise inverted reverse', ref:'h18' },
+    ]},
+    { id:'hc27', title:'Inverted Reverse Figure Eights', items:[
+      { id:'hc27a', text:'Turning Away From Pilot — inverted reverse', ref:'h18' },
+      { id:'hc27b', text:'Turning Toward Pilot — inverted reverse', ref:'h18' },
+      { id:'hc27c', text:'Transition from five Away to five Toward — inverted reverse', ref:'h18' },
+      { id:'hc27d', text:'Transition from five Toward to five Away — inverted reverse', ref:'h18' },
+    ]},
+    { id:'hc28', title:'Inverted Reverse — Loops', items:[
+      { id:'hc28a', text:'Flying left, start turn, inverted reverse loop, Repeat three times', ref:'h12' },
+      { id:'hc28b', text:'Flying Right, start, Repeat three times — inverted reverse', ref:'h12' },
+      { id:'hc28c', text:'Going Away, start loop, Repeat three times', ref:'h12' },
+      { id:'hc28d', text:'Coming Toward Pilot, start loop, Repeat three times', ref:'h12' },
+    ]},
+    { id:'hc29', title:'Inverted Stall Turn Stalls', items:[
+      { id:'hc29a', text:'Flying from Right to Left, start turn — inverted stall', ref:'h10' },
+      { id:'hc29b', text:'Flying from Left to Right, start — Repeat three times', ref:'h10' },
+      { id:'hc29c', text:'Flying Right, start, Repeat three times — inverted stall', ref:'h10' },
+      { id:'hc29d', text:'Coming Toward Pilot — inverted stall Repeat three times', ref:'h10' },
+    ]},
+    { id:'hc30', title:'Inverted Forward Loop Stalls', items:[
+      { id:'hc30a', text:'Flying from Left to Right, start turn, Repeat three times', ref:'h12' },
+      { id:'hc30b', text:'Flying from Right to Left, start, Repeat three times', ref:'h12' },
+      { id:'hc30c', text:'Going Away, start, Repeat three times', ref:'h12' },
+      { id:'hc30d', text:'Coming Toward Pilot, start, Repeat three times', ref:'h12' },
+    ]},
+    { id:'hc31', title:'Inverted Forward — Roll Stalls', items:[
+      { id:'hc31a', text:'Flying left to Right using right aileron — inverted roll stall', ref:'h13' },
+      { id:'hc31b', text:'Flying right to Left using left aileron', ref:'h13' },
+      { id:'hc31c', text:'Flying right to Left, start, Repeat three times', ref:'h13' },
+      { id:'hc31d', text:'Repeat at all headings in a ♦ pattern', ref:'h13' },
+    ]},
+    { id:'hc32', title:'Hammerheads / Stall Turns', items:[
+      { id:'hc32a', text:'Upright Forward Clockwise', ref:'h10' },
+      { id:'hc32b', text:'Upright Forward Counterclockwise', ref:'h10' },
+      { id:'hc32c', text:'Upright Reverse Clockwise', ref:'h10' },
+      { id:'hc32d', text:'Upright Reverse Counterclockwise', ref:'h10' },
+    ]},
+    { id:'hc33', title:'Inverted Hammerheads / Stall Turns', items:[
+      { id:'hc33a', text:'Inverted Forward Clockwise', ref:'h10' },
+      { id:'hc33b', text:'Inverted Forward Counterclockwise', ref:'h10' },
+      { id:'hc33c', text:'Inverted Reverse Clockwise', ref:'h10' },
+      { id:'hc33d', text:'Inverted Reverse Counterclockwise', ref:'h10' },
+    ]},
+    { id:'hc34', title:'Funnel Preparation', items:[
+      { id:'hc34a', text:'Slow upright circle with nose pointed to middle of the circle clockwise', ref:'h15' },
+      { id:'hc34b', text:'Slow upright circle with nose pointed to middle of the circle counterclockwise', ref:'h15' },
+      { id:'hc34c', text:'Slow upright circle with tail pointed to middle of the circle clockwise', ref:'h15' },
+      { id:'hc34d', text:'Slow upright circle with tail pointed to middle of the circle counterclockwise', ref:'h15' },
+      { id:'hc34e', text:'Slow inverted circle with nose pointed to middle clockwise', ref:'h30' },
+      { id:'hc34f', text:'Slow inverted circle with nose pointed to middle counterclockwise', ref:'h30' },
+      { id:'hc34g', text:'Slow inverted circle with tail pointed to middle clockwise', ref:'h30' },
+      { id:'hc34h', text:'Slow inverted circle with tail pointed to middle counterclockwise', ref:'h30' },
+    ]},
+    { id:'hc35', title:'Nose Down Clockwise / Counterclockwise (Funnels)', items:[
+      { id:'hc35a', text:'Skids Up Nose Down Clockwise funnel', ref:'h15' },
+      { id:'hc35b', text:'Skids Up Nose Down Counterclockwise funnel', ref:'h15' },
+      { id:'hc35c', text:'Skids Down Nose Down Clockwise funnel', ref:'h15' },
+      { id:'hc35d', text:'Skids Down Nose Down Counterclockwise funnel', ref:'h15' },
+      { id:'hc35e', text:'Nose Up Clockwise funnel', ref:'h15' },
+      { id:'hc35f', text:'Nose Up Counterclockwise funnel', ref:'h15' },
+    ]},
+    { id:'hc36', title:'Piro Toss / Flips Travel', items:[
+      { id:'hc36a', text:'Slow Clockwise in a clockwise circle', ref:'h23' },
+      { id:'hc36b', text:'Slow Counterclockwise in a clockwise circle', ref:'h23' },
+    ]},
+    { id:'hc37', title:'Piro Flips', items:[
+      { id:'hc37a', text:'Piro Clockwise in a clockwise circle', ref:'h23' },
+      { id:'hc37b', text:'Piro Counterclockwise in a clockwise circle', ref:'h23' },
+    ]},
+    { id:'hc38', title:'Tic-Tocs', items:[
+      { id:'hc38a', text:'Nose/tail tic-toc upright', ref:'h9' },
+      { id:'hc38b', text:'Side-to-side tic-toc', ref:'h9' },
+      { id:'hc38c', text:'Tic-toc while translating left/right', ref:'h9' },
+      { id:'hc38d', text:'Tic-toc while translating forward/back', ref:'h9' },
+      { id:'hc38e', text:'Tic-toc pirouetting clockwise', ref:'h14' },
+      { id:'hc38f', text:'Tic-toc pirouetting counterclockwise', ref:'h14' },
+    ]},
+    { id:'hc39', title:'Piro Circles / Pirouetting Patterns', items:[
+      { id:'hc39a', text:'Pirouetting clockwise circuit CW', ref:'h17' },
+      { id:'hc39b', text:'Pirouetting counterclockwise circuit CCW', ref:'h17' },
+      { id:'hc39c', text:'Pirouetting clockwise circuit CCW (opposite spin to direction)', ref:'h17' },
+      { id:'hc39d', text:'Pirouetting counterclockwise circuit CW (opposite spin)', ref:'h17' },
+      { id:'hc39e', text:'Pirouetting figure-8', ref:'h28' },
+      { id:'hc39f', text:'Death spiral clockwise', ref:'h30' },
+      { id:'hc39g', text:'Death spiral counterclockwise', ref:'h30' },
+    ]},
+    { id:'hc40', title:'Walls, Elevators & Advanced', items:[
+      { id:'hc40a', text:'Vertical wall clockwise', ref:'h24' },
+      { id:'hc40b', text:'Vertical wall counterclockwise', ref:'h24' },
+      { id:'hc40c', text:'Elevator — pirouette climbing', ref:'h25' },
+      { id:'hc40d', text:'Elevator — pirouette descending', ref:'h25' },
+      { id:'hc40e', text:'Rolling circle', ref:'h27' },
+      { id:'hc40f', text:'Hurricane — inverted pirouette', ref:'h19' },
+      { id:'hc40g', text:'Perform all of the above in a ♦♦ pattern', ref:null },
+      { id:'hc40h', text:'Combine Tic-Toc X and Y1 and Z2, Where X is Y3 and Z4 pattern', ref:null },
+    ]},
+  ]
+},
+
+plane: {
+  label: 'Airplane',
+  icon: 'ti-plane',
+  stages: [
+    { id:'pc1', title:'Fundamental Flight', items:[
+      { id:'pc1a', text:'Straight and level flight — 60 seconds hands-off after trim', ref:'p1' },
+      { id:'pc1b', text:'Straight and level into wind', ref:'p1' },
+      { id:'pc1c', text:'Straight and level crosswind — both directions', ref:'p1' },
+      { id:'pc1d', text:'Climb at constant heading — 200 feet, then level off', ref:'p1' },
+      { id:'pc1e', text:'Descend at constant heading — controlled to level off', ref:'p1' },
+    ]},
+    { id:'pc2', title:'Stalls', items:[
+      { id:'pc2a', text:'Power-off stall — straight ahead recovery', ref:'p3' },
+      { id:'pc2b', text:'Power-off stall with bank — wings level before nose down', ref:'p3' },
+      { id:'pc2c', text:'Power-on stall — straight ahead', ref:'p3' },
+      { id:'pc2d', text:'Stall in a turn — both directions', ref:'p3' },
+      { id:'pc2e', text:'Recognize stall buffet at least 3 seconds before full break', ref:'p3' },
+    ]},
+    { id:'pc3', title:'Basic Circuits', items:[
+      { id:'pc3a', text:'Clockwise rectangular circuit — 4 coordinated turns', ref:'p2' },
+      { id:'pc3b', text:'Counterclockwise rectangular circuit', ref:'p2' },
+      { id:'pc3c', text:'Five consecutive clockwise circuits — consistent altitude', ref:'p2' },
+      { id:'pc3d', text:'Five consecutive counterclockwise circuits', ref:'p2' },
+      { id:'pc3e', text:'Transition CW to CCW circuits without leveling', ref:'p2' },
+    ]},
+    { id:'pc4', title:'Landings', items:[
+      { id:'pc4a', text:'Consistent glide path to threshold — 5 approaches', ref:'p19' },
+      { id:'pc4b', text:'Touch and go — smooth touchdown in the touch zone', ref:'p19' },
+      { id:'pc4c', text:'Five consecutive touch and goes', ref:'p19' },
+      { id:'pc4d', text:'Go-around from low approach — full climb out', ref:'p19' },
+      { id:'pc4e', text:'Crosswind landing — both directions', ref:'p19' },
+    ]},
+    { id:'pc5', title:'Loops', items:[
+      { id:'pc5a', text:'Inside loop from level flight — round shape', ref:'p4' },
+      { id:'pc5b', text:'Three consecutive inside loops — consistent size', ref:'p4' },
+      { id:'pc5c', text:'Inside loop from left-to-right pass', ref:'p4' },
+      { id:'pc5d', text:'Inside loop from right-to-left pass', ref:'p4' },
+      { id:'pc5e', text:'Inside loop going away from pilot', ref:'p4' },
+      { id:'pc5f', text:'Inside loop coming toward pilot', ref:'p4' },
+      { id:'pc5g', text:'Outside loop — negative G throughout', ref:'p12' },
+      { id:'pc5h', text:'Three consecutive outside loops', ref:'p12' },
+    ]},
+    { id:'pc6', title:'Rolls', items:[
+      { id:'pc6a', text:'Aileron roll — left', ref:'p5' },
+      { id:'pc6b', text:'Aileron roll — right', ref:'p5' },
+      { id:'pc6c', text:'Three consecutive rolls — same direction', ref:'p5' },
+      { id:'pc6d', text:'Three consecutive rolls — alternating direction', ref:'p5' },
+      { id:'pc6e', text:'Four-point roll — equal pause at each station', ref:'p15' },
+      { id:'pc6f', text:'Eight-point roll', ref:'p15' },
+      { id:'pc6g', text:'Rudder roll — left and right', ref:'p20' },
+    ]},
+    { id:'pc7', title:'Inverted Flight', items:[
+      { id:'pc7a', text:'Enter inverted from loop top — hold 5 seconds', ref:'p17' },
+      { id:'pc7b', text:'Inverted straight and level — 10 seconds', ref:'p17' },
+      { id:'pc7c', text:'Inverted straight and level — 30 seconds', ref:'p17' },
+      { id:'pc7d', text:'Inverted turn — both directions', ref:'p17' },
+      { id:'pc7e', text:'Inverted figure-8', ref:'p17' },
+      { id:'pc7f', text:'Inverted circuit — clockwise', ref:'p17' },
+      { id:'pc7g', text:'Inverted circuit — counterclockwise', ref:'p17' },
+    ]},
+    { id:'pc8', title:'Combination Maneuvers', items:[
+      { id:'pc8a', text:'Split-S — from level, roll inverted, pull through', ref:'p6' },
+      { id:'pc8b', text:'Immelmann turn — half loop up, half roll at top', ref:'p7' },
+      { id:'pc8c', text:'Cuban eight — two half-loops with downline half-rolls', ref:'p16' },
+      { id:'pc8d', text:'Three consecutive Cuban eights', ref:'p16' },
+      { id:'pc8e', text:'Split-S followed immediately by Immelmann', ref:'p6' },
+      { id:'pc8f', text:'Immelmann followed immediately by Split-S', ref:'p7' },
+    ]},
+    { id:'pc9', title:'Precision Aerobatics', items:[
+      { id:'pc9a', text:'Hammerhead — clean vertical climb, yaw 180°, vertical down', ref:'p8' },
+      { id:'pc9b', text:'Three consecutive hammerheads — same yaw direction', ref:'p8' },
+      { id:'pc9c', text:'Hammerhead both yaw directions', ref:'p8' },
+      { id:'pc9d', text:'Knife edge — 3 seconds sustained', ref:'p9' },
+      { id:'pc9e', text:'Knife edge — 10 seconds sustained straight line', ref:'p9' },
+      { id:'pc9f', text:'Knife edge turn — heading change while in knife edge', ref:'p9' },
+      { id:'pc9g', text:'Tail slide — full backward slide before recovery', ref:'p14' },
+    ]},
+    { id:'pc10', title:'Advanced Rotation', items:[
+      { id:'pc10a', text:'Snap roll — one clean rotation, stop at entry heading', ref:'p10' },
+      { id:'pc10b', text:'Snap roll both directions — consistent stop point', ref:'p10' },
+      { id:'pc10c', text:'Snap roll at top of a loop', ref:'p10' },
+      { id:'pc10d', text:'Spin — two clean rotations, recovery on heading', ref:'p11' },
+      { id:'pc10e', text:'Spin — four rotations, consistent recovery', ref:'p11' },
+      { id:'pc10f', text:'Spin both directions', ref:'p11' },
+      { id:'pc10g', text:'Lomcevak — full tumble and recovery', ref:'p18' },
+    ]},
+    { id:'pc11', title:'Complex Patterns', items:[
+      { id:'pc11a', text:'Rolling circle — continuous roll on horizontal circle', ref:'p13' },
+      { id:'pc11b', text:'Rolling circle both directions', ref:'p13' },
+      { id:'pc11c', text:'Loops at all four cardinal headings', ref:'p4' },
+      { id:'pc11d', text:'Rolls at all four cardinal headings', ref:'p5' },
+      { id:'pc11e', text:'Hammerheads at all four cardinal headings', ref:'p8' },
+      { id:'pc11f', text:'Complete aerobatic sequence — 8+ connected maneuvers', ref:null },
+      { id:'pc11g', text:'Precision aerobatic sequence — entry/exit altitudes matched', ref:null },
+    ]},
+  ]
+},
+
+quadcopter: {
+  label: 'Quadcopter',
+  icon: 'ti-drone',
+  stages: [
+    { id:'qc1', title:'Angle Mode Fundamentals', items:[
+      { id:'qc1a', text:'Stable hover in angle mode — 60 seconds', ref:'q1' },
+      { id:'qc1b', text:'Hover outdoors with light wind', ref:'q1' },
+      { id:'qc1c', text:'Forward/backward translation — 10 meters, stop cleanly', ref:'q1' },
+      { id:'qc1d', text:'Left/right translation — 10 meters, stop cleanly', ref:'q1' },
+      { id:'qc1e', text:'Box pattern at constant altitude', ref:'q1' },
+      { id:'qc1f', text:'Yaw 360° while hovering — both directions', ref:'q1' },
+    ]},
+    { id:'qc2', title:'Basic Circuits (Angle Mode)', items:[
+      { id:'qc2a', text:'Clockwise circle — consistent radius and altitude', ref:'q2' },
+      { id:'qc2b', text:'Counterclockwise circle', ref:'q2' },
+      { id:'qc2c', text:'Figure-8 — large, altitude consistent', ref:'q2' },
+      { id:'qc2d', text:'Figure-8 — medium, both circles equal size', ref:'q2' },
+      { id:'qc2e', text:'Figure-8 — tight, altitude consistent throughout', ref:'q2' },
+      { id:'qc2f', text:'Cinematic tripod shot — 30 seconds stationary indoors', ref:'q12' },
+      { id:'qc2g', text:'Cinematic tripod shot — 30 seconds outdoors with wind', ref:'q12' },
+    ]},
+    { id:'qc3', title:'Acro Mode Introduction', items:[
+      { id:'qc3a', text:'Hover in acro mode — 30 seconds without crashing (sim first)', ref:'q1' },
+      { id:'qc3b', text:'Forward flight in acro mode — straight line 20 meters', ref:'q1' },
+      { id:'qc3c', text:'Throttle punch from hover — hold 1 second, return', ref:'q8' },
+      { id:'qc3d', text:'Throttle chop from altitude — recover before ground', ref:'q8' },
+      { id:'qc3e', text:'Punch-chop-hover sequence — clean every time', ref:'q8' },
+      { id:'qc3f', text:'Acro mode figure-8 — large, consistent', ref:'q2' },
+    ]},
+    { id:'qc4', title:'Basic Flips & Rolls', items:[
+      { id:'qc4a', text:'Backflip — full rotation, clean recovery', ref:'q6' },
+      { id:'qc4b', text:'Front flip — full rotation, clean recovery', ref:'q6' },
+      { id:'qc4c', text:'Left roll — full rotation', ref:'q3' },
+      { id:'qc4d', text:'Right roll — full rotation', ref:'q3' },
+      { id:'qc4e', text:'Three consecutive backflips in position', ref:'q6' },
+      { id:'qc4f', text:'Three consecutive rolls — same direction', ref:'q3' },
+      { id:'qc4g', text:'Alternating backflip / front flip sequence', ref:'q6' },
+    ]},
+    { id:'qc5', title:'Power Loops & Split-S', items:[
+      { id:'qc5a', text:'Power loop at altitude — full rotation, exit level', ref:'q3' },
+      { id:'qc5b', text:'Three consecutive power loops — consistent size', ref:'q3' },
+      { id:'qc5c', text:'Power loop at low altitude — close to ground', ref:'q3' },
+      { id:'qc5d', text:'Split-S from altitude — know your altitude loss', ref:'q4' },
+      { id:'qc5e', text:'Split-S followed immediately by power loop', ref:'q4' },
+      { id:'qc5f', text:'Power loop followed immediately by Split-S', ref:'q3' },
+    ]},
+    { id:'qc6', title:'Cinematic Moves', items:[
+      { id:'qc6a', text:'Manual orbit — 360° around a point, nose tracking', ref:'q5' },
+      { id:'qc6b', text:'Manual orbit — consistent speed and altitude throughout', ref:'q5' },
+      { id:'qc6c', text:'Orbit — tighten and widen radius mid-orbit', ref:'q5' },
+      { id:'qc6d', text:'Dive bomb — from 100 feet, pull out at 30 feet', ref:'q7' },
+      { id:'qc6e', text:'Dive bomb — lower pull-out point progressively', ref:'q7' },
+      { id:'qc6f', text:'Reveal shot — rise up from behind an object', ref:null },
+      { id:'qc6g', text:'Fly-through — thread a gap or doorway at slow speed', ref:null },
+    ]},
+    { id:'qc7', title:'Gate Racing Skills', items:[
+      { id:'qc7a', text:'Single gate at slow speed — clean center every time', ref:'q11' },
+      { id:'qc7b', text:'Single gate at speed — no angle deviation', ref:'q11' },
+      { id:'qc7c', text:'Three gates in sequence without stopping', ref:'q11' },
+      { id:'qc7d', text:'Five gates — plan exit angle through each', ref:'q11' },
+      { id:'qc7e', text:'Full lap of a race course without gate touch', ref:'q11' },
+      { id:'qc7f', text:'Full lap — improve lap time by 20% from first attempt', ref:'q11' },
+    ]},
+    { id:'qc8', title:'Freestyle Foundation', items:[
+      { id:'qc8a', text:'Matty flip — clean every attempt', ref:'q6' },
+      { id:'qc8b', text:'Two-move combination — power loop then Split-S', ref:'q9' },
+      { id:'qc8c', text:'Two-move combination — dive bomb then power loop', ref:'q9' },
+      { id:'qc8d', text:'Three-move flowing line — no hover between moves', ref:'q9' },
+      { id:'qc8e', text:'Five-move line from takeoff to landing', ref:'q9' },
+      { id:'qc8f', text:'Inverted hover — stable for 10 seconds', ref:'q10' },
+      { id:'qc8g', text:'Inverted yaw spin — slow, maintaining position', ref:'q10' },
+    ]},
+    { id:'qc9', title:'Advanced Freestyle', items:[
+      { id:'qc9a', text:'Inverted yaw spin — fast, maintaining position', ref:'q10' },
+      { id:'qc9b', text:'Seven+ move freestyle line — flows start to finish', ref:'q9' },
+      { id:'qc9c', text:'Freestyle line including an inverted section', ref:'q9' },
+      { id:'qc9d', text:'Film a complete 30-second freestyle run — review footage', ref:null },
+      { id:'qc9e', text:'Repeat the same freestyle line twice — matching result', ref:null },
+      { id:'qc9f', text:'Nail a signature move you invented or adapted as your own', ref:null },
+    ]},
+  ]
+}
+
+}; // end CURRICULUM
+
+
+// ── CURRICULUM FUNCTIONS ──────────────────────
+const CURR_KEY = 'rcfc_curriculum';
+let _currCraft = 'helicopter';
+
+function loadCurr(){try{return JSON.parse(localStorage.getItem(CURR_KEY)||'{}');}catch(e){return {};}}
+function saveCurr(d){try{localStorage.setItem(CURR_KEY,JSON.stringify(d));}catch(e){}}
+
+function getCurrKey(itemId){return _currCraft+'_'+itemId;}
+
+function isCurrDone(itemId){
+  const d=loadCurr();
+  return !!d[getCurrKey(itemId)];
+}
+
+function toggleCurrItem(itemId, el){
+  const d=loadCurr();
+  const k=getCurrKey(itemId);
+  d[k]=!d[k];
+  saveCurr(d);
+  renderCurrItem(itemId, el, d[k]);
+  updateCurrProgress();
+}
+
+function renderCurrItem(itemId, rowEl, done){
+  const check=rowEl.querySelector('.ci-check');
+  const text=rowEl.querySelector('.ci-text');
+  if(check){
+    check.className='ci-check'+(done?' done':'');
+    check.innerHTML=done?'<i class="ti ti-check"></i>':'';
+  }
+  if(text) text.className='ci-text'+(done?' done':'');
+  // update parent stage header sub count
+  const stageCard=rowEl.closest('.stage-card');
+  if(stageCard) updateStageHeader(stageCard);
+}
+
+function updateStageHeader(stageCard){
+  const items=stageCard.querySelectorAll('.curr-item');
+  const done=stageCard.querySelectorAll('.ci-check.done').length;
+  const total=items.length;
+  const sub=stageCard.querySelector('.stage-sub');
+  if(sub) sub.textContent=done+' / '+total+' complete';
+  const num=stageCard.querySelector('.stage-num');
+  if(num){
+    if(done===total&&total>0){num.classList.add('complete');}
+    else{num.classList.remove('complete');}
+  }
+}
+
+function updateCurrProgress(){
+  const craft=CURRICULUM[_currCraft];
+  if(!craft)return;
+  let total=0,done=0;
+  const d=loadCurr();
+  craft.stages.forEach(stage=>{
+    stage.items.forEach(item=>{
+      total++;
+      if(d[getCurrKey(item.id)])done++;
+    });
+  });
+  const pct=total?Math.round(done/total*100):0;
+  const fill=document.getElementById('curr-prog-fill');
+  const pctEl=document.getElementById('curr-prog-pct');
+  const label=document.getElementById('curr-prog-label');
+  if(fill)fill.style.width=pct+'%';
+  if(pctEl)pctEl.textContent=pct+'%';
+  if(label)label.textContent=craft.label+' — '+done+'/'+total+' items';
+}
+
+function setCurrCraft(craft, btn){
+  _currCraft=craft;
+  document.querySelectorAll('.curr-craft-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderCurrList();
+}
+
+function renderCurrList(){
+  const craft=CURRICULUM[_currCraft];
+  if(!craft)return;
+  const list=document.getElementById('curr-list');
+  if(!list)return;
+  const d=loadCurr();
+  let html='';
+  craft.stages.forEach((stage,si)=>{
+    const doneCount=stage.items.filter(item=>d[getCurrKey(item.id)]).length;
+    const total=stage.items.length;
+    const allDone=doneCount===total&&total>0;
+    html+=`<div class="stage-card" id="sc-${stage.id}">
+      <div class="stage-header" onclick="toggleStage('${stage.id}')">
+        <div class="stage-num${allDone?' complete':''}">${si+1}</div>
+        <div class="stage-info">
+          <div class="stage-title">${stage.title}</div>
+          <div class="stage-sub">${doneCount} / ${total} complete</div>
+        </div>
+        <i class="ti ti-chevron-right stage-arrow" id="sa-${stage.id}"></i>
+      </div>
+      <div class="stage-items" id="si-${stage.id}">`;
+    stage.items.forEach(item=>{
+      const done=!!d[getCurrKey(item.id)];
+      const refBtn=item.ref
+        ?`<span class="ci-ref" onclick="event.stopPropagation();jumpToRef('${item.ref}')" title="Open in Reference">Ref</span>`
+        :'';
+      html+=`<div class="curr-item" id="ci-${item.id}" onclick="toggleCurrItem('${item.id}',this)">
+        <div class="ci-check${done?' done':''}">${done?'<i class="ti ti-check"></i>':''}</div>
+        <div class="ci-text${done?' done':''}">${item.text}</div>
+        ${refBtn}
+      </div>`;
+    });
+    html+='</div></div>';
+  });
+  list.innerHTML=html;
+  updateCurrProgress();
+}
+
+function toggleStage(stageId){
+  const items=document.getElementById('si-'+stageId);
+  const arrow=document.getElementById('sa-'+stageId);
+  if(!items)return;
+  const open=items.classList.toggle('open');
+  if(arrow)arrow.classList.toggle('open',open);
+}
+
+function jumpToRef(refId){
+  // Switch to reference tab and open the move overlay
+  switchTab('ref','au');
+  setTimeout(()=>openMove(refId),120);
+}
+
+
 // ── INIT ──────────────────────────────────────
 filterMoves();
 renderLearnGrid();
 updateProgress();
+renderCurrList();
 </script>
 </body>
 </html>
