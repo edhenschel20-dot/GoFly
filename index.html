@@ -431,9 +431,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div>
     <div class="slabel">Your level</div>
     <div class="toggle-row">
-      <button class="tbtn ob" id="l-beg" onclick="setLS('l-level','beginner',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-seedling"></i> Beginner</button>
+      <button class="tbtn" id="l-beg" onclick="setLS('l-level','beginner',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-seedling"></i> Beginner</button>
       <button class="tbtn" id="l-int" onclick="setLS('l-level','intermediate',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-trending-up"></i> Intermediate</button>
-      <button class="tbtn" id="l-adv" onclick="setLS('l-level','advanced',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-star"></i> Advanced</button>
+      <button class="tbtn ob" id="l-adv" onclick="setLS('l-level','advanced',this,'l-beg,l-int,l-adv',true)"><i class="ti ti-star"></i> Advanced</button>
     </div>
   </div>
   <div>
@@ -444,6 +444,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div class="api-bar">
     <button class="api-toggle" onclick="toggleAPI('l')"><span><i class="ti ti-key" style="margin-right:5px"></i> API Keys</span><i class="ti ti-chevron-down" id="api-arr-l"></i></button>
     <div class="api-inner" id="api-inner-l">
+      <div class="api-row"><div class="api-lbl" style="color:var(--blue)">Claude</div><input type="password" class="api-input" id="claude-key" placeholder="console.anthropic.com" oninput="syncK('claude')" /><span class="ktag ku" id="ck-status">Not set</span></div>
       <div class="api-row"><div class="api-lbl">Gemini</div><input type="password" class="api-input" id="gemini-key" placeholder="aistudio.google.com" oninput="syncK('gemini')" /><span class="ktag ku" id="gk-status">Not set</span></div>
       <div class="key-remember-row">
         <span class="key-remember-label"><i class="ti ti-lock" style="margin-right:4px"></i>Remember key on this device</span>
@@ -672,7 +673,7 @@ const S={
   cf:'all',df:'all',
   'g-craft':'helicopter','g-level':'beginner','g-focuses':new Set(['overall']),
   'c-craft':'helicopter','c-focuses':new Set(),
-  'l-craft':'helicopter','l-level':'beginner','l-selected':'','l-lesson':'',
+  'l-craft':'helicopter','l-level':'advanced','l-selected':'','l-lesson':'',
   'g-files':{1:null,2:null,3:null},
   'c-files':{1:null,2:null},
   'l-files':{1:null,2:null},
@@ -702,6 +703,7 @@ function syncK(which){
     const ok=v.length>10;
     document.getElementById('ck-status').textContent=ok?'✓ Set':'Not set';
     document.getElementById('ck-status').className='ktag '+(ok?'kb':'ku');
+    saveKeysIfEnabled();
   } else {
     const ids=['gemini-key','gk-g','gk-c'];
     ids.forEach(id=>{
@@ -798,8 +800,8 @@ function buildDetail(m){
 
 async function aiDeepDive(id){
   const m=MOVES.find(x=>x.id===id);
-  const key=getGKey();
-  if(!key){document.getElementById('ai-result-'+id).innerHTML='<div class="warn-box"><strong>Gemini API key needed.</strong> Enter it in the API Keys section in any tab.</div>';return;}
+  const key=getCKey();
+  if(!key){document.getElementById('ai-result-'+id).innerHTML='<div class="warn-box"><strong>Claude API key needed.</strong> Enter it in the Learn tab API Keys section.</div>';return;}
   const btn=document.querySelector('.ai-btn');
   if(btn){btn.disabled=true;btn.innerHTML='<div class="spin b"></div> Building AI lesson...';}
   const el=document.getElementById('ai-result-'+id);
@@ -809,7 +811,11 @@ async function aiDeepDive(id){
     const ddPrompt=`You are an expert RC ${m.craft} flight instructor. Be concise, practical, specific.
 
 Give me an extended lesson on "${m.name}" for an RC ${m.craft} pilot. Include: mental preparation techniques, detailed stick timing, what the aircraft should look and feel like at each phase, the most common mistake and how to diagnose it from video, and 3 specific sim exercises for muscle memory. Max 400 words.`;
-    const text=await callGemini([{text:ddPrompt}],1000);
+    const text=await callClaude(
+      `Expert RC ${m.craft} instructor. Concise, practical, specific.`,
+      ddPrompt,
+      800
+    );
     clearInterval(pi);
     el.innerHTML=`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-wand"></i> AI lesson — ${m.name}</div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`;
   }catch(err){clearInterval(pi);el.innerHTML=`<div class="warn-box"><strong>Error:</strong> ${err.message}</div>`;}
@@ -818,19 +824,21 @@ Give me an extended lesson on "${m.name}" for an RC ${m.craft} pilot. Include: m
 
 // ── LEARN ─────────────────────────────────────
 function renderLearnGrid(){
+  const craft=S['l-craft'];
   const lvl=S['l-level'];
-  const moves=MOVES.filter(m=>{
-    if(m.craft!==S['l-craft'])return false;
+  const moves=MOVES.filter(function(m){
+    if(m.craft!==craft)return false;
     if(lvl==='beginner')return m.diff==='Beginner';
-    if(lvl==='intermediate')return m.diff==='Beginner'||m.diff==='Intermediate';
-    return true; // advanced shows all
+    if(lvl==='intermediate')return (m.diff==='Beginner'||m.diff==='Intermediate');
+    return true;
   });
-  document.getElementById('learn-grid').innerHTML=moves.length?moves.map(m=>
-    `<div class="mc ${S['l-selected']===m.id?'sel':''}" onclick="selMove('${m.id}',this)">
-      <i class="ti ${m.icon}"></i>
-      <div><div class="mc-name">${m.name}</div><div class="mc-diff">${m.diff}</div></div>
-    </div>`
-  ).join(''):'<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-size:12px">No moves for this level</div>';
+  const grid=document.getElementById('learn-grid');
+  if(!grid)return;
+  if(!moves.length){grid.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--muted);font-size:12px">No moves for this level</div>';return;}
+  grid.innerHTML=moves.map(function(m){
+    const sel=S['l-selected']===m.id?'sel':'';
+    return '<div class="mc '+sel+'" onclick="selMove(''+m.id+'',this)"><i class="ti '+m.icon+'"></i><div><div class="mc-name">'+m.name+'</div><div class="mc-diff">'+m.diff+'</div></div></div>';
+  }).join('');
 }
 function selMove(id,el){S['l-selected']=id;document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');document.getElementById('l-custom').value='';checkSavedLesson();}
 function setLS(k,v,btn,ids,rerender){
@@ -864,7 +872,7 @@ async function callGemini(parts,max){
 async function callClaude(sys,usr,max){
   const k=getCKey();if(!k)throw new Error('Claude API key not set. Enter it in Learn tab API Keys.');
   const res=await fetch('https://api.anthropic.com/v1/messages',
-    {method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01'},
+    {method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:max,system:sys,messages:[{role:'user',content:usr}]})});
   if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Claude error '+res.status);}
   const d=await res.json();trackCall('claude');return d.content?.[0]?.text||'';
@@ -900,26 +908,11 @@ async function teachMove(){
   hideEl('l-attempt-wrap');S['l-files']={1:null,2:null};
   const pi=tickP('l-lesson');
   try{
-    const prompt=`You are the world's best RC ${craft} flight instructor. Break complex maneuvers into simple logical steps. Explain stick inputs in plain English. The student practices in a simulator.
-
-Teach me "${move}" on an RC ${craft}. I am ${level} level.
-
-## What this maneuver is
-Plain-English description.
-## Why it is challenging
-What brain and hands must do differently.
-## Before you start
-Prerequisite skills.
-## The stick movements
-Each control and exactly what it does.
-## Step-by-step progression (5-6 phases)
-Each phase: name, goal, what to do, one common mistake and fix, when to advance.
-## Warning signs you need more practice
-## Sim tips
-3-4 specific tips.
-
-Be direct and specific. Max 500 words.`;
-    const text=await callGemini([{text:prompt}],1500);
+    const text=await callClaude(
+      `You are the world's best RC ${craft} flight instructor. Break complex maneuvers into simple logical steps. Explain stick inputs in plain English. The student practices in a simulator — crashing is fine, building real muscle memory is the goal.`,
+      `Teach me "${move}" on an RC ${craft}. I am ${level} level.\n\n## What this maneuver is\nPlain-English description.\n## Why it is challenging\nWhat brain and hands must do differently.\n## Before you start\nPrerequisite skills.\n## The stick movements\nEach control and exactly what it does — plain English.\n## Step-by-step progression (5-6 phases)\nEach phase: name, goal, what to do, one common mistake and fix, when to advance.\n## Warning signs you need more practice\nSpecific signs not ready to progress.\n## Sim tips\n3-4 specific simulator tips.\n\nBe direct and specific. Max 500 words.`,
+      1200
+    );
     stopP(pi,'l-lesson');S['l-lesson']=text;
     saveLesson(craft,move,level,text);
     checkSavedLesson();
@@ -1116,12 +1109,19 @@ const KEYS_KEY='rcfc_keys';
 function loadSavedKeys(){
   try{
     const d=JSON.parse(localStorage.getItem(KEYS_KEY)||'{}');
-    if(d.remember&&d.gemini){
-      ['gemini-key','gk-g','gk-c'].forEach(id=>{
-        const el=document.getElementById(id);
-        if(el&&!el.value)el.value=d.gemini;
-      });
-      syncK('gemini');
+    if(d.remember){
+      if(d.gemini){
+        ['gemini-key','gk-g','gk-c'].forEach(id=>{
+          const el=document.getElementById(id);
+          if(el&&!el.value)el.value=d.gemini;
+        });
+        syncK('gemini');
+      }
+      if(d.claude){
+        const el=document.getElementById('claude-key');
+        if(el&&!el.value)el.value=d.claude;
+        syncK('claude');
+      }
       const cb=document.getElementById('keys-remember');
       if(cb)cb.checked=true;
     }
@@ -1131,8 +1131,12 @@ function loadSavedKeys(){
 function saveKeysIfEnabled(){
   const cb=document.getElementById('keys-remember');
   if(!cb||!cb.checked)return;
-  const k=getGKey();
-  if(k){try{localStorage.setItem(KEYS_KEY,JSON.stringify({remember:true,gemini:k}));}catch(e){}}
+  const gk=getGKey();
+  const ck=getCKey();
+  const d={remember:true};
+  if(gk)d.gemini=gk;
+  if(ck)d.claude=ck;
+  try{localStorage.setItem(KEYS_KEY,JSON.stringify(d));}catch(e){}
 }
 
 function toggleRememberKeys(checked){
