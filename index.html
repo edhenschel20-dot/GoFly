@@ -179,6 +179,8 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .curr-item:last-child{border-bottom:none;}
 .curr-item:active{background:var(--surface2);}
 .ci-text{flex:1;font-size:12px;color:#9aa3b5;line-height:1.55;}
+.ci-learn{font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--bborder);background:var(--bdim);font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.3px;cursor:pointer;color:var(--blue);white-space:nowrap;line-height:1.4;}
+.ci-learn:active{opacity:0.7;}
 .ci-ref{font-size:11px;color:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:700;flex-shrink:0;padding:2px 6px;border:1px solid var(--bborder);border-radius:4px;background:var(--bdim);white-space:nowrap;margin-top:1px;}
 .curr-list{padding-bottom:20px;}
 
@@ -1971,7 +1973,7 @@ function renderCurrList(){
     stage.items.forEach(item=>{
       const prof=item.ref?getProf(item.ref):'none';
       const refBtn=item.ref
-        ?`<span class="ci-ref" onclick="event.stopPropagation();jumpToRef('${item.ref}')" title="Ref">Ref</span>`
+        ?`<span class="ci-ref" onclick="event.stopPropagation();jumpToRef('${item.ref}')" title="Open in Reference">Ref</span><button class="ci-learn" onclick="event.stopPropagation();jumpToLearn('${item.ref}')" title="Build lesson plan">Learn</button>`
         :'';
       const sts=[{v:'none',l:'—'},{v:'practicing',l:'Prac.'},{v:'solid',l:'Solid'},{v:'mastered',l:'Mastered'}];
       const sBtns=sts.map(function(s){
@@ -1999,9 +2001,37 @@ function toggleStage(stageId){
 }
 
 function jumpToRef(refId){
-  // Switch to reference tab and open the move overlay
   switchTab('ref','au');
   setTimeout(()=>openMove(refId),120);
+}
+
+function jumpToLearn(refId){
+  // Find which move this is and pre-select it on the Learn tab
+  const move=MOVES.find(m=>m.id===refId);
+  if(!move)return;
+  // Set the craft
+  const craftBtns={'helicopter':'l-heli','plane':'l-plane','quadcopter':'l-quad'};
+  const craftBtnId=craftBtns[move.craft];
+  if(craftBtnId){
+    const btn=document.getElementById(craftBtnId);
+    if(btn) setLS('l-craft',move.craft,btn,'l-heli,l-plane,l-quad',true);
+  }
+  // Set level to advanced so the move is always visible
+  const advBtn=document.getElementById('l-adv');
+  if(advBtn) setLS('l-level','advanced',advBtn,'l-beg,l-int,l-adv',true);
+  // Pre-select the move
+  S['l-selected']=refId;
+  // Switch to learn tab
+  switchTab('learn','ab');
+  // Highlight the selected move card after render
+  setTimeout(()=>{
+    const card=document.querySelector('[data-mid="'+refId+'"]');
+    if(card){
+      document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));
+      card.classList.add('sel');
+    }
+    checkSavedLesson();
+  },150);
 }
 
 
