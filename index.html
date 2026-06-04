@@ -178,10 +178,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .curr-item{display:flex;align-items:flex-start;gap:10px;padding:8px 14px;cursor:pointer;border-bottom:1px solid var(--border);}
 .curr-item:last-child{border-bottom:none;}
 .curr-item:active{background:var(--surface2);}
-.ci-check{width:20px;height:20px;border-radius:5px;border:2px solid var(--border2);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all 0.15s;}
-.ci-check.done{background:var(--accent);border-color:var(--accent);color:var(--bg);}
 .ci-text{flex:1;font-size:12px;color:#9aa3b5;line-height:1.55;}
-.ci-text.done{color:var(--muted2);text-decoration:line-through;}
 .ci-ref{font-size:11px;color:var(--blue);font-family:'Barlow Condensed',sans-serif;font-weight:700;flex-shrink:0;padding:2px 6px;border:1px solid var(--bborder);border-radius:4px;background:var(--bdim);white-space:nowrap;margin-top:1px;}
 .curr-list{padding-bottom:20px;}
 
@@ -209,6 +206,22 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .key-toggle input:checked + .key-toggle-track{background:var(--accent);}
 .key-toggle-thumb{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:white;transition:transform 0.2s;}
 .key-toggle input:checked ~ .key-toggle-thumb{transform:translateX(16px);}
+
+/* CURRICULUM STATUS INLINE */
+.ci-status{display:flex;gap:3px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end;max-width:130px;}
+.ci-sbtn{padding:3px 6px;border-radius:4px;border:1px solid var(--border2);background:transparent;font-family:'Barlow Condensed',sans-serif;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;cursor:pointer;color:var(--muted2);white-space:nowrap;line-height:1.4;}
+.ci-sbtn:active{opacity:0.7;}
+.ci-sbtn.cs-practicing{background:rgba(240,196,74,0.15);border-color:var(--gborder);color:var(--gold);}
+.ci-sbtn.cs-solid{background:rgba(94,173,247,0.15);border-color:var(--bborder);color:var(--blue);}
+.ci-sbtn.cs-mastered{background:rgba(74,240,176,0.15);border-color:var(--aborder);color:var(--accent);}
+.ci-sbtn.cs-none{background:var(--surface2);border-color:var(--border2);color:var(--muted);}
+.ci-text.cs-mastered{color:var(--muted2);text-decoration:line-through;}
+.stage-sub-pills{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.ssp{font-size:9px;padding:1px 5px;border-radius:3px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+.ssp-p{background:rgba(240,196,74,0.15);color:var(--gold);}
+.ssp-s{background:rgba(94,173,247,0.15);color:var(--blue);}
+.ssp-m{background:rgba(74,240,176,0.15);color:var(--accent);}
+
 /* BACKUP / RESTORE */
 .backup-bar{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;}
 .backup-toggle{width:100%;padding:10px 14px;background:transparent;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -632,6 +645,11 @@ const MOVES=[
 {id:'h28',craft:'helicopter',name:'Tail-slide entry inverted',icon:'ti-arrow-down',diff:'Advanced',what:'Entering inverted flight through a tail-slide — climbing vertically, hanging at zero, sliding back tail-first, then catching inverted as the nose swings down.',why:'Provides an alternate and dramatic inverted entry. The uncontrolled slide phase requires trusting the process and catching it at the right moment.',prereqs:'Solid inverted hover. Comfortable vertical climbs to zero.',sticks:[{i:'Vertical climb',a:'Clean vertical line to zero'},{i:'Zero and slide',a:'Neutralize — let it hang and begin sliding back'},{i:'Nose falls through',a:'As nose passes inverted position apply inverted hover collective'},{i:'Catch inverted',a:'Stabilize in inverted hover'}],phases:[{n:'Vertical climb to zero',g:'Clean deceleration to zero on a vertical line',s:['Full power pull to vertical','Chop throttle as speed bleeds','Maintain vertical until zero speed'],m:'Not reaching true zero — just does a stall turn instead'},{n:'Allow nose to fall',g:'Let the nose fall through to inverted and catch it',s:['Zero speed — nose will hang then fall','As nose approaches inverted, apply inverted collective','Catch the inverted hover'],m:'Applying collective too early or too late'},{n:'Clean inverted recovery',g:'Stable inverted hover after the catch',s:['Consistent nose fall direction','Clean catch every time'],m:'Messy recovery — practice the inverted catch timing'}],warnings:['Not reaching true zero — the slide phase will not happen','Inverted hover not solid before attempting to catch from slide'],tips:['The nose fall direction is determined by entry line alignment','The catch is a reflex — practice timing at altitude first','This entry looks spectacular in competition']},
 {id:'h29',craft:'helicopter',name:'Pirouette to inverted',icon:'ti-arrows-up-down',diff:'Advanced',what:'Transitioning from an upright pirouette directly into an inverted pirouette without stopping. The pirouette continues through the flip transition.',why:'The transition through the flip while the pirouette is spinning requires the flip input to be perfectly timed within the spin.',prereqs:'Clean pirouette. Clean tic-toc. Hurricane hover.',sticks:[{i:'Yaw',a:'Continuous pirouette throughout — does not stop for the transition'},{i:'Cyclic flip input',a:'Applied at specific pirouette phase to flip from upright to inverted'},{i:'Throttle',a:'Changes from positive to negative during the transition'}],phases:[{n:'Slow pirouette flip',g:'Flip from upright to inverted pirouette at slow spin rate',s:['Slow pirouette','At tail-in position apply flip input','Maintain pirouette through the flip','Establish inverted pirouette'],m:'Pirouette stopping during the flip — yaw must continue'},{n:'Speed up transition',g:'Faster pirouette through the transition',s:['Increase pirouette rate gradually','Flip input timing becomes faster','At high speed the transition should look seamless'],m:'Losing the pirouette during the flip — timing off'},{n:'Inverted pirouette to upright',g:'Reverse transition — inverted back to upright pirouette',s:['From inverted pirouette apply flip input','Transition back to upright pirouette','Seamless direction'],m:'Stopping between inverted and upright pirouette'}],warnings:['Pirouette stopping during transition','Throttle reversal not happening during flip'],tips:['This is the gateway to tic-toc pirouettes','The yaw input must be truly continuous','Slow pirouette rate first to get the timing right']},
 {id:'h30',craft:'helicopter',name:'Funnels (advanced)',icon:'ti-tornado',diff:'Advanced',what:'Advanced funnel variations — inverted funnel, nose-in funnel, combined funnel-to-funnel transitions. The helicopter traces cone shapes at different orientations.',why:'Each variation requires managing a different control set. Inverted funnel adds reversed collective. Nose-in funnel adds reversed cyclic.',prereqs:'Clean standard upright funnel. Inverted hover solid.',sticks:[{i:'Inverted funnel',a:'Bank maintained while flying inverted circle — throttle reversed from normal'},{i:'Nose-in funnel',a:'Funnel with nose pointing toward the cone center — reversed cyclic for the circle'},{i:'Funnel transitions',a:'Moving between funnel sizes or orientations smoothly'}],phases:[{n:'Inverted funnel',g:'Funnel entirely in inverted flight',s:['Enter inverted hover','Establish circular path with bank','Maintain inverted funnel — throttle management is the challenge'],m:'Altitude creeping — inverted throttle management in motion'},{n:'Nose-in funnel',g:'Funnel with nose toward the center',s:['Enter nose-in hover','Bank and orbit with nose in','Continuous inward yaw to keep nose on center'],m:'Nose tracking off center — yaw rate must match orbit speed'},{n:'Funnel size transitions',g:'Grow and shrink funnel smoothly',s:['Start with a size','Gradually increase or decrease radius mid-funnel','Keep it smooth — no stops'],m:'Abrupt size changes — smooth continuous adjustment'}],warnings:['Standard funnel not solid before attempting variations','Inverted hover in motion not practiced'],tips:['Inverted funnel and nose-in funnel each take dedicated practice','Transitions between sizes look great in competition','Video from various angles to see the cone shapes']},
+  {id:'h31',craft:'helicopter',name:'Backwards flight',icon:'ti-arrow-back-up',diff:'Intermediate',what:'Flying the helicopter in reverse — nose facing you, moving away from you. Nose-in hover with backward translation.',why:'All cyclic inputs for translation are reversed from forward flight. The brain wants to push forward to go forward — here the same input moves it toward you.',prereqs:'Solid nose-in hover. Comfortable translating in all directions.',sticks:[{i:'Right stick down',a:'Moves heli away from you (backward) — opposite of tail-in'},{i:'Right stick up',a:'Moves heli toward you'},{i:'Right stick left/right',a:'Moves heli left/right — also reversed from tail-in'},{i:'Left stick',a:'Yaw — works same as always'}],phases:[{n:'Nose-in hover review',g:'Solid nose-in hover before adding translation',s:['30 seconds solid nose-in hover','All corrections instinctive'],m:'Any hesitation in nose-in — fix that first'},{n:'Small backward movement',g:'Move heli a few feet away while nose-in',s:['From nose-in hover push right stick down slightly','Feel how it moves away','Return to hover'],m:'Pushing wrong direction — down = away in nose-in'},{n:'Straight backward line',g:'Fly 20 feet directly away nose-in',s:['Apply gentle backward input','Maintain heading and altitude','Return forward'],m:'Drifting sideways — correct with left/right stick'},{n:'Backward circuits',g:'Fly backward in a consistent circuit',s:['Combine backward movement with gentle turns','Keep nose facing you throughout'],m:'Losing orientation during turns'}],warnings:['Nose-in hover not solid before attempting','Pushing wrong direction and flying toward yourself'],tips:['This is nose-in hover with translation — if nose-in is solid this follows naturally','Start with tiny inputs','Practice in a simulator until automatic']},
+  {id:'h32',craft:'helicopter',name:'Sideways flight',icon:'ti-arrows-left-right',diff:'Intermediate',what:'Flying the helicopter continuously sideways — translating left or right while the nose stays pointed straight ahead.',why:'Sustained sideways flight puts the helicopter into side-in orientations continuously. Controls feel unfamiliar because the primary movement axis is lateral.',prereqs:'Solid side-in hover both directions. Comfortable with lateral translation.',sticks:[{i:'Right stick left (tail-in)',a:'Moves heli left'},{i:'Right stick right (tail-in)',a:'Moves heli right'},{i:'When side-on',a:'All lateral controls rotate 90° — same as side-in hover'},{i:'Yaw',a:'Maintains heading during turns'}],phases:[{n:'Sideways pass left',g:'Fly 30 feet sideways left at constant altitude',s:['From tail-in hover push right stick left','Maintain heading and altitude','Stop at 30 feet'],m:'Yawing instead of translating — roll input only'},{n:'Sideways pass right',g:'Fly 30 feet sideways right',s:['Same as left but opposite direction','Most pilots have a weaker direction'],m:'Weaker direction — drill it separately'},{n:'Sideways figure-8',g:'Fly a figure-8 using sideways translation',s:['Fly sideways left in a circle','Cross over and fly sideways right circle'],m:'Dropping altitude during the crossover'}],warnings:['Side-in hover not solid first','Confusing lateral and forward inputs when side-on'],tips:['Think of it as side-in hover with translation','Slow speed first','Reveals lateral orientation gaps quickly']},
+  {id:'h33',craft:'helicopter',name:'Inverted autorotation',icon:'ti-player-play',diff:'Advanced',what:'Autorotation entered and flown from inverted flight. The full glide and flare sequence performed upside down.',why:'Everything in a normal autorotation is reversed when inverted. Throttle management, flare direction, and altitude judgment all need recalibration.',prereqs:'Rock solid inverted circuits. Upright autorotation completely consistent. Both individually effortless.',sticks:[{i:'Throttle',a:'Drop to inverted collective — let rotor spin up from airflow inverted'},{i:'Cyclic',a:'Maintain inverted glide speed and heading'},{i:'Inverted flare',a:'At 20-30 feet push cyclic forward (inverted) to slow descent'},{i:'Recovery',a:'Pull collective and return to upright or land'}],phases:[{n:'Prerequisite check',g:'Both skills clean individually',s:['Upright auto — 5 consistent flares at same height','Inverted circuits — 5 clean laps at constant altitude'],m:'Either not consistent — fix individually first'},{n:'High altitude inverted auto',g:'Enter inverted auto at 200 feet, recover at 50 feet',s:['Enter inverted flight','Chop collective inverted','Establish inverted glide','Recover at 50 feet'],m:'Not establishing inverted glide'},{n:'Inverted flare timing',g:'Flare inverted at 30 feet consistently',s:['Practice 10+ inverted autos','Note flare height each time','Dial in 30-foot inverted flare'],m:'Late inverted flare — hard landing'}],warnings:['Upright autorotation not consistent first','Inverted circuits not effortless first'],tips:['One of the hardest RC helicopter skills','Sim only until completely reliable','The inverted flare direction is the most critical thing to get right']},
+  {id:'h34',craft:'helicopter',name:'Nose-in figure-8',icon:'ti-infinity',diff:'Advanced',what:'Flying a figure-8 with the nose always pointing inward toward the center of the pattern — including through the crossover where orientation reverses instantly.',why:'Individual nose-in circles are one challenge. The figure-8 crossover requires an instant orientation snap. Most pilots fall apart at the crossover.',prereqs:'Nose-in circle clean CW and CCW. Hovering 8 solid.',sticks:[{i:'Yaw',a:'Continuous inward yaw through both circles to keep nose toward center'},{i:'Cyclic',a:'Traces the figure-8 path while orientation constantly changes'},{i:'Crossover',a:'At crossover point the nose yaw direction reverses instantly'}],phases:[{n:'Nose-in circle CW',g:'Clean full nose-in CW circle — nose toward center',s:['Orbit CW with nose tracking center','Consistent speed and altitude'],m:'Nose drifting off center'},{n:'Nose-in circle CCW',g:'Clean full nose-in CCW circle',s:['Same as CW but opposite direction'],m:'Weaker direction — must be equal before combining'},{n:'First crossover',g:'Transition from CW to CCW at crossover point',s:['Complete CW circle','At crossover reverse yaw direction instantly','Enter CCW circle'],m:'Hesitating at crossover — must be decisive'},{n:'Full nose-in figure-8',g:'Complete multiple nose-in figure-8s continuously',s:['Smooth crossover every time','Both circles equal size'],m:'One circle larger — crossover yaw timing off'}],warnings:['Either nose-in circle direction not clean first','Pausing at crossover point'],tips:['The crossover is a 100% commitment — no hesitation','Slow figure-8 first','Competition-level mastery of nose-in']},
+
 // ════════════════ PLANE ════════════════
 {id:'p1',craft:'plane',name:'Straight and level flight',icon:'ti-minus',diff:'Beginner',what:'Flying in a straight line at constant altitude and constant heading. The most fundamental fixed-wing skill.',why:'Sounds trivial but requires constant small corrections for wind and trim. All aerobatics degrade without this foundation.',prereqs:'None — the very first skill.',sticks:[{i:'Throttle',a:'Maintains airspeed'},{i:'Elevator (right stick up/down)',a:'Pitch — controls altitude'},{i:'Aileron (right stick left/right)',a:'Bank — corrects for drift'},{i:'Rudder (left stick left/right)',a:'Yaw — directional control'}],phases:[{n:'Trim for level flight',g:'Hands-off flight with minimal deviation',s:['Launch and establish flight','Adjust elevator trim so plane flies level hands-off','Adjust aileron trim for wings level'],m:'Not trimming first — fighting the plane the whole flight'},{n:'Straight lines',g:'Fly directly away without deviation',s:['Full throttle straight ahead','Tiny corrections only','One input per problem'],m:'Over-controlling — corrections cause oscillations'},{n:'Altitude hold',g:'Maintain same altitude for 30 seconds',s:['Eyes on the horizon relative to the plane','Gentle elevator corrections only'],m:'Chasing altitude with big elevator inputs'}],warnings:['Needing constant large inputs — trim is off','Altitude oscillating'],tips:['Trim trim trim — a well-trimmed plane flies itself','Eyes on the horizon line — it tells you attitude','Wind affects straight flight — compensate with into-wind aileron']},
 {id:'p2',craft:'plane',name:'Coordinated turn',icon:'ti-rotate-clockwise',diff:'Beginner',what:'A banked turn with no skidding or slipping. The most efficient way to change direction. Foundation of all aerobatics.',why:'Most beginners use only aileron. Rudder coordination prevents inefficient skidding turns.',prereqs:'Straight and level flight.',sticks:[{i:'Aileron',a:'Banks the plane — initiates the turn'},{i:'Rudder (same direction)',a:'Coordinates the turn — prevents skid or slip'},{i:'Back pressure (elevator)',a:'Maintains altitude — more bank requires more back pressure'}],phases:[{n:'Shallow coordinated turn 20°',g:'Coordinated 20° bank, altitude maintained',s:['Gentle aileron right','Add gentle right rudder','Slight back pressure','Roll out with opposite aileron and rudder'],m:'Forgetting the rudder — uncoordinated turn wastes energy'},{n:'Medium turn 45°',g:'45° bank, coordinated, altitude within 50 feet',s:['More aileron and rudder','Noticeably more back pressure needed'],m:'Altitude loss — insufficient back pressure'},{n:'Steep turn 60°',g:'60° bank, coordinated, altitude within 100 feet',s:['Significant bank, back pressure and rudder','Speed up slightly before entry'],m:'Overbanking past 60° — load factor rises sharply'}],warnings:['Nose dropping in turns — check back pressure','Skidding or slipping — check rudder coordination'],tips:['Rudder in the direction of bank — always','Practice level 360s until effortless','Steep turns are the entry test for aerobatics']},
@@ -653,6 +671,11 @@ const MOVES=[
 {id:'p18',craft:'plane',name:'Lomcevak',icon:'ti-tornado',diff:'Advanced',what:'A tumbling maneuver — the aircraft rotates end-over-end simultaneously in multiple axes. One of the most chaotic-looking aerobatic moves.',why:'An uncoordinated input combination induces rotation in multiple axes simultaneously. Entry is specific and recovery is from a chaotic attitude.',prereqs:'Spin awareness. Snap roll experience. Comfortable with unusual attitudes.',sticks:[{i:'Entry speed',a:'Specific speed range — usually around stall speed'},{i:'Full up elevator',a:'Initiates tumble'},{i:'Full rudder and aileron together',a:'All three axes loaded simultaneously'},{i:'Recovery',a:'From whatever attitude — normalize then pull level'}],phases:[{n:'Entry setup',g:'Find the correct entry speed and input combination',s:['Research your specific aircraft Lomcevak entry','Usually: near stall speed, full up elevator, full aileron and rudder together'],m:'Wrong entry speed — results in snap roll not Lomcevak'},{n:'Allow the tumble',g:'Let the aircraft tumble without fighting it',s:['Apply entry inputs','Release — let the plane tumble','Do not correct during the tumble'],m:'Fighting the tumble — extends the chaotic phase'},{n:'Recovery from any attitude',g:'Establish from whatever attitude exits the tumble',s:['Wings level, establish a horizon','Climb or descend as needed','Add power'],m:'Pulling before wings are level — can re-enter stall'}],warnings:['Not all aircraft can perform a Lomcevak safely — verify first','Recovery attitude can be anything — must be comfortable with unusual attitudes'],tips:['Research your specific aircraft — entry is not universal','High altitude for all Lomcevak practice','One of the most crowd-pleasing tumbling maneuvers in aerobatics']},
 {id:'p19',craft:'plane',name:'Rudder roll',icon:'ti-refresh',diff:'Advanced',what:'A full 360° roll initiated and driven primarily by rudder input rather than aileron, creating a slower more graceful rotation.',why:'Tests rudder-aileron coordination at an advanced level. Different from an aileron roll in feel and appearance.',prereqs:'Clean aileron rolls. Strong rudder coordination.',sticks:[{i:'Rudder',a:'Primary roll-initiating input — full rudder starts the roll'},{i:'Aileron',a:'Coordinated with rudder throughout — reduces adverse yaw'},{i:'Elevator',a:'Manages pitch through the rotation'}],phases:[{n:'Rudder-led roll initiation',g:'Initiate roll with rudder and feel the coordination',s:['Apply full rudder in roll direction','Add coordinated aileron','Note how it feels different from pure aileron roll'],m:'Using only aileron — must be rudder-led'},{n:'Complete rotation',g:'360° rotation clean and controlled',s:['Consistent rudder and aileron','Elevator to manage pitch','Complete to wings level'],m:'Roll stopping before completion — not enough sustained input'},{n:'Speed and altitude maintenance',g:'Exit same speed and altitude as entry',s:['Throttle management','Elevator corrections during rotation'],m:'Altitude loss through the bottom of the rotation'}],warnings:['Reverting to aileron-only roll — stay rudder-led','Stopping rotation before complete'],tips:['Slower and more graceful than an aileron roll','Used in display flying for aesthetic effect','Develops rudder and aileron coordination simultaneously']},
 {id:'p20',craft:'plane',name:'Touch and go',icon:'ti-plane-departure',diff:'Beginner',what:'Land on the runway, immediately apply full power without stopping, and take off again. Tests landing approach and takeoff in sequence.',why:'Core flying skill — tests approach management, touchdown consistency, and immediate go-around discipline.',prereqs:'Basic flight.',sticks:[{i:'Approach',a:'Consistent glide path to threshold'},{i:'Flare',a:'Reduce power, pull back slightly to arrest descent at runway'},{i:'Touchdown and immediate power',a:'Touch gently, add full power while rolling'},{i:'Rotate and climb',a:'Hold heading until flying speed then rotate'}],phases:[{n:'Consistent approach',g:'Same glide path every time',s:['Choose visual reference points for approach','Consistent throttle and attitude on final','Over threshold at consistent height'],m:'Varying approach speed — some fast some slow'},{n:'Smooth touchdown',g:'Touch down in the touch zone every time',s:['Flare at consistent height','Let the plane fly to the runway','Do not drive it in'],m:'Bouncing — usually flare too high or too abrupt'},{n:'Go and climb',g:'Smooth power addition and straight climb',s:['Full power smoothly after touchdown','Hold heading during acceleration','Rotate at flying speed'],m:'Turning before climb speed established'}],warnings:['Inconsistent approach speed','Bouncing touchdowns consistently'],tips:['Consistent throttle on approach is the most important variable','Touch zone should be the same spot every time','Go-arounds are always the right answer if not stabilized']},
+  {id:'p21',craft:'plane',name:'Consecutive loops',icon:'ti-circles',diff:'Intermediate',what:'Multiple inside loops flown back to back continuously — each loop the same size and position. Tests consistent energy management across repetitions.',why:'Each successive loop requires matching entry speed and pull force of the previous one. Speed builds or decays if throttle is not actively managed.',prereqs:'Single clean inside loop. Good throttle management.',sticks:[{i:'Entry speed',a:'Set entry speed and maintain it across all loops'},{i:'Consistent pull',a:'Same pull force every loop'},{i:'Throttle',a:'Active management — reduction at top, addition at bottom each loop'},{i:'Rudder',a:'Wings level — prevents heading drift across loops'}],phases:[{n:'Two consecutive loops',g:'Two loops same size without leveling between',s:['Loop 1 — note exit altitude and speed','Immediately enter loop 2','Check loop 2 size vs loop 1'],m:'Leveling between loops — must flow directly from exit into next entry'},{n:'Three consecutive loops',g:'Three loops same size',s:['Consistent throttle management','Same pull force every time'],m:'Loops growing or shrinking — throttle management issue'},{n:'Five consecutive loops',g:'Five in a row identical',s:['Consistent entry speed','Consistent pull force','Active throttle every loop'],m:'Size drift across sequence — usually throttle accumulation'}],warnings:['Single loop not clean first','Altitude drift across loops'],tips:['Record from the side — loop size drift is invisible from below','Entry speed controls everything else','5 identical loops is very impressive in a display']},
+  {id:'p22',craft:'plane',name:'Vertical roll',icon:'ti-arrow-up',diff:'Advanced',what:'The aircraft climbs vertically and rolls continuously around its vertical axis while going straight up. A pure vertical upline with continuous aileron rolls.',why:'Maintaining a true vertical upline while rolling requires precise elevator and rudder inputs to prevent the nose from tracking off vertical as roll attitude changes.',prereqs:'Clean vertical climbs. Clean rolls. Hammerhead proves vertical tracking ability.',sticks:[{i:'Elevator',a:'Maintains vertical — active throughout to prevent tracking off'},{i:'Rudder',a:'Keeps the roll axis truly vertical'},{i:'Aileron',a:'Continuous roll input'},{i:'Throttle',a:'Full power throughout'}],phases:[{n:'Vertical climb only',g:'Clean vertical upline — perfectly straight, no rolling',s:['Pull to vertical','Climb straight up maintaining the line'],m:'Vertical line not truly vertical — fix tracking first'},{n:'Half roll on upline',g:'Roll 180 degrees on a vertical upline',s:['Climb vertical','Apply aileron for half roll','Continue vertical climb after'],m:'Nose tracking off vertical during roll'},{n:'Full vertical rolls',g:'Two or more full rolls on the vertical upline',s:['Full aileron roll input','Maintain vertical throughout','Rudder keeps axis straight'],m:'Upline curving — aileron and rudder coordination is key'},{n:'Stop on heading',g:'Stop after set number of rolls on precise heading',s:['Plan number of rolls','Stop on target heading'],m:'Overshooting the stop'}],warnings:['Vertical upline not straight — fix tracking first','Nose tracking off during rolls'],tips:['Slow roll rate makes vertical tracking easier','Straightness of the upline is what judges see','A staple of precision aerobatics']},
+  {id:'p23',craft:'plane',name:'Avalanche',icon:'ti-cloud-storm',diff:'Advanced',what:'A loop with a snap roll inserted at the inverted apex. Enter an inside loop, snap roll at the top, then continue the loop to level. An Aresti catalog figure.',why:'Requires slower entry speed than a normal loop to hit snap speed at the top, but fast enough to complete the loop. The snap must be clean and stop on heading.',prereqs:'Clean snap roll. Clean inside loops. Entry speed management for both.',sticks:[{i:'Entry speed',a:'Slower than a normal loop — need snap speed at the top'},{i:'Pull to loop top',a:'Pull up as normal but note airspeed bleeding faster'},{i:'Snap at top',a:'At inverted apex: full up elevator plus full rudder simultaneously'},{i:'Stop snap and continue',a:'Neutralize after one snap rotation and continue pulling through to level'}],phases:[{n:'Find entry speed',g:'Find speed that gives snap speed at the top',s:['Too fast = no snap at top','Too slow = stalls before top','Note which speed works for your aircraft'],m:'Wrong entry speed — the snap either doesnt happen or stalls'},{n:'Snap at top of loop',g:'One clean rotation snap at inverted apex',s:['Pull into loop at calculated speed','At top apply snap inputs','One full rotation','Neutralize and continue loop'],m:'More than one rotation — neutralize faster'},{n:'Complete avalanche',g:'Smooth loop, clean snap at top, smooth exit',s:['Consistent entry speed','Decisive snap inputs','Clean stop after one rotation'],m:'Snap timing off — usually before or after the true apex'}],warnings:['Neither snap roll nor loop clean individually first','Entry speed wildly inconsistent'],tips:['Entry speed is the entire trick — find your aircraft number','The snap happens fast — inputs must be decisive','One of the most visually striking single maneuvers in aerobatics']},
+  {id:'p24',craft:'plane',name:'Reverse Cuban eight',icon:'ti-infinity',diff:'Advanced',what:'The Cuban eight flown with outside loops — you push into negative G half-loops. Creates the same figure-8 shape but with outside loops and downline half-rolls.',why:'All Cuban eight challenges but with sustained negative G throughout the outside loop phases.',prereqs:'Clean outside loops. Clean Cuban eight. Comfortable with sustained negative G.',sticks:[{i:'Entry',a:'Level flight at good speed'},{i:'Push forward (elevator)',a:'Initiates outside half loop — negative G throughout'},{i:'Half roll at 45 degree downline',a:'Same as Cuban eight — roll at 45 degree downline inverted'},{i:'Second outside half loop',a:'Push into second outside half loop from downline'},{i:'Half roll to level',a:'Roll on downline, return to level'}],phases:[{n:'Single outside half loop with downline',g:'Outside half loop then roll on downline',s:['Build speed','Push forward into outside half loop','Allow 45 degree downline at top','Roll to upright at 45 degrees'],m:'Rolling at the top instead of on the downline'},{n:'Continue to second outside half loop',g:'Push into second outside half loop from downline',s:['After roll on downline push into second outside loop'],m:'Pulling instead of pushing — instinct error at second loop entry'},{n:'Complete Reverse Cuban eight',g:'Both outside loops same size with clean rolls on both downlines',s:['Consistent entry speed','Both loops same radius','Both rolls at exact 45 degree downline'],m:'One loop smaller — second loop entry speed usually lower'}],warnings:['Outside loop not clean first','Cuban eight not clean first'],tips:['Same geometry as Cuban eight — just outside instead of inside','The instinct to pull at second loop entry is the main enemy','Builds outside loop endurance and negative G tolerance']},
+
 // ════════════════ QUADCOPTER ════════════════
 {id:'q1',craft:'quadcopter',name:'Stable hover',icon:'ti-square',diff:'Beginner',what:'Maintaining a stationary position in the air. Angle mode self-levels. Acro mode requires active stabilization.',why:'The absolute foundation. Everything else builds on position control.',prereqs:'None for angle mode. Simulator time recommended for acro.',sticks:[{i:'Throttle (left up)',a:'Increases thrust — climbs'},{i:'Yaw (left left/right)',a:'Rotates on vertical axis'},{i:'Pitch (right up/down)',a:'Tilts forward/back'},{i:'Roll (right left/right)',a:'Tilts side to side'}],phases:[{n:'Angle mode hover',g:'Stable hover in stabilized mode for 1 minute',s:['Use angle/stabilized mode','Hover at 3 feet','Small corrections to maintain position'],m:'Over-correcting — let the stabilizer work'},{n:'Outdoor hover with wind',g:'Stable hover outdoors for 30 seconds',s:['Wind creates constant drift','Continuous small corrections needed'],m:'Applying indoor corrections to outdoor flying'},{n:'Acro mode hover',g:'Stable hover in acro/rate mode',s:['Significantly harder — no self-level','Start very low','Constant small corrections'],m:'Large inputs in acro — always ends in crash'}],warnings:['Not stable in angle mode before attempting acro','Outdoor wind not accounted for'],tips:['Angle mode first — always','Outdoor vs sim feels different due to wind','Record and review flights to spot bad habits early']},
 {id:'q2',craft:'quadcopter',name:'Figure-8',icon:'ti-infinity',diff:'Beginner',what:'Two linked circles in opposite directions forming a figure-8. The most fundamental circuit for quads.',why:'Tests banked turns in both directions. Most pilots have a weak direction — this exposes it.',prereqs:'Stable hover. Basic forward flight.',sticks:[{i:'Throttle',a:'More needed in banked turns to maintain altitude'},{i:'Roll',a:'Bank into each circle'},{i:'Pitch',a:'Forward speed maintenance'},{i:'Yaw',a:'Coordinates the turn'}],phases:[{n:'Large loose figure-8',g:'Complete pattern without altitude loss',s:['Large circles — 50+ feet','Altitude first — shape secondary'],m:'Too tight initially — altitude loss and panic'},{n:'Consistent circle sizes',g:'Both circles same diameter',s:['Visual reference for size','Both directions match'],m:'One circle always bigger — uneven bank angle'},{n:'Tight figure-8',g:'Crisp small figure-8',s:['Reduce circle size gradually','Altitude and speed maintained'],m:'Rushing tight before large is clean'}],warnings:['Altitude varying more than 10 feet','Circle shapes very different from each other'],tips:['Figure-8s reveal your weak turning direction','Practice each direction alone before combining','Speed consistency equals size consistency']},
@@ -1348,299 +1371,272 @@ helicopter: {
   label: 'Helicopter',
   icon: 'ti-propeller',
   stages: [
-    { id:'hc1', title:'Hovering Basics', items:[
-      { id:'hc1a', text:'Tail-in hover — stable for 30 seconds', ref:'h1' },
-      { id:'hc1b', text:'Tail-in — left side-in hover', ref:'h3' },
-      { id:'hc1c', text:'Tail-in — right side-in hover', ref:'h3' },
-      { id:'hc1d', text:'Nose-in hover — stable for 30 seconds', ref:'h2' },
-      { id:'hc1e', text:'Transition Tail-in to Nose-in to Tail-in (30 sec, pause at each)', ref:'h2' },
-      { id:'hc1f', text:'Transition Tail-in to Left to Nose to Right to Tail (30 sec, pause at each)', ref:'h3' },
+    { id:'hc1', title:'1 — Tail-in Hover Basics', items:[
+      { id:'hc1a', text:'Throttle feel on ground — no liftoff yet', ref:'h1' },
+      { id:'hc1b', text:'6-inch hover — lift and land cleanly', ref:'h1' },
+      { id:'hc1c', text:'3-foot stable hover — 30 seconds', ref:'h1' },
+      { id:'hc1d', text:'Hover and translate — all four directions', ref:'h1' },
+      { id:'hc1e', text:'Box pattern at constant altitude', ref:'h1' },
     ]},
-    { id:'hc2', title:'Pirouettes', items:[
-      { id:'hc2a', text:'Slow clockwise pirouette in place', ref:'h5' },
-      { id:'hc2b', text:'Slow counterclockwise pirouette in place', ref:'h5' },
-      { id:'hc2c', text:'Five consecutive quick clockwise pirouettes', ref:'h5' },
-      { id:'hc2d', text:'Five consecutive quick counterclockwise pirouettes', ref:'h5' },
-      { id:'hc2e', text:'Five consecutive clockwise/counterclockwise alternating', ref:'h5' },
-      { id:'hc2f', text:'Five consecutive quick clockwise/counterclockwise', ref:'h5' },
-      { id:'hc2g', text:'Transition from Five Consecutive CW to Five Consecutive CCW', ref:'h5' },
-      { id:'hc2h', text:'Transition from Five Consecutive CCW to Five Consecutive CW', ref:'h5' },
+    { id:'hc2', title:'2 — Orientation: All Four Headings', items:[
+      { id:'hc2a', text:'Left side-in hover — rotate and return x20', ref:'h3' },
+      { id:'hc2b', text:'Left side-in hover — hold 10 seconds', ref:'h3' },
+      { id:'hc2c', text:'Right side-in hover — rotate and return x20', ref:'h3' },
+      { id:'hc2d', text:'Right side-in hover — hold 10 seconds', ref:'h3' },
+      { id:'hc2e', text:'Nose-in hover — mental prep and rotate/return x20', ref:'h2' },
+      { id:'hc2f', text:'Nose-in hover — hold 5 seconds', ref:'h2' },
+      { id:'hc2g', text:'Nose-in hover — hold 30 seconds', ref:'h2' },
+      { id:'hc2h', text:'Transition: Tail → Left → Nose → Right → Tail (30 sec each)', ref:'h2' },
     ]},
-    { id:'hc3', title:'Forward Flight Basics — Circuits', items:[
-      { id:'hc3a', text:'Clockwise circuit', ref:'h22' },
-      { id:'hc3b', text:'Counterclockwise circuit', ref:'h22' },
-      { id:'hc3c', text:'Five consecutive clockwise circuits', ref:'h22' },
-      { id:'hc3d', text:'Five consecutive counterclockwise circuits', ref:'h22' },
-      { id:'hc3e', text:'Five CW then five CCW circuits back to back', ref:'h22' },
-      { id:'hc3f', text:'Transition from Five CW Clockwise to Five Counterclockwise', ref:'h22' },
-      { id:'hc3g', text:'Transition from Five Counterclockwise to Five Consecutive Clockwise', ref:'h22' },
+    { id:'hc3', title:'3 — Tail-in Circuits and Patterns', items:[
+      { id:'hc3a', text:'Tail-in circle — clockwise, consistent altitude', ref:'h21' },
+      { id:'hc3b', text:'Tail-in circle — counterclockwise', ref:'h21' },
+      { id:'hc3c', text:'Five consecutive CW circuits', ref:'h21' },
+      { id:'hc3d', text:'Five consecutive CCW circuits', ref:'h21' },
+      { id:'hc3e', text:'Transition CW to CCW without stopping', ref:'h21' },
+      { id:'hc3f', text:'Tail-in figure-8 — turning away from pilot', ref:'h4' },
+      { id:'hc3g', text:'Tail-in figure-8 — turning toward pilot', ref:'h4' },
+      { id:'hc3h', text:'Five consecutive figure-8s', ref:'h4' },
+      { id:'hc3i', text:'Sideways flight left — 30 feet, altitude maintained', ref:'h32' },
+      { id:'hc3j', text:'Sideways flight right — 30 feet', ref:'h32' },
+      { id:'hc3k', text:'Sideways figure-8 — lateral translation throughout', ref:'h32' },
     ]},
-    { id:'hc4', title:'Forward Flight — Figure Eights', items:[
-      { id:'hc4a', text:'Turning Away From Pilot figure-8', ref:'h4' },
-      { id:'hc4b', text:'Turning Toward Pilot figure-8', ref:'h4' },
-      { id:'hc4c', text:'Five consecutive turning Away figure-8s', ref:'h4' },
-      { id:'hc4d', text:'Transition from five consecutive turning Away pilot to five consecutive Turning Toward', ref:'h4' },
-      { id:'hc4e', text:'Transition from five consecutive turning Toward pilot to five consecutive Turning Away', ref:'h4' },
+    { id:'hc4', title:'4 — Pirouettes', items:[
+      { id:'hc4a', text:'Slow CW pirouette — watch pattern, no corrections', ref:'h5' },
+      { id:'hc4b', text:'Slow CCW pirouette', ref:'h5' },
+      { id:'hc4c', text:'Pirouette — stop cleanly at each cardinal heading', ref:'h5' },
+      { id:'hc4d', text:'Pirouette — maintain altitude only', ref:'h5' },
+      { id:'hc4e', text:'Pirouette — maintain within 6-foot box', ref:'h5' },
+      { id:'hc4f', text:'Pirouette — maintain within 3 feet, both directions', ref:'h5' },
+      { id:'hc4g', text:'Five consecutive fast CW pirouettes', ref:'h5' },
+      { id:'hc4h', text:'Five consecutive fast CCW pirouettes', ref:'h5' },
+      { id:'hc4i', text:'Alternate CW and CCW pirouettes x5', ref:'h5' },
     ]},
-    { id:'hc5', title:'Forward Flight — Loops', items:[
-      { id:'hc5a', text:'Flying from Left to Right, loop, start from Right', ref:'h11' },
-      { id:'hc5b', text:'Flying from Right to Left, loop, start from Left', ref:'h11' },
-      { id:'hc5c', text:'Flying from Left to Right, start turn, loop, Repeat three times', ref:'h11' },
-      { id:'hc5d', text:'Flying from Right to Left, start turn, loop, Repeat three times', ref:'h11' },
-      { id:'hc5e', text:'Going Away From Pilot loop', ref:'h11' },
-      { id:'hc5f', text:'Coming Toward Pilot loop', ref:'h11' },
+    { id:'hc5', title:'5 — Pirouette While Moving', items:[
+      { id:'hc5a', text:'Pirouette while drifting — observe the pattern', ref:'h6' },
+      { id:'hc5b', text:'Pirouette while moving forward in a straight line', ref:'h6' },
+      { id:'hc5c', text:'Pirouette while moving sideways — both directions', ref:'h6' },
+      { id:'hc5d', text:'Pirouette on a large CW circle', ref:'h6' },
+      { id:'hc5e', text:'Pirouette on a large CCW circle', ref:'h6' },
     ]},
-    { id:'hc6', title:'Forward Flight — Rolls', items:[
-      { id:'hc6a', text:'Flying left to right aileron, roll left', ref:'h13' },
-      { id:'hc6b', text:'Flying right to left aileron, roll right', ref:'h13' },
-      { id:'hc6c', text:'Going Away From Pilot using right aileron', ref:'h13' },
-      { id:'hc6d', text:'Going Away From Pilot using left aileron', ref:'h13' },
-      { id:'hc6e', text:'Going Toward Pilot using right aileron', ref:'h13' },
-      { id:'hc6f', text:'Going Toward Pilot using left aileron', ref:'h13' },
-      { id:'hc6g', text:'Going Away From Pilot using right aileron — repeat three times', ref:'h13' },
-      { id:'hc6h', text:'Going Toward Pilot — start turn, roll, Repeat three times', ref:'h13' },
+    { id:'hc6', title:'6 — Nose-in Circuits and Hovering 8', items:[
+      { id:'hc6a', text:'Nose-in circle — CW, nose toward center', ref:'h20' },
+      { id:'hc6b', text:'Nose-in circle — CCW', ref:'h20' },
+      { id:'hc6c', text:'Five consecutive CW nose-in circuits', ref:'h20' },
+      { id:'hc6d', text:'Transition CW to CCW nose-in', ref:'h20' },
+      { id:'hc6e', text:'Hovering 8 — very slow, full orientation changes', ref:'h22' },
+      { id:'hc6f', text:'Hovering 8 — both loops equal size, altitude consistent', ref:'h22' },
+      { id:'hc6g', text:'Backwards flight — small movement away from pilot nose-in', ref:'h31' },
+      { id:'hc6h', text:'Backwards flight — 20 feet straight, altitude maintained', ref:'h31' },
+      { id:'hc6i', text:'Nose-in figure-8 — CW and CCW circles solid before combining', ref:'h34' },
+      { id:'hc6j', text:'Nose-in figure-8 — full crossover, both circles equal size', ref:'h34' },
     ]},
-    { id:'hc7', title:'Reverse Flight Basics', items:[
-      { id:'hc7a', text:'Flying left to right aileron', ref:'h20' },
-      { id:'hc7b', text:'Flying from right to left', ref:'h20' },
-      { id:'hc7c', text:'Going Away From Pilot', ref:'h20' },
-      { id:'hc7d', text:'Coming Toward Pilot', ref:'h20' },
+    { id:'hc7', title:'7 — Forward Flight Loops', items:[
+      { id:'hc7a', text:'Loop from left-to-right pass', ref:'h11' },
+      { id:'hc7b', text:'Loop from right-to-left pass', ref:'h11' },
+      { id:'hc7c', text:'Loop going away from pilot', ref:'h11' },
+      { id:'hc7d', text:'Loop coming toward pilot', ref:'h11' },
+      { id:'hc7e', text:'Three consecutive loops — consistent size', ref:'h11' },
+      { id:'hc7f', text:'Loops at all four cardinal headings', ref:'h11' },
     ]},
-    { id:'hc8', title:'Reverse Flight — Figure Eights', items:[
-      { id:'hc8a', text:'Reverse flight — Clockwise', ref:'h20' },
-      { id:'hc8b', text:'Reverse flight — Counterclockwise', ref:'h20' },
-      { id:'hc8c', text:'Five consecutive CW reverse circuits', ref:'h20' },
-      { id:'hc8d', text:'Transition from Five CW Clockwise to Five Counterclockwise', ref:'h20' },
-      { id:'hc8e', text:'Five Counterclockwise to Five Consecutive Clockwise', ref:'h20' },
+    { id:'hc8', title:'8 — Stall Turns', items:[
+      { id:'hc8a', text:'Vertical climb and hold at top', ref:'h10' },
+      { id:'hc8b', text:'Stall turn — CW yaw', ref:'h10' },
+      { id:'hc8c', text:'Stall turn — CCW yaw', ref:'h10' },
+      { id:'hc8d', text:'Three consecutive stall turns same direction', ref:'h10' },
+      { id:'hc8e', text:'Stall turns at all four cardinal headings', ref:'h10' },
     ]},
-    { id:'hc9', title:'Reverse Flight — Loops', items:[
-      { id:'hc9a', text:'Reverse loop from left to right', ref:'h11' },
-      { id:'hc9b', text:'Flying from right to Left, start turn, loop, Repeat', ref:'h11' },
-      { id:'hc9c', text:'Going Away From Pilot — reverse loop', ref:'h11' },
-      { id:'hc9d', text:'Going Away From Pilot — start turn, loop, Repeat three times', ref:'h11' },
-      { id:'hc9e', text:'Coming Toward Pilot — start turn, loop, Repeat three times', ref:'h11' },
+    { id:'hc9', title:'9 — Flips and Rolls', items:[
+      { id:'hc9a', text:'Roll — right aileron, flying left to right', ref:'h13' },
+      { id:'hc9b', text:'Roll — left aileron, flying right to left', ref:'h13' },
+      { id:'hc9c', text:'Roll going away from pilot', ref:'h13' },
+      { id:'hc9d', text:'Roll coming toward pilot', ref:'h13' },
+      { id:'hc9e', text:'Three consecutive rolls same direction', ref:'h13' },
+      { id:'hc9f', text:'Rolls at all four cardinal headings', ref:'h13' },
+      { id:'hc9g', text:'Rolls in a diamond pattern — all headings', ref:'h13' },
     ]},
-    { id:'hc10', title:'Reverse Flight — Rolls', items:[
-      { id:'hc10a', text:'Reverse rolling loop — Flying left to right, roll left', ref:'h13' },
-      { id:'hc10b', text:'Flying right to left using right aileron', ref:'h13' },
-      { id:'hc10c', text:'Going Away From Pilot — reverse roll right aileron', ref:'h13' },
-      { id:'hc10d', text:'Going Away From Pilot — reverse roll left aileron', ref:'h13' },
-      { id:'hc10e', text:'Flying away, start turn, roll, Repeat three times', ref:'h13' },
-      { id:'hc10f', text:'Coming Toward Pilot — start turn, roll, Repeat three times', ref:'h13' },
-      { id:'hc10g', text:'Perform all of the above in a ♦ pattern', ref:'h13' },
+    { id:'hc10', title:'10 — Autorotation', items:[
+      { id:'hc10a', text:'Autorotation from 200 feet — full glide and flare', ref:'h16' },
+      { id:'hc10b', text:'Autorotation — consistent flare height every time', ref:'h16' },
+      { id:'hc10c', text:'Autorotation — five consistent autos in a row', ref:'h16' },
+      { id:'hc10d', text:'180 degree autorotation — enter downwind, land into wind', ref:'h16' },
+      { id:'hc10e', text:'Inverted autorotation — upright auto and inverted circuits both solid first', ref:'h33' },
+      { id:'hc10f', text:'Inverted autorotation — enter inverted at 200 feet, recover at 50 feet', ref:'h33' },
+      { id:'hc10g', text:'Inverted autorotation — consistent inverted flare height', ref:'h33' },
     ]},
-    { id:'hc11', title:'Reverse Flight Circuits', items:[
-      { id:'hc11a', text:'Clockwise', ref:'h22' },
-      { id:'hc11b', text:'Counterclockwise', ref:'h22' },
-      { id:'hc11c', text:'Five consecutive clockwise reverse circuits', ref:'h22' },
-      { id:'hc11d', text:'Transition CW Five Consecutive Clockwise to Five Counterclockwise Clockwise', ref:'h22' },
-      { id:'hc11e', text:'Five Consecutive Clockwise to Five Counterclockwise', ref:'h22' },
+    { id:'hc11', title:'11 — Inverted Hover: Foundation', items:[
+      { id:'hc11a', text:'Theory — map every inverted control before flying', ref:'h7' },
+      { id:'hc11b', text:'Inverted tail-in — enter and hold 3 seconds at 50 feet', ref:'h23' },
+      { id:'hc11c', text:'Inverted tail-in — hold 10 seconds at altitude', ref:'h23' },
+      { id:'hc11d', text:'Inverted tail-in — hold 30 seconds at altitude', ref:'h23' },
+      { id:'hc11e', text:'Inverted tail-in — bring down to 3 feet', ref:'h23' },
     ]},
-    { id:'hc12', title:'Reverse Flight Figure Eights', items:[
-      { id:'hc12a', text:'Turning Away From Pilot', ref:'h4' },
-      { id:'hc12b', text:'Turning Toward Pilot', ref:'h4' },
-      { id:'hc12c', text:'Transition from five consecutive turning Away pilot to five consecutive Turning Toward', ref:'h4' },
-      { id:'hc12d', text:'Transition from five Toward to five consecutive Turning Away', ref:'h4' },
+    { id:'hc12', title:'12 — Inverted Hover: All Orientations', items:[
+      { id:'hc12a', text:'Inverted left side-in — hold 10 seconds', ref:'h7' },
+      { id:'hc12b', text:'Inverted right side-in — hold 10 seconds', ref:'h7' },
+      { id:'hc12c', text:'Inverted nose-in — theory map then 3 seconds at altitude', ref:'h8' },
+      { id:'hc12d', text:'Inverted nose-in — hold 10 seconds', ref:'h8' },
+      { id:'hc12e', text:'Inverted nose-in — hold 30 seconds', ref:'h8' },
+      { id:'hc12f', text:'Transition: Inv. Tail to Left to Nose to Right to Tail', ref:'h8' },
     ]},
-    { id:'hc13', title:'Reverse Forward Flight — Loops', items:[
-      { id:'hc13a', text:'Flying from Right to Left using right aileron', ref:'h11' },
-      { id:'hc13b', text:'Flying from Left to Right, start, Repeat three times', ref:'h11' },
-      { id:'hc13c', text:'Going Away From Pilot — start turn, Repeat three times', ref:'h11' },
-      { id:'hc13d', text:'Coming Toward Pilot — start turn, Repeat three times', ref:'h11' },
+    { id:'hc13', title:'13 — Inverted Pirouettes', items:[
+      { id:'hc13a', text:'Inverted pirouette — slow CW, no corrections', ref:'h19' },
+      { id:'hc13b', text:'Inverted pirouette — slow CCW', ref:'h19' },
+      { id:'hc13c', text:'Inverted pirouette — maintain altitude only', ref:'h19' },
+      { id:'hc13d', text:'Inverted pirouette — maintain within 6-foot box', ref:'h19' },
+      { id:'hc13e', text:'Four consecutive fast CW inverted pirouettes', ref:'h19' },
+      { id:'hc13f', text:'Four consecutive fast CCW inverted pirouettes', ref:'h19' },
+      { id:'hc13g', text:'Alternate CW and CCW inverted pirouettes x5', ref:'h19' },
     ]},
-    { id:'hc14', title:'Reverse Forward Flight — Rolls', items:[
-      { id:'hc14a', text:'Flying left to right using right aileron', ref:'h13' },
-      { id:'hc14b', text:'Flying right to left, start turn, Repeat three times', ref:'h13' },
-      { id:'hc14c', text:'Going Away From Pilot — start turn, Repeat three times', ref:'h13' },
-      { id:'hc14d', text:'Coming Toward Pilot — repeat three times', ref:'h13' },
-      { id:'hc14e', text:'Perform all of the above in a ♦ pattern', ref:'h13' },
+    { id:'hc14', title:'14 — Flips: Upright to Inverted', items:[
+      { id:'hc14a', text:'Back elevator flip — upright tail-in to inverted nose-in', ref:'h9' },
+      { id:'hc14b', text:'Front elevator flip — upright to inverted', ref:'h9' },
+      { id:'hc14c', text:'Right aileron flip — upright left to inverted left', ref:'h9' },
+      { id:'hc14d', text:'Left aileron flip — upright left to inverted left', ref:'h9' },
+      { id:'hc14e', text:'Right aileron flip — upright right to inverted right', ref:'h9' },
+      { id:'hc14f', text:'Left aileron flip — upright right to inverted right', ref:'h9' },
+      { id:'hc14g', text:'Forward elevator flip — upright nose to inverted tail', ref:'h9' },
+      { id:'hc14h', text:'Back elevator flip — upright nose to inverted tail', ref:'h9' },
     ]},
-    { id:'hc15', title:'Inverted Hover', items:[
-      { id:'hc15a', text:'Tail-in inverted hover — stable', ref:'h23' },
-      { id:'hc15b', text:'Left side-in inverted', ref:'h7' },
-      { id:'hc15c', text:'Right side-in inverted', ref:'h7' },
-      { id:'hc15d', text:'Nose-in inverted hover', ref:'h8' },
-      { id:'hc15e', text:'Transition from Nose-in to Tail in to Nose-in (30 sec, pause at each)', ref:'h8' },
-      { id:'hc15f', text:'Transition from Nose in to Left to Nose to Right to Nose (20 sec, pause at each)', ref:'h8' },
+    { id:'hc15', title:'15 — Tic-Tocs', items:[
+      { id:'hc15a', text:'Nose/tail tic-toc — flip upright to inverted, hold 3 sec', ref:'h9' },
+      { id:'hc15b', text:'Two consecutive tic-tocs — upright to inverted to upright', ref:'h9' },
+      { id:'hc15c', text:'Five consecutive tic-tocs — position maintained', ref:'h9' },
+      { id:'hc15d', text:'Side-to-side tic-toc (aileron axis)', ref:'h9' },
+      { id:'hc15e', text:'Tic-toc while translating left', ref:'h9' },
+      { id:'hc15f', text:'Tic-toc while translating right', ref:'h9' },
+      { id:'hc15g', text:'Tic-toc while translating forward', ref:'h9' },
+      { id:'hc15h', text:'Tic-toc while translating backward', ref:'h9' },
     ]},
-    { id:'hc16', title:'Inverted Pirouettes', items:[
-      { id:'hc16a', text:'Quick clockwise inverted pirouette', ref:'h19' },
-      { id:'hc16b', text:'Quick counterclockwise inverted pirouette', ref:'h19' },
-      { id:'hc16c', text:'Four consecutive quick clockwise pirouettes inverted', ref:'h19' },
-      { id:'hc16d', text:'Four consecutive quick counterclockwise pirouettes inverted', ref:'h19' },
-      { id:'hc16e', text:'Five Consecutive CW Clockwise to Five CCW Counterclockwise inverted', ref:'h19' },
-      { id:'hc16f', text:'Five Consecutive Slow Counterclockwise inverted', ref:'h19' },
+    { id:'hc16', title:'16 — Continuous Rolls', items:[
+      { id:'hc16a', text:'Roll series — tail to inverted tail x3 (right aileron)', ref:'h13' },
+      { id:'hc16b', text:'Roll series — tail to inverted tail x3 (left aileron)', ref:'h13' },
+      { id:'hc16c', text:'Roll series — tail to inverted nose x3', ref:'h13' },
+      { id:'hc16d', text:'Roll series — left to inverted right x3', ref:'h13' },
+      { id:'hc16e', text:'Roll series — nose to inverted tail x3', ref:'h13' },
+      { id:'hc16f', text:'Continuous roll in a straight line — maintain heading', ref:'h13' },
     ]},
-    { id:'hc17', title:'Flips', items:[
-      { id:'hc17a', text:'Upright Tail-in to Inverted Nose-in and back (Back Elevator)', ref:'h9' },
-      { id:'hc17b', text:'Upright Tail-in to Inverted Nose-in and back (Front Elevator)', ref:'h9' },
-      { id:'hc17c', text:'Upright Left to Inverted Left and back (Right Aileron)', ref:'h9' },
-      { id:'hc17d', text:'Upright Left to Inverted Left and back (Left Aileron)', ref:'h9' },
-      { id:'hc17e', text:'Upright Right to Inverted Right and back (Right Aileron)', ref:'h9' },
-      { id:'hc17f', text:'Upright Right to Inverted Right and back (Left Aileron)', ref:'h9' },
-      { id:'hc17g', text:'Upright Nose to Inverted Tail and back (Forward Elevator)', ref:'h9' },
-      { id:'hc17h', text:'Upright Nose to Inverted Tail and back (Back Elevator)', ref:'h9' },
+    { id:'hc17', title:'17 — Inverted Circuits', items:[
+      { id:'hc17a', text:'Inverted straight line — 50 feet, altitude maintained', ref:'h18' },
+      { id:'hc17b', text:'Inverted circle — CW, large radius', ref:'h18' },
+      { id:'hc17c', text:'Inverted circle — CCW', ref:'h18' },
+      { id:'hc17d', text:'Five consecutive inverted CW circuits', ref:'h18' },
+      { id:'hc17e', text:'Transition CW to CCW inverted circuits', ref:'h18' },
+      { id:'hc17f', text:'Inverted figure-8', ref:'h18' },
+      { id:'hc17g', text:'Inverted forward — turning away from pilot', ref:'h18' },
+      { id:'hc17h', text:'Inverted forward — turning toward pilot', ref:'h18' },
     ]},
-    { id:'hc18', title:'Rolls', items:[
-      { id:'hc18a', text:'Upright Tail to Inverted Tail and back (Right Aileron) Three times consecutively', ref:'h13' },
-      { id:'hc18b', text:'Upright Tail to Inverted Tail and back (Left Aileron) Three times', ref:'h13' },
-      { id:'hc18c', text:'Upright Tail to Inverted Nose and back (Right Aileron) Three times', ref:'h13' },
-      { id:'hc18d', text:'Upright Left to Inverted Right and back (Right Aileron) Three times', ref:'h13' },
-      { id:'hc18e', text:'Upright Left to Inverted Left and back (Left Aileron) Three times', ref:'h13' },
-      { id:'hc18f', text:'Upright Right to Inverted Left and back (Right Aileron) Three times', ref:'h13' },
-      { id:'hc18g', text:'Upright Right to Inverted Right and back (Left Aileron) Three times', ref:'h13' },
-      { id:'hc18h', text:'Upright Left to Inverted Right and back (Left Aileron) Three times', ref:'h13' },
+    { id:'hc18', title:'18 — Inverted Loops', items:[
+      { id:'hc18a', text:'Understand outside vs inside loop before flying', ref:'h12' },
+      { id:'hc18b', text:'Inverted loop from left-to-right pass', ref:'h12' },
+      { id:'hc18c', text:'Inverted loop from right-to-left pass', ref:'h12' },
+      { id:'hc18d', text:'Inverted loop going away from pilot', ref:'h12' },
+      { id:'hc18e', text:'Inverted loop coming toward pilot', ref:'h12' },
+      { id:'hc18f', text:'Three consecutive inverted loops — consistent size', ref:'h12' },
     ]},
-    { id:'hc19', title:'Continuous Roll Plan A', items:[
-      { id:'hc19a', text:'Upright Tail to Inverted Tail and back (Right Aileron) Three times consecutively', ref:'h13' },
-      { id:'hc19b', text:'Upright Tail to Inverted Nose and back (Forward Elevator) Three times consecutively', ref:'h13' },
-      { id:'hc19c', text:'Upright Tail to Inverted Nose and back (Right Aileron) Three times consecutively', ref:'h13' },
-      { id:'hc19d', text:'Upright Left to Inverted Right and back (Right Aileron) Three times consecutively', ref:'h13' },
-      { id:'hc19e', text:'Upright Nose to Inverted Tail and back (Left Aileron) Three times consecutively', ref:'h13' },
-      { id:'hc19f', text:'Upright Left to Inverted Left and back (Left Aileron) Three times consecutively', ref:'h13' },
+    { id:'hc19', title:'19 — Inverted Stall Turns', items:[
+      { id:'hc19a', text:'Inverted stall turn — CW yaw', ref:'h10' },
+      { id:'hc19b', text:'Inverted stall turn — CCW yaw', ref:'h10' },
+      { id:'hc19c', text:'Three consecutive inverted stall turns', ref:'h10' },
+      { id:'hc19d', text:'Inverted stall turns at all four cardinal headings', ref:'h10' },
     ]},
-    { id:'hc20', title:'Inverted Circuits', items:[
-      { id:'hc20a', text:'Inverted clockwise circuit', ref:'h18' },
-      { id:'hc20b', text:'Inverted counterclockwise circuit', ref:'h18' },
-      { id:'hc20c', text:'Five consecutive inverted CW circuits', ref:'h18' },
-      { id:'hc20d', text:'Transition from Five CW to Five CCW inverted', ref:'h18' },
-      { id:'hc20e', text:'Five Consecutive Clockwise to Five Counterclockwise inverted', ref:'h18' },
+    { id:'hc20', title:'20 — Tic-Toc Pirouette', items:[
+      { id:'hc20a', text:'Tic-toc effortless — prerequisite check', ref:'h9' },
+      { id:'hc20b', text:'Pirouette effortless — prerequisite check', ref:'h5' },
+      { id:'hc20c', text:'Tic-toc with very slow CW pirouette added', ref:'h14' },
+      { id:'hc20d', text:'Tic-toc with very slow CCW pirouette added', ref:'h14' },
+      { id:'hc20e', text:'Tic-toc pirouette — increase speed gradually', ref:'h14' },
+      { id:'hc20f', text:'Tic-toc pirouetting CW — competition rate', ref:'h14' },
+      { id:'hc20g', text:'Tic-toc pirouetting CCW — competition rate', ref:'h14' },
     ]},
-    { id:'hc21', title:'Inverted Forward Flight', items:[
-      { id:'hc21a', text:'Inverted clockwise circuit', ref:'h18' },
-      { id:'hc21b', text:'Inverted counterclockwise circuit', ref:'h18' },
-      { id:'hc21c', text:'Transition from Five Consecutive CW to Five CCW inverted forward', ref:'h18' },
-      { id:'hc21d', text:'Transition from Five CCW to Five Consecutive Clockwise inverted forward', ref:'h18' },
+    { id:'hc21', title:'21 — Pirouette to Inverted', items:[
+      { id:'hc21a', text:'Slow pirouette — flip to inverted at tail-in point', ref:'h29' },
+      { id:'hc21b', text:'Pirouette continues through the flip seamlessly', ref:'h29' },
+      { id:'hc21c', text:'Speed up — seamless upright to inverted transition', ref:'h29' },
+      { id:'hc21d', text:'Inverted pirouette back to upright — reverse transition', ref:'h29' },
+      { id:'hc21e', text:'Chain: upright piro to inverted piro to upright piro', ref:'h29' },
     ]},
-    { id:'hc22', title:'Inverted Forward Flight — Figure Eights', items:[
-      { id:'hc22a', text:'Turning Away From Pilot — inverted', ref:'h18' },
-      { id:'hc22b', text:'Turning Toward Pilot — inverted', ref:'h18' },
-      { id:'hc22c', text:'Transition from five consecutive turning Away to five consecutive Turning Toward — inverted', ref:'h18' },
-      { id:'hc22d', text:'Transition from five Toward to five consecutive Turning Away — inverted', ref:'h18' },
+    { id:'hc22', title:'22 — Hurricane (Inverted Pirouette)', items:[
+      { id:'hc22a', text:'All inverted orientations effortless — prerequisite check', ref:'h19' },
+      { id:'hc22b', text:'Slow inverted pirouette — altitude only, let it drift', ref:'h19' },
+      { id:'hc22c', text:'Inverted pirouette — start adding position corrections', ref:'h19' },
+      { id:'hc22d', text:'Hurricane — maintain within 6-foot box', ref:'h19' },
+      { id:'hc22e', text:'Hurricane — maintain within 3 feet, both directions', ref:'h19' },
     ]},
-    { id:'hc23', title:'Inverted Stall Turns', items:[
-      { id:'hc23a', text:'Flying from Right to Left, start turn', ref:'h10' },
-      { id:'hc23b', text:'Flying from Left to Right, start turn — Repeat three times', ref:'h10' },
-      { id:'hc23c', text:'Flying Right, start Inverted, Repeat three times', ref:'h10' },
-      { id:'hc23d', text:'Coming Toward Pilot — inverted stall turn, Repeat three times', ref:'h10' },
+    { id:'hc23', title:'23 — Funnel Preparation', items:[
+      { id:'hc23a', text:'Slow upright circle — nose toward center, CW', ref:'h15' },
+      { id:'hc23b', text:'Slow upright circle — nose toward center, CCW', ref:'h15' },
+      { id:'hc23c', text:'Slow upright circle — tail toward center, CW', ref:'h15' },
+      { id:'hc23d', text:'Slow upright circle — tail toward center, CCW', ref:'h15' },
+      { id:'hc23e', text:'Slow inverted circle — nose toward center, CW', ref:'h30' },
+      { id:'hc23f', text:'Slow inverted circle — nose toward center, CCW', ref:'h30' },
+      { id:'hc23g', text:'Slow inverted circle — tail toward center, CW', ref:'h30' },
+      { id:'hc23h', text:'Slow inverted circle — tail toward center, CCW', ref:'h30' },
     ]},
-    { id:'hc24', title:'Inverted Forward — Loops', items:[
-      { id:'hc24a', text:'Flying left to Right using right aileron — inverted', ref:'h12' },
-      { id:'hc24b', text:'Flying left to Right, start loop, Repeat three times — inverted', ref:'h12' },
-      { id:'hc24c', text:'Going Away From Pilot, start loop, Repeat three times', ref:'h12' },
-      { id:'hc24d', text:'Coming Toward Pilot, start loop, Repeat three times', ref:'h12' },
+    { id:'hc24', title:'24 — Funnels', items:[
+      { id:'hc24a', text:'Skids-up nose-down funnel — CW', ref:'h15' },
+      { id:'hc24b', text:'Skids-up nose-down funnel — CCW', ref:'h15' },
+      { id:'hc24c', text:'Skids-down nose-down funnel — CW', ref:'h15' },
+      { id:'hc24d', text:'Skids-down nose-down funnel — CCW', ref:'h15' },
+      { id:'hc24e', text:'Nose-up funnel — CW', ref:'h15' },
+      { id:'hc24f', text:'Nose-up funnel — CCW', ref:'h15' },
+      { id:'hc24g', text:'Inverted funnel — CW', ref:'h30' },
+      { id:'hc24h', text:'Inverted funnel — CCW', ref:'h30' },
+      { id:'hc24i', text:'Nose-in funnel — nose toward center CW', ref:'h30' },
+      { id:'hc24j', text:'Funnel size transitions — grow and shrink mid-funnel', ref:'h30' },
     ]},
-    { id:'hc25', title:'Inverted Forward — Rolls', items:[
-      { id:'hc25a', text:'Flying left to Right using right aileron — inverted roll', ref:'h13' },
-      { id:'hc25b', text:'Flying right to Left, start, Repeat three times', ref:'h13' },
-      { id:'hc25c', text:'Going Away From Pilot using right aileron — inverted', ref:'h13' },
-      { id:'hc25d', text:'Going Away From Pilot using left aileron — inverted', ref:'h13' },
-      { id:'hc25e', text:'Perform all of the above in a ♦ pattern', ref:'h13' },
+    { id:'hc25', title:'25 — Piro Flip', items:[
+      { id:'hc25a', text:'Clean pirouette effortless — prerequisite check', ref:'h5' },
+      { id:'hc25b', text:'Clean flips and rolls effortless — prerequisite check', ref:'h13' },
+      { id:'hc25c', text:'Slow pirouette — apply flip at tail-in point', ref:'h23' },
+      { id:'hc25d', text:'Slow pirouette — apply flip at nose-in point', ref:'h23' },
+      { id:'hc25e', text:'Piro flip CW — consistent result every time', ref:'h23' },
+      { id:'hc25f', text:'Piro flip CCW — consistent result every time', ref:'h23' },
     ]},
-    { id:'hc26', title:'Inverted Reverse Flight Basics', items:[
-      { id:'hc26a', text:'Clockwise inverted reverse circuit', ref:'h18' },
-      { id:'hc26b', text:'Counterclockwise inverted reverse circuit', ref:'h18' },
-      { id:'hc26c', text:'Five consecutive CW inverted reverse circuits', ref:'h18' },
-      { id:'hc26d', text:'Transition CW to CCW inverted reverse', ref:'h18' },
-      { id:'hc26e', text:'Five consecutive Clockwise to Five Counterclockwise inverted reverse', ref:'h18' },
+    { id:'hc26', title:'26 — Pirouetting Circle', items:[
+      { id:'hc26a', text:'Clean pirouette effortless — prerequisite check', ref:'h17' },
+      { id:'hc26b', text:'Slow pirouette on large CW circle', ref:'h17' },
+      { id:'hc26c', text:'Slow pirouette on large CCW circle', ref:'h17' },
+      { id:'hc26d', text:'Pirouetting CW on CW circuit', ref:'h17' },
+      { id:'hc26e', text:'Pirouetting CCW on CCW circuit', ref:'h17' },
+      { id:'hc26f', text:'Pirouetting CW on CCW circuit — opposite spin', ref:'h17' },
+      { id:'hc26g', text:'Pirouetting CCW on CW circuit — opposite spin', ref:'h17' },
+      { id:'hc26h', text:'Pirouetting figure-8', ref:'h28' },
     ]},
-    { id:'hc27', title:'Inverted Reverse Figure Eights', items:[
-      { id:'hc27a', text:'Turning Away From Pilot — inverted reverse', ref:'h18' },
-      { id:'hc27b', text:'Turning Toward Pilot — inverted reverse', ref:'h18' },
-      { id:'hc27c', text:'Transition from five Away to five Toward — inverted reverse', ref:'h18' },
-      { id:'hc27d', text:'Transition from five Toward to five Away — inverted reverse', ref:'h18' },
+    { id:'hc27', title:'27 — Wall and Rolling Circle', items:[
+      { id:'hc27a', text:'Loops prerequisite — same quality as stall turn', ref:'h11' },
+      { id:'hc27b', text:'Wall — large vertical circle CW', ref:'h24' },
+      { id:'hc27c', text:'Wall — large vertical circle CCW', ref:'h24' },
+      { id:'hc27d', text:'Wall — smaller radius, consistent circle', ref:'h24' },
+      { id:'hc27e', text:'Rolling circle — continuous roll in a straight line', ref:'h27' },
+      { id:'hc27f', text:'Rolling circle CW', ref:'h27' },
+      { id:'hc27g', text:'Rolling circle CCW', ref:'h27' },
     ]},
-    { id:'hc28', title:'Inverted Reverse — Loops', items:[
-      { id:'hc28a', text:'Flying left, start turn, inverted reverse loop, Repeat three times', ref:'h12' },
-      { id:'hc28b', text:'Flying Right, start, Repeat three times — inverted reverse', ref:'h12' },
-      { id:'hc28c', text:'Going Away, start loop, Repeat three times', ref:'h12' },
-      { id:'hc28d', text:'Coming Toward Pilot, start loop, Repeat three times', ref:'h12' },
+    { id:'hc28', title:'28 — Elevator', items:[
+      { id:'hc28a', text:'Pirouette while climbing — slow vertical speed', ref:'h25' },
+      { id:'hc28b', text:'Pirouette while descending — controlled column', ref:'h25' },
+      { id:'hc28c', text:'Elevator climb — full height, consistent column', ref:'h25' },
+      { id:'hc28d', text:'Elevator descent — controlled spiral to low altitude', ref:'h25' },
     ]},
-    { id:'hc29', title:'Inverted Stall Turn Stalls', items:[
-      { id:'hc29a', text:'Flying from Right to Left, start turn — inverted stall', ref:'h10' },
-      { id:'hc29b', text:'Flying from Left to Right, start — Repeat three times', ref:'h10' },
-      { id:'hc29c', text:'Flying Right, start, Repeat three times — inverted stall', ref:'h10' },
-      { id:'hc29d', text:'Coming Toward Pilot — inverted stall Repeat three times', ref:'h10' },
+    { id:'hc29', title:'29 — Death Spiral', items:[
+      { id:'hc29a', text:'Elevator descent effortless — prerequisite check', ref:'h26' },
+      { id:'hc29b', text:'Death spiral — pirouette descending, recover at 30 feet', ref:'h26' },
+      { id:'hc29c', text:'Death spiral — lower recovery point gradually per session', ref:'h26' },
+      { id:'hc29d', text:'Death spiral — recovery within 10 feet of ground', ref:'h26' },
+      { id:'hc29e', text:'Death spiral — CW and CCW both consistent', ref:'h26' },
     ]},
-    { id:'hc30', title:'Inverted Forward Loop Stalls', items:[
-      { id:'hc30a', text:'Flying from Left to Right, start turn, Repeat three times', ref:'h12' },
-      { id:'hc30b', text:'Flying from Right to Left, start, Repeat three times', ref:'h12' },
-      { id:'hc30c', text:'Going Away, start, Repeat three times', ref:'h12' },
-      { id:'hc30d', text:'Coming Toward Pilot, start, Repeat three times', ref:'h12' },
-    ]},
-    { id:'hc31', title:'Inverted Forward — Roll Stalls', items:[
-      { id:'hc31a', text:'Flying left to Right using right aileron — inverted roll stall', ref:'h13' },
-      { id:'hc31b', text:'Flying right to Left using left aileron', ref:'h13' },
-      { id:'hc31c', text:'Flying right to Left, start, Repeat three times', ref:'h13' },
-      { id:'hc31d', text:'Repeat at all headings in a ♦ pattern', ref:'h13' },
-    ]},
-    { id:'hc32', title:'Hammerheads / Stall Turns', items:[
-      { id:'hc32a', text:'Upright Forward Clockwise', ref:'h10' },
-      { id:'hc32b', text:'Upright Forward Counterclockwise', ref:'h10' },
-      { id:'hc32c', text:'Upright Reverse Clockwise', ref:'h10' },
-      { id:'hc32d', text:'Upright Reverse Counterclockwise', ref:'h10' },
-    ]},
-    { id:'hc33', title:'Inverted Hammerheads / Stall Turns', items:[
-      { id:'hc33a', text:'Inverted Forward Clockwise', ref:'h10' },
-      { id:'hc33b', text:'Inverted Forward Counterclockwise', ref:'h10' },
-      { id:'hc33c', text:'Inverted Reverse Clockwise', ref:'h10' },
-      { id:'hc33d', text:'Inverted Reverse Counterclockwise', ref:'h10' },
-    ]},
-    { id:'hc34', title:'Funnel Preparation', items:[
-      { id:'hc34a', text:'Slow upright circle with nose pointed to middle of the circle clockwise', ref:'h15' },
-      { id:'hc34b', text:'Slow upright circle with nose pointed to middle of the circle counterclockwise', ref:'h15' },
-      { id:'hc34c', text:'Slow upright circle with tail pointed to middle of the circle clockwise', ref:'h15' },
-      { id:'hc34d', text:'Slow upright circle with tail pointed to middle of the circle counterclockwise', ref:'h15' },
-      { id:'hc34e', text:'Slow inverted circle with nose pointed to middle clockwise', ref:'h30' },
-      { id:'hc34f', text:'Slow inverted circle with nose pointed to middle counterclockwise', ref:'h30' },
-      { id:'hc34g', text:'Slow inverted circle with tail pointed to middle clockwise', ref:'h30' },
-      { id:'hc34h', text:'Slow inverted circle with tail pointed to middle counterclockwise', ref:'h30' },
-    ]},
-    { id:'hc35', title:'Nose Down Clockwise / Counterclockwise (Funnels)', items:[
-      { id:'hc35a', text:'Skids Up Nose Down Clockwise funnel', ref:'h15' },
-      { id:'hc35b', text:'Skids Up Nose Down Counterclockwise funnel', ref:'h15' },
-      { id:'hc35c', text:'Skids Down Nose Down Clockwise funnel', ref:'h15' },
-      { id:'hc35d', text:'Skids Down Nose Down Counterclockwise funnel', ref:'h15' },
-      { id:'hc35e', text:'Nose Up Clockwise funnel', ref:'h15' },
-      { id:'hc35f', text:'Nose Up Counterclockwise funnel', ref:'h15' },
-    ]},
-    { id:'hc36', title:'Piro Toss / Flips Travel', items:[
-      { id:'hc36a', text:'Slow Clockwise in a clockwise circle', ref:'h23' },
-      { id:'hc36b', text:'Slow Counterclockwise in a clockwise circle', ref:'h23' },
-    ]},
-    { id:'hc37', title:'Piro Flips', items:[
-      { id:'hc37a', text:'Piro Clockwise in a clockwise circle', ref:'h23' },
-      { id:'hc37b', text:'Piro Counterclockwise in a clockwise circle', ref:'h23' },
-    ]},
-    { id:'hc38', title:'Tic-Tocs', items:[
-      { id:'hc38a', text:'Nose/tail tic-toc upright', ref:'h9' },
-      { id:'hc38b', text:'Side-to-side tic-toc', ref:'h9' },
-      { id:'hc38c', text:'Tic-toc while translating left/right', ref:'h9' },
-      { id:'hc38d', text:'Tic-toc while translating forward/back', ref:'h9' },
-      { id:'hc38e', text:'Tic-toc pirouetting clockwise', ref:'h14' },
-      { id:'hc38f', text:'Tic-toc pirouetting counterclockwise', ref:'h14' },
-    ]},
-    { id:'hc39', title:'Piro Circles / Pirouetting Patterns', items:[
-      { id:'hc39a', text:'Pirouetting clockwise circuit CW', ref:'h17' },
-      { id:'hc39b', text:'Pirouetting counterclockwise circuit CCW', ref:'h17' },
-      { id:'hc39c', text:'Pirouetting clockwise circuit CCW (opposite spin to direction)', ref:'h17' },
-      { id:'hc39d', text:'Pirouetting counterclockwise circuit CW (opposite spin)', ref:'h17' },
-      { id:'hc39e', text:'Pirouetting figure-8', ref:'h28' },
-      { id:'hc39f', text:'Death spiral clockwise', ref:'h30' },
-      { id:'hc39g', text:'Death spiral counterclockwise', ref:'h30' },
-    ]},
-    { id:'hc40', title:'Walls, Elevators & Advanced', items:[
-      { id:'hc40a', text:'Vertical wall clockwise', ref:'h24' },
-      { id:'hc40b', text:'Vertical wall counterclockwise', ref:'h24' },
-      { id:'hc40c', text:'Elevator — pirouette climbing', ref:'h25' },
-      { id:'hc40d', text:'Elevator — pirouette descending', ref:'h25' },
-      { id:'hc40e', text:'Rolling circle', ref:'h27' },
-      { id:'hc40f', text:'Hurricane — inverted pirouette', ref:'h19' },
-      { id:'hc40g', text:'Perform all of the above in a ♦♦ pattern', ref:null },
-      { id:'hc40h', text:'Combine Tic-Toc X and Y1 and Z2, Where X is Y3 and Z4 pattern', ref:null },
+    { id:'hc30', title:'30 — Tail-Slide Entry and Advanced Combinations', items:[
+      { id:'hc30a', text:'Tail-slide entry inverted — vertical climb to zero speed', ref:'h28' },
+      { id:'hc30b', text:'Tail-slide — allow slide and catch in inverted hover', ref:'h28' },
+      { id:'hc30c', text:'Tail-slide entry — consistent inverted recovery', ref:'h28' },
+      { id:'hc30d', text:'Chain: Funnel into Tic-toc into Death spiral', ref:null },
+      { id:'hc30e', text:'Chain: Pirouetting circle into Piro flip into Wall', ref:null },
+      { id:'hc30f', text:'Full 3D flight — connect 5+ advanced moves smoothly', ref:null },
+      { id:'hc30g', text:'Complete routine at all four cardinal headings', ref:null },
     ]},
   ]
 },
+
 
 plane: {
   label: 'Airplane',
@@ -1683,6 +1679,9 @@ plane: {
       { id:'pc5f', text:'Inside loop coming toward pilot', ref:'p4' },
       { id:'pc5g', text:'Outside loop — negative G throughout', ref:'p12' },
       { id:'pc5h', text:'Three consecutive outside loops', ref:'p12' },
+      { id:'pc5i', text:'Consecutive loops — three identical inside loops back to back', ref:'p21' },
+      { id:'pc5j', text:'Consecutive loops — five identical, consistent size throughout', ref:'p21' },
+      { id:'pc5k', text:'Avalanche — loop with snap roll at inverted apex', ref:'p23' },
     ]},
     { id:'pc6', title:'Rolls', items:[
       { id:'pc6a', text:'Aileron roll — left', ref:'p5' },
@@ -1718,6 +1717,8 @@ plane: {
       { id:'pc9e', text:'Knife edge — 10 seconds sustained straight line', ref:'p9' },
       { id:'pc9f', text:'Knife edge turn — heading change while in knife edge', ref:'p9' },
       { id:'pc9g', text:'Tail slide — full backward slide before recovery', ref:'p14' },
+      { id:'pc9h', text:'Vertical roll — continuous rolls on a vertical upline', ref:'p22' },
+      { id:'pc9i', text:'Vertical roll — stop on specific heading after set number of rolls', ref:'p22' },
     ]},
     { id:'pc10', title:'Advanced Rotation', items:[
       { id:'pc10a', text:'Snap roll — one clean rotation, stop at entry heading', ref:'p10' },
@@ -1736,6 +1737,8 @@ plane: {
       { id:'pc11e', text:'Hammerheads at all four cardinal headings', ref:'p8' },
       { id:'pc11f', text:'Complete aerobatic sequence — 8+ connected maneuvers', ref:null },
       { id:'pc11g', text:'Precision aerobatic sequence — entry/exit altitudes matched', ref:null },
+      { id:'pc11h', text:'Reverse Cuban eight — outside loops with downline rolls', ref:'p24' },
+      { id:'pc11i', text:'Cuban eight into Reverse Cuban eight — inside then outside version', ref:'p24' },
     ]},
   ]
 },
@@ -1840,59 +1843,95 @@ function isCurrDone(itemId){
   return !!d[getCurrKey(itemId)];
 }
 
-function toggleCurrItem(itemId, el){
-  const d=loadCurr();
-  const k=getCurrKey(itemId);
-  d[k]=!d[k];
-  saveCurr(d);
-  renderCurrItem(itemId, el, d[k]);
+function setCurrItemStatus(refId, status, btn){
+  if(!refId)return;
+  // Save to the same proficiency store as Reference tab
+  const d=loadProfs();
+  d[refId]=status;
+  saveProfs(d);
+  // Update all buttons in this ci-status group
+  const statusGroup=btn.closest('.ci-status');
+  if(statusGroup){
+    statusGroup.querySelectorAll('.ci-sbtn').forEach(function(b){
+      const s=b.getAttribute('data-status');
+      b.className='ci-sbtn'+(status===s?' cs-'+s:'');
+    });
+  }
+  // Update text strikethrough for mastered
+  const itemDiv=btn.closest('.curr-item');
+  if(itemDiv){
+    const txt=itemDiv.querySelector('.ci-text');
+    if(txt)txt.className='ci-text'+(status==='mastered'?' cs-mastered':'');
+  }
+  // Refresh stage header counts
+  const stageCard=btn.closest('.stage-card');
+  if(stageCard) refreshStageHeader(stageCard);
+  // Sync Reference tab progress bar
+  updateProgress();
   updateCurrProgress();
 }
 
-function renderCurrItem(itemId, rowEl, done){
-  const check=rowEl.querySelector('.ci-check');
-  const text=rowEl.querySelector('.ci-text');
-  if(check){
-    check.className='ci-check'+(done?' done':'');
-    check.innerHTML=done?'<i class="ti ti-check"></i>':'';
-  }
-  if(text) text.className='ci-text'+(done?' done':'');
-  // update parent stage header sub count
-  const stageCard=rowEl.closest('.stage-card');
-  if(stageCard) updateStageHeader(stageCard);
-}
-
-function updateStageHeader(stageCard){
+function refreshStageHeader(stageCard){
+  // Recount statuses from DOM
   const items=stageCard.querySelectorAll('.curr-item');
-  const done=stageCard.querySelectorAll('.ci-check.done').length;
+  let counts={none:0,practicing:0,solid:0,mastered:0};
+  items.forEach(function(item){
+    const btns=item.querySelectorAll('.ci-sbtn');
+    btns.forEach(function(b){
+      const s=b.getAttribute('data-status');
+      if(s&&b.className.indexOf('cs-'+s)>-1)counts[s]=(counts[s]||0)+1;
+    });
+  });
   const total=items.length;
+  const started=total-counts.none;
   const sub=stageCard.querySelector('.stage-sub');
-  if(sub) sub.textContent=done+' / '+total+' complete';
+  if(sub){
+    let pills='';
+    if(counts.practicing)pills+='<span class="ssp ssp-p">'+counts.practicing+' practicing</span>';
+    if(counts.solid)pills+='<span class="ssp ssp-s">'+counts.solid+' solid</span>';
+    if(counts.mastered)pills+='<span class="ssp ssp-m">'+counts.mastered+' mastered</span>';
+    sub.innerHTML=started+' / '+total+' started'+(pills?'<div class="stage-sub-pills">'+pills+'</div>':'');
+  }
   const num=stageCard.querySelector('.stage-num');
   if(num){
-    if(done===total&&total>0){num.classList.add('complete');}
-    else{num.classList.remove('complete');}
+    if(counts.mastered===total&&total>0)num.classList.add('complete');
+    else num.classList.remove('complete');
   }
 }
 
 function updateCurrProgress(){
   const craft=CURRICULUM[_currCraft];
   if(!craft)return;
-  let total=0,done=0;
-  const d=loadCurr();
-  craft.stages.forEach(stage=>{
-    stage.items.forEach(item=>{
+  let total=0;
+  let counts={none:0,practicing:0,solid:0,mastered:0};
+  craft.stages.forEach(function(stage){
+    stage.items.forEach(function(item){
       total++;
-      if(d[getCurrKey(item.id)])done++;
+      const p=item.ref?getProf(item.ref):'none';
+      counts[p]=(counts[p]||0)+1;
     });
   });
-  const pct=total?Math.round(done/total*100):0;
+  const started=total-counts.none;
+  const pct=total?Math.round(counts.mastered/total*100):0;
   const fill=document.getElementById('curr-prog-fill');
   const pctEl=document.getElementById('curr-prog-pct');
   const label=document.getElementById('curr-prog-label');
-  if(fill)fill.style.width=pct+'%';
-  if(pctEl)pctEl.textContent=pct+'%';
-  if(label)label.textContent=craft.label+' — '+done+'/'+total+' items';
+  if(fill){
+    // Segmented progress bar: practicing=gold, solid=blue, mastered=green
+    fill.style.width='0%';
+    fill.style.background='var(--gold)';
+    const bar=fill.parentElement;
+    if(bar){
+      bar.innerHTML='';
+      if(counts.mastered){const s=document.createElement('div');s.style.cssText='height:100%;background:var(--accent);flex:'+counts.mastered;bar.appendChild(s);}
+      if(counts.solid){const s=document.createElement('div');s.style.cssText='height:100%;background:var(--blue);flex:'+counts.solid;bar.appendChild(s);}
+      if(counts.practicing){const s=document.createElement('div');s.style.cssText='height:100%;background:var(--gold);flex:'+counts.practicing;bar.appendChild(s);}
+      if(counts.none){const s=document.createElement('div');s.style.cssText='height:100%;background:var(--border2);flex:'+counts.none;bar.appendChild(s);}
+      bar.style.display='flex';
+    }
+  }
+  if(pctEl)pctEl.textContent=counts.mastered+' mastered';
+  if(label)label.textContent=craft.label+' — '+started+'/'+total+' started';
 }
 
 function setCurrCraft(craft, btn){
@@ -1910,29 +1949,39 @@ function renderCurrList(){
   const d=loadCurr();
   let html='';
   craft.stages.forEach((stage,si)=>{
-    const doneCount=stage.items.filter(item=>d[getCurrKey(item.id)]).length;
     const total=stage.items.length;
-    const allDone=doneCount===total&&total>0;
+    let sc={none:0,practicing:0,solid:0,mastered:0};
+    stage.items.forEach(item=>{const p=item.ref?getProf(item.ref):'none';sc[p]=(sc[p]||0)+1;});
+    const allMastered=sc.mastered===total&&total>0;
+    const pills=(sc.practicing?`<span class="ssp ssp-p">${sc.practicing} practicing</span>`:'')+
+                (sc.solid?`<span class="ssp ssp-s">${sc.solid} solid</span>`:'')+
+                (sc.mastered?`<span class="ssp ssp-m">${sc.mastered} mastered</span>`:'');
+    const started=total-sc.none;
     html+=`<div class="stage-card" id="sc-${stage.id}">
       <div class="stage-header" onclick="toggleStage('${stage.id}')">
-        <div class="stage-num${allDone?' complete':''}">${si+1}</div>
+        <div class="stage-num${allMastered?' complete':''}">${si+1}</div>
         <div class="stage-info">
           <div class="stage-title">${stage.title}</div>
-          <div class="stage-sub">${doneCount} / ${total} complete</div>
+          <div class="stage-sub">${started} / ${total} started${pills?'<div class="stage-sub-pills">'+pills+'</div>':''}</div>
         </div>
         <i class="ti ti-chevron-right stage-arrow" id="sa-${stage.id}"></i>
       </div>
       <div class="stage-items" id="si-${stage.id}">`;
     stage.items.forEach(item=>{
-      const done=!!d[getCurrKey(item.id)];
+      const prof=item.ref?getProf(item.ref):'none';
       const refBtn=item.ref
-        ?`<span class="ci-ref" onclick="event.stopPropagation();jumpToRef('${item.ref}')" title="Open in Reference">Ref</span>`
+        ?`<span class="ci-ref" onclick="event.stopPropagation();jumpToRef('${item.ref}')" title="Ref">Ref</span>`
         :'';
-      html+=`<div class="curr-item" id="ci-${item.id}" onclick="toggleCurrItem('${item.id}',this)">
-        <div class="ci-check${done?' done':''}">${done?'<i class="ti ti-check"></i>':''}</div>
-        <div class="ci-text${done?' done':''}">${item.text}</div>
-        ${refBtn}
-      </div>`;
+      const sts=[{v:'none',l:'—'},{v:'practicing',l:'Prac.'},{v:'solid',l:'Solid'},{v:'mastered',l:'Mastered'}];
+      const sBtns=sts.map(function(s){
+        const active=prof===s.v?' cs-'+s.v:'';
+        const rid=item.ref||'';
+        return '<button class="ci-sbtn'+active+'" onclick="event.stopPropagation();setCurrItemStatus(\'' +rid+ '\',\'' +s.v+ '\',this)" data-status="'+s.v+'" data-refid="'+rid+'">'+s.l+'</button>';
+      }).join('');
+      html+='<div class="curr-item" id="ci-'+item.id+'">'
+           +'<div class="ci-text'+(prof==='mastered'?' cs-mastered':'')+'" id="ci-text-'+item.id+'">'+item.text+'</div>'
+           +'<div class="ci-status" id="ci-status-'+item.id+'">'+sBtns+refBtn+'</div>'
+           +'</div>';
     });
     html+='</div></div>';
   });
