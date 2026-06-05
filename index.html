@@ -872,22 +872,33 @@ function renderLearnGrid(){
   });
 }
 function selMove(id,el){
+  // 1. Update selection state
   S['l-selected']=id;
   S['l-lesson']='';
   S['l-files']={1:null,2:null};
+  // 2. Update UI selection
   document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
   document.getElementById('l-custom').value='';
-  // Clear panels before checking for saved lesson
+  // 3. Hide all lesson panels
   hideEl('l-lesson');
   hideEl('l-attempt-wrap');
   hideEl('l-results');
-  checkSavedLesson();
-  // Auto-load saved lesson if one exists for this move
+  // 4. Check for saved lesson and update the bar
   const move=MOVES.find(m=>m.id===id);
   if(move){
     const saved=getSavedLesson(S['l-craft'],move.name);
-    if(saved) loadSavedLesson();
+    if(saved){
+      // Show saved bar and load content
+      checkSavedLesson();
+      loadSavedLesson();
+    } else {
+      // No saved lesson - show build button
+      const bar=document.getElementById('l-saved-bar');
+      const newBtn=document.getElementById('l-teach-btn-new');
+      if(bar) bar.style.display='none';
+      if(newBtn) newBtn.style.display='flex';
+    }
   }
 }
 function setLS(k,v,btn,ids,rerender){
