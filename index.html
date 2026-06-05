@@ -873,9 +873,15 @@ function renderLearnGrid(){
 }
 function selMove(id,el){
   S['l-selected']=id;
+  S['l-lesson']='';
+  S['l-files']={1:null,2:null};
   document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
   document.getElementById('l-custom').value='';
+  // Clear panels before checking for saved lesson
+  hideEl('l-lesson');
+  hideEl('l-attempt-wrap');
+  hideEl('l-results');
   checkSavedLesson();
   // Auto-load saved lesson if one exists for this move
   const move=MOVES.find(m=>m.id===id);
@@ -2039,6 +2045,8 @@ function jumpToLearn(refId){
   if(advBtn) setLS('l-level','advanced',advBtn,'l-beg,l-int,l-adv',true);
   // Pre-select the move
   S['l-selected']=refId;
+  S['l-lesson']='';
+  S['l-files']={1:null,2:null};
   // Switch to learn tab
   switchTab('learn','ab');
   // Highlight the selected move card after render
@@ -2048,6 +2056,9 @@ function jumpToLearn(refId){
       document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));
       card.classList.add('sel');
     }
+    hideEl('l-lesson');
+    hideEl('l-attempt-wrap');
+    hideEl('l-results');
     checkSavedLesson();
     // Auto-load saved lesson if exists
     const move=MOVES.find(m=>m.id===refId);
