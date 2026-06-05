@@ -710,7 +710,7 @@ function switchTab(id,cls){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add(cls);
   document.getElementById('panel-'+id).classList.add('active');
-  if(id==='learn') checkSavedLesson();
+  if(id==='learn') checkSavedLesson(false);
 }
 
 // ── API KEYS ──────────────────────────────────
@@ -881,7 +881,7 @@ function selMove(id,el){
   hideEl('l-lesson');
   hideEl('l-attempt-wrap');
   hideEl('l-results');
-  checkSavedLesson();
+  checkSavedLesson(true);
 }
 function setLS(k,v,btn,ids,rerender){
   S[k]=v;
@@ -894,7 +894,6 @@ function setLS(k,v,btn,ids,rerender){
     if(k==='l-craft')S['l-selected']='';
     renderLearnGrid();
   }
-  checkSavedLesson();
 }
 
 // ── GENERIC SETTERS ───────────────────────────
@@ -1217,7 +1216,7 @@ function deleteSavedLesson(){
   checkSavedLesson();
 }
 
-function checkSavedLesson(){
+function checkSavedLesson(autoLoad){
   const custom=document.getElementById('l-custom').value.trim();
   const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
   const bar=document.getElementById('l-saved-bar');
@@ -1225,16 +1224,16 @@ function checkSavedLesson(){
   if(!move||!bar||!newBtn){if(bar)bar.style.display='none';if(newBtn)newBtn.style.display='flex';return;}
   const saved=getSavedLesson(S['l-craft'],move);
   if(saved){
-    // Show the saved bar
     bar.style.display='block';
     newBtn.style.display='none';
     document.getElementById('sl-move-name').textContent='— '+saved.move;
     const d=new Date(saved.saved);
     document.getElementById('sl-meta').textContent=saved.craft+' · '+saved.level+' · Saved '+d.toLocaleDateString();
-    // Auto-display the lesson content
-    S['l-lesson']=saved.text;
-    showEl('l-lesson','<div class="results-wrap"><div class="rhead bl"><i class="ti ti-device-floppy"></i> Saved lesson \u2014 '+saved.move+'</div><div class="rbody" style="color:#9aa3b5">'+rMD(saved.text,'b')+'</div></div>');
-    document.getElementById('l-attempt-wrap').style.display='block';
+    if(autoLoad){
+      S['l-lesson']=saved.text;
+      showEl('l-lesson','<div class="results-wrap"><div class="rhead bl"><i class="ti ti-device-floppy"></i> Saved lesson \u2014 '+saved.move+'</div><div class="rbody" style="color:#9aa3b5">'+rMD(saved.text,'b')+'</div></div>');
+      document.getElementById('l-attempt-wrap').style.display='block';
+    }
   } else {
     bar.style.display='none';
     newBtn.style.display='flex';
@@ -2056,13 +2055,7 @@ function jumpToLearn(refId){
     hideEl('l-lesson');
     hideEl('l-attempt-wrap');
     hideEl('l-results');
-    checkSavedLesson();
-    // Auto-load saved lesson if exists
-    const move=MOVES.find(m=>m.id===refId);
-    if(move){
-      const saved=getSavedLesson(S['l-craft'],move.name);
-      if(saved) loadSavedLesson();
-    }
+    checkSavedLesson(true);
   },150);
 }
 
