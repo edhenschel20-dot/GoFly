@@ -361,6 +361,10 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 <!-- REFERENCE -->
 <div class="panel active" id="panel-ref">
   <div class="info-note" style="border-color:var(--gborder)"><strong style="color:var(--gold)">Field reference — no internet needed.</strong> Browse all maneuvers, stick guides and phase progressions. Tap any move for the full breakdown. Works at the field without WiFi.</div>
+  <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;font-size:11px;color:var(--muted)">
+    <strong style="color:var(--text)">Debug:</strong> <button onclick="showDebug()" style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer">Show storage state</button>
+    <div id="debug-out" style="margin-top:6px;font-size:10px;word-break:break-all;display:none"></div>
+  </div>
   <div class="ref-search"><i class="ti ti-search si"></i><input type="text" id="ref-q" placeholder="Search maneuvers..." oninput="filterMoves()" /></div>
   <div>
     <div class="slabel">Craft</div>
@@ -2102,6 +2106,34 @@ function jumpToLearn(refId){
   },150);
 }
 
+
+// ── DEBUG ──────────────────────────────────────
+function showDebug(){
+  const out=document.getElementById('debug-out');
+  if(!out)return;
+  out.style.display='block';
+  const lessons=loadLessons();
+  const learnState=localStorage.getItem(LEARN_STATE_KEY)||'not set';
+  const lessonKeys=Object.keys(lessons);
+  const lines=[
+    'S[l-selected]: '+S['l-selected'],
+    'S[l-craft]: '+S['l-craft'],
+    'S[l-level]: '+S['l-level'],
+    'LEARN_STATE_KEY in storage: '+learnState,
+    'Saved lessons ('+lessonKeys.length+'): '+lessonKeys.join(', '),
+    'LESSON_KEY value: '+LESSON_KEY,
+  ];
+  if(S['l-selected']){
+    const m=MOVES.find(x=>x.id===S['l-selected']);
+    if(m){
+      lines.push('Selected move name: '+m.name);
+      const key=lessonStoreKey(S['l-craft'],m.name);
+      lines.push('Expected lesson key: '+key);
+      lines.push('Lesson found: '+(lessons[key]?'YES':'NO'));
+    }
+  }
+  out.innerHTML=lines.map(l=>'<div>'+l+'</div>').join('');
+}
 
 // ── INIT ──────────────────────────────────────
 filterMoves();
