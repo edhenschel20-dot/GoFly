@@ -362,7 +362,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 <div class="panel active" id="panel-ref">
   <div class="info-note" style="border-color:var(--gborder)"><strong style="color:var(--gold)">Field reference — no internet needed.</strong> Browse all maneuvers, stick guides and phase progressions. Tap any move for the full breakdown. Works at the field without WiFi.</div>
   <div style="background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);padding:8px 12px;font-size:11px;color:var(--muted)">
-    <strong style="color:var(--text)">Debug:</strong> <button onclick="showDebug()" style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer">Show storage state</button>
+    <strong style="color:var(--text)">Debug:</strong>
+    <button onclick="showDebug()" style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--border2);background:var(--surface2);color:var(--muted);cursor:pointer">Show storage state</button>
+    <button onclick="testLessonSave()" style="font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--bborder);background:var(--bdim);color:var(--blue);cursor:pointer;margin-left:4px">Test save 2 lessons</button>
     <div id="debug-out" style="margin-top:6px;font-size:10px;word-break:break-all;display:none"></div>
   </div>
   <div class="ref-search"><i class="ti ti-search si"></i><input type="text" id="ref-q" placeholder="Search maneuvers..." oninput="filterMoves()" /></div>
@@ -1235,7 +1237,16 @@ function restoreLearnState(){
 const LESSON_KEY = 'rcfc_lessons';
 
 function loadLessons(){try{return JSON.parse(localStorage.getItem(LESSON_KEY)||'{}');}catch(e){return {};}}
-function saveLessons(d){try{localStorage.setItem(LESSON_KEY,JSON.stringify(d));}catch(e){}}
+function saveLessons(d){
+  try{
+    const json=JSON.stringify(d);
+    localStorage.setItem(LESSON_KEY,json);
+    console.log('saveLessons: wrote '+Object.keys(d).length+' lessons, '+json.length+' bytes');
+  }catch(e){
+    console.error('saveLessons FAILED:',e);
+    alert('Could not save lesson: '+e.message);
+  }
+}
 
 function lessonStoreKey(craft, move){
   return (craft+'__'+move).toLowerCase().replace(/[^a-z0-9_]/g,'_');
@@ -2158,7 +2169,25 @@ function showDebug(){
   out.innerHTML=lines.map(l=>'<div style="margin:1px 0">'+l+'</div>').join('');
 }
 
-// ── INIT ──────────────────────────────────────
+function testLessonSave(){
+  const out=document.getElementById('debug-out');
+  if(out)out.style.display='block';
+  // Save two test lessons
+  saveLesson('helicopter','TEST LESSON A','advanced','Test content A - '+Date.now());
+  saveLesson('helicopter','TEST LESSON B','advanced','Test content B - '+Date.now());
+  // Read them back
+  const d=loadLessons();
+  const keyA=lessonStoreKey('helicopter','TEST LESSON A');
+  const keyB=lessonStoreKey('helicopter','TEST LESSON B');
+  const foundA=!!d[keyA];
+  const foundB=!!d[keyB];
+  const total=Object.keys(d).length;
+  const result='Test A saved: '+(foundA?'YES':'NO')+' | Test B saved: '+(foundB?'YES':'NO')+' | Total lessons: '+total;
+  if(out)out.innerHTML='<div style="color:'+(foundA&&foundB?'var(--accent)':'var(--danger)')+'">'+result+'</div>';
+  alert(result);
+}
+
+
 filterMoves();
 restoreLearnState();
 // Sync craft/level button UI to restored state
