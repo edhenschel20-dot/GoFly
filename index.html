@@ -956,9 +956,13 @@ function errHTML(msg){return `<div class="results-wrap"><div class="rhead" style
 
 // ── TEACH MOVE ────────────────────────────────
 async function teachMove(){
+  // Always prefer the grid selection over the custom text field
+  const selectedMove=S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'';
   const custom=document.getElementById('l-custom').value.trim();
-  const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  const move=selectedMove||custom;
   if(!move){alert('Pick a maneuver from the grid or type one in.');return;}
+  // Clear custom field if we have a grid selection
+  if(selectedMove&&document.getElementById('l-custom'))document.getElementById('l-custom').value='';
   const craft=S['l-craft'],level=S['l-level'];
   setBtn('l-teach-btn-new',true,'<div class="spin b"></div> Building...');
   showEl('l-lesson',ldHTML('l-lesson','Building your lesson plan...','b'));
@@ -1249,7 +1253,8 @@ function getSavedLesson(craft, move){
 }
 
 function deleteSavedLesson(){
-  const move=document.getElementById('l-custom').value.trim()||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  const selectedFromGrid=S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'';
+  const move=selectedFromGrid||document.getElementById('l-custom').value.trim();
   if(!move)return;
   const d=loadLessons();
   delete d[lessonStoreKey(S['l-craft'],move)];
@@ -1258,8 +1263,9 @@ function deleteSavedLesson(){
 }
 
 function checkSavedLesson(autoLoad){
+  const selectedFromGrid=S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'';
   const custom=document.getElementById('l-custom')?document.getElementById('l-custom').value.trim():'';
-  const selectedMove=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  const selectedMove=selectedFromGrid||custom;
   const bar=document.getElementById('l-saved-bar');
   const newBtn=document.getElementById('l-teach-btn-new');
   if(!selectedMove){
@@ -1292,8 +1298,9 @@ function checkSavedLesson(autoLoad){
 }
 
 function loadSavedLesson(){
+  const selectedFromGrid=S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'';
   const custom=document.getElementById('l-custom').value.trim();
-  const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  const move=selectedFromGrid||custom;
   if(!move)return;
   const saved=getSavedLesson(S['l-craft'],move);
   if(!saved)return;
