@@ -2121,31 +2121,40 @@ function showDebug(){
   const out=document.getElementById('debug-out');
   if(!out)return;
   out.style.display='block';
+  // Test localStorage write
+  let lsWritable=false;
+  try{
+    localStorage.setItem('rcfc_test','1');
+    lsWritable=localStorage.getItem('rcfc_test')==='1';
+    localStorage.removeItem('rcfc_test');
+  }catch(e){}
   const lessons=loadLessons();
   const learnState=localStorage.getItem(LEARN_STATE_KEY)||'not set';
   const lessonKeys=Object.keys(lessons);
   const customVal=document.getElementById('l-custom')?document.getElementById('l-custom').value:'(not on learn tab)';
   const lines=[
+    'localStorage writable: '+(lsWritable?'YES':'NO - PRIVATE MODE?'),
     'S[l-selected]: '+S['l-selected'],
     'S[l-craft]: '+S['l-craft'],
-    'S[l-level]: '+S['l-level'],
-    'l-custom field value: "'+customVal+'"',
+    'l-custom field: "'+customVal+'"',
     'LEARN_STATE_KEY: '+learnState,
     'Saved lessons ('+lessonKeys.length+'):',
   ];
   lessonKeys.forEach(k=>{
     const v=lessons[k];
-    lines.push('  key: '+k+' | move: '+(v.move||'?')+' | craft: '+(v.craft||'?'));
+    lines.push('\u2022 key: '+k+' | move: '+(v.move||'?'));
   });
   if(S['l-selected']){
     const m=MOVES.find(x=>x.id===S['l-selected']);
     if(m){
-      lines.push('Selected move name: "'+m.name+'"');
       const key=lessonStoreKey(S['l-craft'],m.name);
-      lines.push('Expected lesson key: '+key);
+      lines.push('Expected key: '+key);
       lines.push('Lesson found: '+(lessons[key]?'YES':'NO'));
     }
   }
+  // Raw localStorage dump of lesson key
+  const raw=localStorage.getItem(LESSON_KEY);
+  lines.push('Raw LESSON_KEY length: '+(raw?raw.length:'null'));
   out.innerHTML=lines.map(l=>'<div style="margin:1px 0">'+l+'</div>').join('');
 }
 
