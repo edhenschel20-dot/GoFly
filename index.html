@@ -982,6 +982,9 @@ async function teachMove(){
     // Show the lesson content
     const lessonDiv=document.getElementById('l-lesson');
     if(lessonDiv){lessonDiv.style.display='block';lessonDiv.innerHTML='<div class="results-wrap"><div class="rhead bl"><i class="ti ti-school"></i> Lesson — '+move+' <span class="lesson-saved-badge"><i class="ti ti-device-floppy" style="font-size:9px"></i> Saved</span></div><div class="rbody" style="color:#9aa3b5">'+rMD(text,'b')+'</div></div>';}
+    // Verify save
+    const allLessons=loadLessons();const savedKeys=Object.keys(allLessons);
+    console.log('After save: '+savedKeys.length+' total: '+savedKeys.join(', '));
     document.getElementById('l-attempt-wrap').style.display='block';
     // Update saved bar to show Regenerate option
     const savedBar=document.getElementById('l-saved-bar');
@@ -1241,7 +1244,8 @@ function saveLessons(d){
   try{
     const json=JSON.stringify(d);
     localStorage.setItem(LESSON_KEY,json);
-    console.log('saveLessons: wrote '+Object.keys(d).length+' lessons, '+json.length+' bytes');
+    const keys=Object.keys(d);
+    console.log('saveLessons OK: '+keys.length+' lessons stored: '+keys.join(', '));
   }catch(e){
     console.error('saveLessons FAILED:',e);
     alert('Could not save lesson: '+e.message);
