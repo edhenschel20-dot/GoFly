@@ -960,6 +960,7 @@ async function teachMove(){
   const selectedMove=S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'';
   const custom=document.getElementById('l-custom').value.trim();
   const move=selectedMove||custom;
+  console.log('teachMove: l-selected='+S['l-selected']+' selectedMove='+selectedMove+' custom='+custom+' move='+move);
   if(!move){alert('Pick a maneuver from the grid or type one in.');return;}
   // Clear custom field if we have a grid selection
   if(selectedMove&&document.getElementById('l-custom'))document.getElementById('l-custom').value='';
@@ -1243,6 +1244,7 @@ function lessonStoreKey(craft, move){
 function saveLesson(craft, move, level, text){
   const d=loadLessons();
   const k=lessonStoreKey(craft,move);
+  console.log('saveLesson: craft='+craft+' move='+move+' key='+k);
   d[k]={craft,move,level,text,saved:new Date().toISOString()};
   saveLessons(d);
 }
@@ -2122,24 +2124,29 @@ function showDebug(){
   const lessons=loadLessons();
   const learnState=localStorage.getItem(LEARN_STATE_KEY)||'not set';
   const lessonKeys=Object.keys(lessons);
+  const customVal=document.getElementById('l-custom')?document.getElementById('l-custom').value:'(not on learn tab)';
   const lines=[
     'S[l-selected]: '+S['l-selected'],
     'S[l-craft]: '+S['l-craft'],
     'S[l-level]: '+S['l-level'],
-    'LEARN_STATE_KEY in storage: '+learnState,
-    'Saved lessons ('+lessonKeys.length+'): '+lessonKeys.join(', '),
-    'LESSON_KEY value: '+LESSON_KEY,
+    'l-custom field value: "'+customVal+'"',
+    'LEARN_STATE_KEY: '+learnState,
+    'Saved lessons ('+lessonKeys.length+'):',
   ];
+  lessonKeys.forEach(k=>{
+    const v=lessons[k];
+    lines.push('  key: '+k+' | move: '+(v.move||'?')+' | craft: '+(v.craft||'?'));
+  });
   if(S['l-selected']){
     const m=MOVES.find(x=>x.id===S['l-selected']);
     if(m){
-      lines.push('Selected move name: '+m.name);
+      lines.push('Selected move name: "'+m.name+'"');
       const key=lessonStoreKey(S['l-craft'],m.name);
       lines.push('Expected lesson key: '+key);
       lines.push('Lesson found: '+(lessons[key]?'YES':'NO'));
     }
   }
-  out.innerHTML=lines.map(l=>'<div>'+l+'</div>').join('');
+  out.innerHTML=lines.map(l=>'<div style="margin:1px 0">'+l+'</div>').join('');
 }
 
 // ── INIT ──────────────────────────────────────
