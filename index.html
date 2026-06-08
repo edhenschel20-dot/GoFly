@@ -228,6 +228,29 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .ssp-s{background:rgba(94,173,247,0.15);color:var(--blue);}
 .ssp-m{background:rgba(74,240,176,0.15);color:var(--accent);}
 
+
+/* GITHUB SYNC */
+.gh-bar{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;}
+.gh-bar-header{padding:10px 14px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.gh-bar-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--muted);flex:1;}
+.gh-status-badge{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;}
+.gh-sync-indicator{font-size:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:0.3px;min-width:70px;text-align:right;}
+.gh-settings-panel{padding:12px 14px;border-top:1px solid var(--border);display:none;flex-direction:column;gap:10px;}
+.gh-field-row{display:flex;flex-direction:column;gap:4px;}
+.gh-field-label{font-size:11px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.gh-field-input{font-size:12px;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;outline:none;width:100%;}
+.gh-field-input:focus{border-color:var(--aborder);}
+.gh-hint{font-size:11px;color:var(--muted);line-height:1.6;}
+.gh-hint a{color:var(--blue);}
+.gh-btn-row{display:flex;gap:7px;}
+.gh-btn{flex:1;padding:9px 6px;border-radius:var(--r);font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:800;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+.gh-btn-save{border:1px solid var(--aborder);background:var(--adim);color:var(--accent);}
+.gh-btn-sync{border:1px solid var(--bborder);background:var(--bdim);color:var(--blue);}
+.gh-btn-load{border:1px solid var(--gborder);background:var(--gdim);color:var(--gold);}
+.gh-btn-clear{border:1px solid var(--border2);background:transparent;color:var(--muted);}
+.gh-btn:active{opacity:0.7;}
+.gh-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
 /* BACKUP / RESTORE */
 .backup-bar{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;}
 .backup-toggle{width:100%;padding:10px 14px;background:transparent;border:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;}
@@ -436,6 +459,41 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
         </div>
       </div>
       <div class="backup-status" id="backup-status"></div>
+    </div>
+  </div>
+  <div class="gh-bar">
+    <div class="gh-bar-header" onclick="toggleGHSettings()">
+      <i class="ti ti-brand-github" style="font-size:15px;color:var(--muted)"></i>
+      <span class="gh-bar-title">GitHub Sync</span>
+      <span class="gh-status-badge" id="gh-status-badge">Not configured</span>
+      <span class="gh-sync-indicator" id="gh-sync-indicator"></span>
+      <i class="ti ti-chevron-down" style="color:var(--muted2);font-size:14px"></i>
+    </div>
+    <div class="gh-settings-panel" id="gh-settings-panel">
+      <div class="gh-field-row">
+        <div class="gh-field-label">GitHub Username</div>
+        <input type="text" class="gh-field-input" id="gh-username" placeholder="e.g. edhenschel20" autocomplete="off" autocorrect="off" autocapitalize="off" />
+      </div>
+      <div class="gh-field-row">
+        <div class="gh-field-label">Repository Name</div>
+        <input type="text" class="gh-field-input" id="gh-repo" placeholder="e.g. rc-flight-coach" autocomplete="off" autocorrect="off" autocapitalize="off" />
+      </div>
+      <div class="gh-field-row">
+        <div class="gh-field-label">Personal Access Token</div>
+        <input type="password" class="gh-field-input" id="gh-token" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off" />
+      </div>
+      <div class="gh-hint">
+        Token needs <strong>Contents: Read &amp; Write</strong> permission.<br>
+        Generate at: <strong>github.com → Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong>
+      </div>
+      <div class="gh-btn-row">
+        <button class="gh-btn gh-btn-save" onclick="saveGHSettings()"><i class="ti ti-check"></i> Save</button>
+        <button class="gh-btn gh-btn-clear" onclick="clearGHSettings()"><i class="ti ti-trash"></i> Clear</button>
+      </div>
+      <div class="gh-btn-row">
+        <button class="gh-btn gh-btn-sync" id="gh-sync-now-btn" onclick="ghSyncNow()"><i class="ti ti-upload"></i> Sync now</button>
+        <button class="gh-btn gh-btn-load" id="gh-load-now-btn" onclick="ghLoadNow()"><i class="ti ti-download"></i> Load from GitHub</button>
+      </div>
     </div>
   </div>
   <div class="move-count" id="move-count"></div>
@@ -1078,9 +1136,9 @@ const PROF_KEY='rcfc_prof';
 const NOTE_KEY='rcfc_notes';
 
 function loadProfs(){try{return JSON.parse(localStorage.getItem(PROF_KEY)||'{}');}catch(e){return {};}}
-function saveProfs(d){try{localStorage.setItem(PROF_KEY,JSON.stringify(d));}catch(e){}}
+function saveProfs(d){try{localStorage.setItem(PROF_KEY,JSON.stringify(d));}catch(e){}scheduleSync();}
 function loadNotes(){try{return JSON.parse(localStorage.getItem(NOTE_KEY)||'{}');}catch(e){return {};}}
-function saveNotes(d){try{localStorage.setItem(NOTE_KEY,JSON.stringify(d));}catch(e){}}
+function saveNotes(d){try{localStorage.setItem(NOTE_KEY,JSON.stringify(d));}catch(e){}scheduleSync();}
 
 function getProf(id){return loadProfs()[id]||'none';}
 function getNote(id){return loadNotes()[id]||'';}
@@ -1241,15 +1299,19 @@ const LESSON_KEY = 'rcfc_lessons';
 
 function loadLessons(){try{return JSON.parse(localStorage.getItem(LESSON_KEY)||'{}');}catch(e){return {};}}
 function saveLessons(d){
+  // Note: GitHub sync handles unlimited storage; localStorage is just a cache
   try{
-    const json=JSON.stringify(d);
-    localStorage.setItem(LESSON_KEY,json);
-    const keys=Object.keys(d);
-    console.log('saveLessons OK: '+keys.length+' lessons stored: '+keys.join(', '));
+    localStorage.setItem(LESSON_KEY,JSON.stringify(d));
   }catch(e){
-    console.error('saveLessons FAILED:',e);
-    alert('Could not save lesson: '+e.message);
+    // Quota exceeded - remove oldest lessons until it fits
+    const byAge=Object.keys(d).sort((a,b)=>new Date(d[a].saved||0)-new Date(d[b].saved||0));
+    for(let i=0;i<byAge.length-1;i++){
+      delete d[byAge[i]];
+      try{localStorage.setItem(LESSON_KEY,JSON.stringify(d));return;}catch(e2){}
+    }
+    console.error('saveLessons: could not save even after pruning');
   }
+  scheduleSync();
 }
 
 function lessonStoreKey(craft, move){
@@ -1928,7 +1990,7 @@ const CURR_KEY = 'rcfc_curriculum';
 let _currCraft = 'helicopter';
 
 function loadCurr(){try{return JSON.parse(localStorage.getItem(CURR_KEY)||'{}');}catch(e){return {};}}
-function saveCurr(d){try{localStorage.setItem(CURR_KEY,JSON.stringify(d));}catch(e){}}
+function saveCurr(d){try{localStorage.setItem(CURR_KEY,JSON.stringify(d));}catch(e){}scheduleSync();}
 
 function getCurrKey(itemId){return _currCraft+'_'+itemId;}
 
@@ -2192,6 +2254,223 @@ function testLessonSave(){
 }
 
 
+// ── GITHUB SYNC ───────────────────────────────
+const GH_KEY = 'rcfc_github';
+let _ghSyncTimer = null;
+let _ghSha = null; // current file SHA needed for updates
+
+function loadGHConfig(){
+  try{return JSON.parse(localStorage.getItem(GH_KEY)||'{}');}catch(e){return {};}
+}
+function saveGHConfig(d){
+  try{localStorage.setItem(GH_KEY,JSON.stringify(d));}catch(e){}
+}
+function getGHConfig(){return loadGHConfig();}
+
+function ghEnabled(){
+  const c=loadGHConfig();
+  return !!(c.token&&c.repo&&c.username);
+}
+
+// Build the complete data bundle
+function buildDataBundle(){
+  return {
+    version:2,
+    app:'RC Flight Coach',
+    saved:new Date().toISOString(),
+    proficiency:loadProfs(),
+    notes:loadNotes(),
+    lessons:loadLessons(),
+    curriculum:loadCurr(),
+    learnState:JSON.parse(localStorage.getItem(LEARN_STATE_KEY)||'{}'),
+  };
+}
+
+// Apply a data bundle to localStorage
+function applyDataBundle(d){
+  if(!d)return;
+  if(d.proficiency)saveProfs(d.proficiency);
+  if(d.notes)saveNotes(d.notes);
+  if(d.lessons){
+    // Save lessons WITHOUT the cap/trim since we're loading from GitHub
+    try{localStorage.setItem(LESSON_KEY,JSON.stringify(d.lessons));}catch(e){
+      // Quota on local - just save what we can
+      saveLessons(d.lessons);
+    }
+  }
+  if(d.curriculum)saveCurr(d.curriculum);
+  if(d.learnState){
+    try{localStorage.setItem(LEARN_STATE_KEY,JSON.stringify(d.learnState));}catch(e){}
+  }
+}
+
+// Get file from GitHub
+async function ghGetFile(){
+  const c=loadGHConfig();
+  if(!c.token||!c.repo||!c.username)return null;
+  const url=`https://api.github.com/repos/${c.username}/${c.repo}/contents/rc-flight-coach-data.json`;
+  try{
+    const res=await fetch(url,{
+      headers:{'Authorization':'token '+c.token,'Accept':'application/vnd.github.v3+json'}
+    });
+    if(res.status===404)return null; // file doesn't exist yet
+    if(!res.ok)return null;
+    const data=await res.json();
+    _ghSha=data.sha;
+    const decoded=JSON.parse(atob(data.content.replace(/\n/g,'')));
+    return decoded;
+  }catch(e){
+    console.log('ghGetFile error:',e);
+    return null;
+  }
+}
+
+// Write file to GitHub
+async function ghPutFile(bundle){
+  const c=loadGHConfig();
+  if(!c.token||!c.repo||!c.username)return false;
+  const url=`https://api.github.com/repos/${c.username}/${c.repo}/contents/rc-flight-coach-data.json`;
+  const content=btoa(unescape(encodeURIComponent(JSON.stringify(bundle,null,2))));
+  const body={
+    message:'RC Flight Coach auto-sync '+new Date().toISOString(),
+    content:content,
+  };
+  if(_ghSha)body.sha=_ghSha;
+  try{
+    const res=await fetch(url,{
+      method:'PUT',
+      headers:{'Authorization':'token '+c.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    if(!res.ok){
+      const err=await res.json();
+      console.log('ghPutFile error:',err);
+      return false;
+    }
+    const data=await res.json();
+    if(data.content)_ghSha=data.content.sha;
+    return true;
+  }catch(e){
+    console.log('ghPutFile error:',e);
+    return false;
+  }
+}
+
+// Schedule a debounced sync
+function scheduleSync(){
+  if(!ghEnabled())return;
+  if(_ghSyncTimer)clearTimeout(_ghSyncTimer);
+  _ghSyncTimer=setTimeout(async function(){
+    const indicator=document.getElementById('gh-sync-indicator');
+    if(indicator){indicator.textContent='↑ Syncing...';indicator.style.color='var(--gold)';}
+    const bundle=buildDataBundle();
+    const ok=await ghPutFile(bundle);
+    if(indicator){
+      indicator.textContent=ok?'✓ Synced':'⚠ Sync failed';
+      indicator.style.color=ok?'var(--accent)':'var(--danger)';
+      setTimeout(()=>{if(indicator)indicator.textContent='';},3000);
+    }
+  },3000);
+}
+
+// Load from GitHub on startup
+async function ghLoadOnStartup(){
+  if(!ghEnabled())return false;
+  const indicator=document.getElementById('gh-sync-indicator');
+  if(indicator){indicator.textContent='↓ Loading...';indicator.style.color='var(--blue)';}
+  const data=await ghGetFile();
+  if(data){
+    applyDataBundle(data);
+    if(indicator){indicator.textContent='✓ Loaded';indicator.style.color='var(--accent)';
+      setTimeout(()=>{if(indicator)indicator.textContent='';},3000);}
+    return true;
+  }
+  if(indicator){indicator.textContent='';} 
+  return false;
+}
+
+// Manual sync now
+async function ghSyncNow(){
+  if(!ghEnabled()){
+    alert('GitHub sync not configured. Open Settings in the Reference tab to set it up.');
+    return;
+  }
+  const btn=document.getElementById('gh-sync-now-btn');
+  if(btn){btn.disabled=true;btn.textContent='Syncing...';}
+  const bundle=buildDataBundle();
+  const ok=await ghPutFile(bundle);
+  if(btn){btn.disabled=false;btn.textContent='Sync now';}
+  alert(ok?'✓ Synced to GitHub successfully':'⚠ Sync failed — check your token and repo settings');
+}
+
+// Load from GitHub manually
+async function ghLoadNow(){
+  if(!ghEnabled()){alert('GitHub sync not configured.');return;}
+  const btn=document.getElementById('gh-load-now-btn');
+  if(btn){btn.disabled=true;btn.textContent='Loading...';}
+  const data=await ghGetFile();
+  if(data){
+    applyDataBundle(data);
+    // Refresh all UI
+    filterMoves();
+    updateProgress();
+    renderCurrList();
+    restoreLearnState();
+    renderLearnGrid();
+    setTimeout(()=>{checkSavedLesson(true);},100);
+    alert('✓ Loaded from GitHub. All data restored.');
+  } else {
+    alert('Nothing found on GitHub yet — sync your data first.');
+  }
+  if(btn){btn.disabled=false;btn.textContent='Load from GitHub';}
+}
+
+// Open GitHub settings panel
+function toggleGHSettings(){
+  const panel=document.getElementById('gh-settings-panel');
+  if(!panel)return;
+  const open=panel.style.display==='block';
+  panel.style.display=open?'none':'block';
+  if(!open){
+    // Populate fields
+    const c=loadGHConfig();
+    const uEl=document.getElementById('gh-username');
+    const rEl=document.getElementById('gh-repo');
+    const tEl=document.getElementById('gh-token');
+    if(uEl)uEl.value=c.username||'';
+    if(rEl)rEl.value=c.repo||'';
+    if(tEl)tEl.value=c.token||'';
+  }
+}
+
+function saveGHSettings(){
+  const u=document.getElementById('gh-username').value.trim();
+  const r=document.getElementById('gh-repo').value.trim();
+  const t=document.getElementById('gh-token').value.trim();
+  if(!u||!r||!t){alert('Please fill in all three fields.');return;}
+  saveGHConfig({username:u,repo:r,token:t});
+  document.getElementById('gh-settings-panel').style.display='none';
+  updateGHStatusBadge();
+  alert('GitHub sync configured! Tap "Sync now" to upload your data.');
+}
+
+function clearGHSettings(){
+  if(!confirm('Remove GitHub sync configuration?'))return;
+  saveGHConfig({});
+  document.getElementById('gh-settings-panel').style.display='none';
+  updateGHStatusBadge();
+}
+
+function updateGHStatusBadge(){
+  const badge=document.getElementById('gh-status-badge');
+  if(!badge)return;
+  badge.textContent=ghEnabled()?'✓ Connected':'Not configured';
+  badge.style.color=ghEnabled()?'var(--accent)':'var(--muted)';
+}
+
+
+// Startup cleanup
+(function(){try{const d=loadLessons();let ch=false;Object.keys(d).forEach(k=>{if(k.includes('test_lesson')){delete d[k];ch=true;}if(d[k]&&d[k].text&&d[k].text.length>4000){d[k].text=d[k].text.substring(0,4000)+'...';ch=true;}});if(ch)saveLessons(d);}catch(e){}})();
 filterMoves();
 restoreLearnState();
 // Sync craft/level button UI to restored state
@@ -2216,6 +2495,16 @@ setTimeout(function(){
       card.classList.add('sel');
     }
     checkSavedLesson(true);
+  }
+  // Load from GitHub if configured
+  if(ghEnabled()){
+    ghLoadOnStartup().then(loaded=>{
+      if(loaded){
+        filterMoves();updateProgress();renderCurrList();
+        restoreLearnState();renderLearnGrid();
+        setTimeout(()=>checkSavedLesson(true),50);
+      }
+    });
   }
 },100);
 </script>
