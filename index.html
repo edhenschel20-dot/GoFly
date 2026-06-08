@@ -1297,19 +1297,31 @@ function restoreLearnState(){
 
 const LESSON_KEY = 'rcfc_lessons';
 
-function loadLessons(){try{return JSON.parse(localStorage.getItem(LESSON_KEY)||'{}');}catch(e){return {};}}
+// In-memory lesson store - bypasses localStorage quota when GitHub sync is on
+let _lessonsCache = null;
+
+function loadLessons(){
+  // Use in-memory cache if available (set by applyDataBundle or previous save)
+  if(_lessonsCache!==null)return _lessonsCache;
+  try{return JSON.parse(localStorage.getItem(LESSON_KEY)||'{}');}catch(e){return {};}
+}
+
 function saveLessons(d){
-  // Note: GitHub sync handles unlimited storage; localStorage is just a cache
+  // Always keep in-memory cache up to date
+  _lessonsCache=d;
+  // Try to write to localStorage (may fail due to quota - that's OK if GH sync is on)
   try{
     localStorage.setItem(LESSON_KEY,JSON.stringify(d));
   }catch(e){
-    // Quota exceeded - remove oldest lessons until it fits
-    const byAge=Object.keys(d).sort((a,b)=>new Date(d[a].saved||0)-new Date(d[b].saved||0));
-    for(let i=0;i<byAge.length-1;i++){
-      delete d[byAge[i]];
-      try{localStorage.setItem(LESSON_KEY,JSON.stringify(d));return;}catch(e2){}
+    // Quota exceeded - if GitHub sync is on, that's fine - GitHub is the real store
+    if(!ghEnabled()){
+      // No GitHub - try pruning to fit
+      const byAge=Object.keys(d).sort((a,b)=>new Date(d[a].saved||0)-new Date(d[b].saved||0));
+      for(let i=0;i<byAge.length-1;i++){
+        delete d[byAge[i]];
+        try{localStorage.setItem(LESSON_KEY,JSON.stringify(d));_lessonsCache=d;return;}catch(e2){}
+      }
     }
-    console.error('saveLessons: could not save even after pruning');
   }
   scheduleSync();
 }
@@ -2292,10 +2304,11 @@ function applyDataBundle(d){
   if(d.proficiency)saveProfs(d.proficiency);
   if(d.notes)saveNotes(d.notes);
   if(d.lessons){
-    // Save lessons WITHOUT the cap/trim since we're loading from GitHub
+    // Set in-memory cache directly - bypasses localStorage quota
+    _lessonsCache=d.lessons;
+    // Also try localStorage as a cache
     try{localStorage.setItem(LESSON_KEY,JSON.stringify(d.lessons));}catch(e){
-      // Quota on local - just save what we can
-      saveLessons(d.lessons);
+      // Quota - that's OK, we have the in-memory cache
     }
   }
   if(d.curriculum)saveCurr(d.curriculum);
