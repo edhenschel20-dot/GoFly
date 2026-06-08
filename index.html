@@ -481,8 +481,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
     </div>
     <div style="padding:0 14px 12px;display:flex;gap:6px">
       <button class="sl-load-btn" onclick="loadSavedLesson()"><i class="ti ti-player-play"></i> Load saved</button>
-      <button class="abtn bbtn" style="flex:1;padding:8px;font-size:11px" id="l-teach-btn" onclick="teachMove()"><i class="ti ti-refresh"></i> Regenerate</button>
-      <button class="sl-del-btn" onclick="deleteSavedLesson()"><i class="ti ti-trash"></i></button>
+      <button class="sl-del-btn" onclick="deleteSavedLesson()"><i class="ti ti-trash"></i> Delete</button>
     </div>
   </div>
   <button class="abtn bbtn" id="l-teach-btn-new" onclick="teachMove()"><i class="ti ti-school"></i> Build my lesson plan</button>
@@ -876,15 +875,23 @@ function renderLearnGrid(){
   });
 }
 function selMove(id,el){
+  // Update state
   S['l-selected']=id;
   S['l-lesson']='';
   S['l-files']={1:null,2:null};
+  // Update grid UI
   document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
-  document.getElementById('l-custom').value='';
-  hideEl('l-lesson');
-  hideEl('l-attempt-wrap');
-  hideEl('l-results');
+  const customEl=document.getElementById('l-custom');
+  if(customEl)customEl.value='';
+  // Hide any previous lesson
+  const lessonEl=document.getElementById('l-lesson');
+  if(lessonEl)lessonEl.style.display='none';
+  const attemptEl=document.getElementById('l-attempt-wrap');
+  if(attemptEl)attemptEl.style.display='none';
+  const resultsEl=document.getElementById('l-results');
+  if(resultsEl)resultsEl.style.display='none';
+  // Show saved lesson if exists, load it
   checkSavedLesson(true);
 }
 function setLS(k,v,btn,ids,rerender){
@@ -948,7 +955,7 @@ async function teachMove(){
   const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
   if(!move){alert('Pick a maneuver from the grid or type one in.');return;}
   const craft=S['l-craft'],level=S['l-level'];
-  setBtn('l-teach-btn',true,'<i class="ti ti-school"></i> Build my lesson plan');
+  setBtn('l-teach-btn-new',true,'<div class="spin b"></div> Building...');
   showEl('l-lesson',ldHTML('l-lesson','Building your lesson plan...','b'));
   hideEl('l-attempt-wrap');S['l-files']={1:null,2:null};
   const pi=tickP('l-lesson');
@@ -960,11 +967,21 @@ async function teachMove(){
     );
     stopP(pi,'l-lesson');S['l-lesson']=text;
     saveLesson(craft,move,level,text);
-    checkSavedLesson();
-    showEl('l-lesson',`<div class="results-wrap"><div class="rhead bl"><i class="ti ti-school"></i> Lesson — ${move} <span class="lesson-saved-badge"><i class="ti ti-device-floppy" style="font-size:9px"></i> Saved</span></div><div class="rbody" style="color:#9aa3b5">${rMD(text,'b')}</div></div>`);
+    // Show the lesson content
+    const lessonDiv=document.getElementById('l-lesson');
+    if(lessonDiv){lessonDiv.style.display='block';lessonDiv.innerHTML='<div class="results-wrap"><div class="rhead bl"><i class="ti ti-school"></i> Lesson — '+move+' <span class="lesson-saved-badge"><i class="ti ti-device-floppy" style="font-size:9px"></i> Saved</span></div><div class="rbody" style="color:#9aa3b5">'+rMD(text,'b')+'</div></div>';}
     document.getElementById('l-attempt-wrap').style.display='block';
+    // Update saved bar to show Regenerate option
+    const savedBar=document.getElementById('l-saved-bar');
+    const newBtnEl=document.getElementById('l-teach-btn-new');
+    if(savedBar)savedBar.style.display='block';
+    if(newBtnEl)newBtnEl.style.display='none';
+    const nameEl=document.getElementById('sl-move-name');
+    if(nameEl)nameEl.textContent='— '+move;
+    const metaEl=document.getElementById('sl-meta');
+    if(metaEl)metaEl.textContent=craft+' · '+level+' · '+new Date().toLocaleDateString();
   }catch(err){stopP(pi,'l-lesson');showEl('l-lesson',errHTML(err.message));}
-  setBtn('l-teach-btn',false,'<i class="ti ti-school"></i> Build my lesson plan');
+  setBtn('l-teach-btn-new',false,'<i class="ti ti-school"></i> Build my lesson plan');
 }
 
 async function analyzeAttempt(){
@@ -1221,30 +1238,36 @@ function deleteSavedLesson(){
 }
 
 function checkSavedLesson(autoLoad){
-  const custom=document.getElementById('l-custom').value.trim();
-  const move=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
+  const custom=document.getElementById('l-custom')?document.getElementById('l-custom').value.trim():'';
+  const selectedMove=custom||(S['l-selected']?MOVES.find(m=>m.id===S['l-selected'])?.name:'');
   const bar=document.getElementById('l-saved-bar');
   const newBtn=document.getElementById('l-teach-btn-new');
-  if(!move||!bar||!newBtn){if(bar)bar.style.display='none';if(newBtn)newBtn.style.display='flex';return;}
-  const saved=getSavedLesson(S['l-craft'],move);
+  if(!selectedMove){
+    if(bar)bar.style.display='none';
+    if(newBtn)newBtn.style.display='flex';
+    return;
+  }
+  const saved=getSavedLesson(S['l-craft'],selectedMove);
   if(saved){
-    bar.style.display='block';
-    newBtn.style.display='none';
-    document.getElementById('sl-move-name').textContent='— '+saved.move;
-    const d=new Date(saved.saved);
-    document.getElementById('sl-meta').textContent=saved.craft+' · '+saved.level+' · Saved '+d.toLocaleDateString();
+    if(bar)bar.style.display='block';
+    if(newBtn)newBtn.style.display='none';
+    const nameEl=document.getElementById('sl-move-name');
+    const metaEl=document.getElementById('sl-meta');
+    if(nameEl)nameEl.textContent='— '+saved.move;
+    if(metaEl)metaEl.textContent=saved.craft+' · '+saved.level+' · '+new Date(saved.saved).toLocaleDateString();
     if(autoLoad){
       S['l-lesson']=saved.text;
-      showEl('l-lesson','<div class="results-wrap"><div class="rhead bl"><i class="ti ti-device-floppy"></i> Saved lesson \u2014 '+saved.move+'</div><div class="rbody" style="color:#9aa3b5">'+rMD(saved.text,'b')+'</div></div>');
-      document.getElementById('l-attempt-wrap').style.display='block';
+      const lessonEl=document.getElementById('l-lesson');
+      if(lessonEl){
+        lessonEl.style.display='block';
+        lessonEl.innerHTML='<div class="results-wrap"><div class="rhead bl"><i class="ti ti-device-floppy"></i> Saved lesson — '+saved.move+'</div><div class="rbody" style="color:#9aa3b5">'+rMD(saved.text,'b')+'</div></div>';
+      }
+      const attemptEl=document.getElementById('l-attempt-wrap');
+      if(attemptEl)attemptEl.style.display='block';
     }
   } else {
-    bar.style.display='none';
-    newBtn.style.display='flex';
-    if(!S['l-lesson']){
-      hideEl('l-lesson');
-      hideEl('l-attempt-wrap');
-    }
+    if(bar)bar.style.display='none';
+    if(newBtn)newBtn.style.display='flex';
   }
 }
 
