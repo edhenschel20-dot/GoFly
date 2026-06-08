@@ -1,8 +1,10 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-08T22:45:35.786Z",
-  "proficiency": {},
+  "saved": "2026-06-08T22:45:53.161Z",
+  "proficiency": {
+    "h1": "mastered"
+  },
   "notes": {},
   "lessons": {
     "helicopter__inverted_autorotation": {
