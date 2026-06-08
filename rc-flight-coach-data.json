@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "app": "RC Flight Coach",
+  "saved": "2026-06-08T16:46:59.089Z",
+  "proficiency": {},
+  "notes": {},
+  "lessons": {
+    "helicopter__tail_in_hover": {
+      "craft": "helicopter",
+      "move": "Tail-in hover",
+      "level": "advanced",
+      "text": "# Tail-In Hover\n\n## What This Maneuver Is\nHelicopter hovers 6–10 feet up, tail pointed at you, nose away. Your reference point is the tail rotor and landing skids — the most natural beginner orientation.\n\n## Why It's Challenging\nEven \"easy\" tail-in demands constant micro-corrections on all four axes simultaneously. Your brain must translate stick movement to aircraft movement in real-time while fighting torque, wind, and rotor wash ground effect.\n\n## Before You Start\n- Understand collective/throttle relationship\n- Can spool up/down without panic\n- Know which stick does what at bench level\n\n---\n\n## The Stick Movements\n\n| Control | Stick | What It Does |\n|---|---|---|\n| **Collective** | Left stick up/down | Altitude — add lift or descend |\n| **Tail Rotor (Rudder)** | Left stick left/right | Nose swings left/right |\n| **Aileron (Roll)** | Right stick left/right | Slides helicopter left/right |\n| **Elevator (Pitch)** | Right stick forward/back | Moves helicopter toward/away from you |\n\n**Key:** In tail-in, all controls are intuitive — push right, heli goes right. Enjoy it now; it reverses nose-in.\n\n---\n\n## Step-by-Step Progression\n\n**Phase 1 — Controlled Liftoff**\nGoal: Reach 6 feet, stabilize.\nDo: Slowly raise collective. Stop climbing the moment skids clear ground. Hold altitude ±1 foot.\nMistake: Over-collective panic surge. Fix: Memorize your hover collective position, approach it slowly.\nAdvance: When you hold altitude 30 seconds without touching elevator/aileron.\n\n**Phase 2 — Altitude Control Only**\nGoal: Deliberate up/down 2 feet, return to hover.\nDo: Make slow, small collective inputs. Wait for the response before correcting.\nMistake: Chasing altitude with rapid pumping. Fix: One input, wait 0.5 seconds, then decide next move.\nAdvance: Smooth yo-yo, no oscillation.\n\n**Phase 3 — Left/Right Lateral Drift Correction**\nGoal: Hold position against simulated wind drift.\nDo: Use aileron (right stick) only to stop sideways movement. Keep corrections under 3mm of stick travel.\nMistake: Overcorrecting into a pendulum. Fix: Match correction size to drift speed — slower drift = smaller input.\nAdvance: Holds a 3-foot box for 60 seconds.\n\n**Phase 4 — Combined Hover Box**\nGoal: Hold 3D position — altitude, lateral, fore/aft simultaneously.\nDo: Enable simulator wind. React to all axes at once.\nMistake: Fixating on one axis and losing another. Fix: Scan all three continuously like reading a sentence.\nAdvance: 2-minute stable hover in light wind.\n\n**Phase 5 — Precision Spot Hover**\nGoal: Hold within 1 foot of a fixed point for 3 minutes.\nDo: Pick a ground marker, never let the heli drift past arm's length.\nAdvance: Consistent, relaxed hands — no white-knuckling.\n\n---\n\n## Warning Signs — Drill More Before Progressing\n- Altitude fluctuates more than 2 feet without wind\n- Corrections feel reactive, not anticipatory\n- You're looking at sticks instead of the helicopter\n\n---\n\n## Sim Tips\n1. **Reduce simulator assists to zero** — let it drift naturally\n2. **Record replays** — watch your inputs vs. aircraft lag\n3. **Practice 10-minute sessions** — muscle memory degrades with fatigue\n4. **Set wind to 5mph gusts** — exposes weak axis control fast",
+      "saved": "2026-06-08T04:40:34.998Z"
+    }
+  },
+  "curriculum": {},
+  "learnState": {
+    "craft": "helicopter",
+    "level": "advanced",
+    "selected": "h2"
+  }
+}
