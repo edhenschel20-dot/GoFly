@@ -879,6 +879,7 @@ function selMove(id,el){
   S['l-selected']=id;
   S['l-lesson']='';
   S['l-files']={1:null,2:null};
+  saveLearnState();
   // Update grid UI
   document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));
   el.classList.add('sel');
@@ -1206,7 +1207,22 @@ function toggleRememberKeys(checked){
   else{try{localStorage.removeItem(KEYS_KEY);}catch(e){}}
 }
 
-// ── LESSON PLAN PERSISTENCE ───────────────────
+const LEARN_STATE_KEY='rcfc_learn_state';
+
+function saveLearnState(){
+  try{localStorage.setItem(LEARN_STATE_KEY,JSON.stringify({craft:S['l-craft'],level:S['l-level'],selected:S['l-selected']}));}catch(e){}
+}
+
+function restoreLearnState(){
+  try{
+    const d=JSON.parse(localStorage.getItem(LEARN_STATE_KEY)||'{}');
+    if(d.craft){S['l-craft']=d.craft;}
+    if(d.level){S['l-level']=d.level;}
+    if(d.selected){S['l-selected']=d.selected;}
+  }catch(e){}
+}
+
+
 const LESSON_KEY = 'rcfc_lessons';
 
 function loadLessons(){try{return JSON.parse(localStorage.getItem(LESSON_KEY)||'{}');}catch(e){return {};}}
@@ -2089,10 +2105,31 @@ function jumpToLearn(refId){
 
 // ── INIT ──────────────────────────────────────
 filterMoves();
+restoreLearnState();
+// Sync craft/level button UI to restored state
+(function(){
+  const craftMap={'helicopter':'l-heli','plane':'l-plane','quadcopter':'l-quad'};
+  const levelMap={'beginner':'l-beg','intermediate':'l-int','advanced':'l-adv'};
+  const craftBtn=document.getElementById(craftMap[S['l-craft']]);
+  if(craftBtn){document.querySelectorAll('#l-heli,#l-plane,#l-quad').forEach(b=>b.className='tbtn');craftBtn.className='tbtn ob';}
+  const levelBtn=document.getElementById(levelMap[S['l-level']]);
+  if(levelBtn){document.querySelectorAll('#l-beg,#l-int,#l-adv').forEach(b=>b.className='tbtn');levelBtn.className='tbtn ob';}
+})();
 renderLearnGrid();
 updateProgress();
 renderCurrList();
 loadSavedKeys();
+// After grid renders, restore selected move highlight and load its lesson
+setTimeout(function(){
+  if(S['l-selected']){
+    const card=document.querySelector('[data-mid="'+S['l-selected']+'"]');
+    if(card){
+      document.querySelectorAll('.mc').forEach(c=>c.classList.remove('sel'));
+      card.classList.add('sel');
+    }
+    checkSavedLesson(true);
+  }
+},100);
 </script>
 </body>
 </html>
