@@ -1113,12 +1113,16 @@ async function analyzeGeneral(){
   setBtn('g-abtn',true,'<i class="ti ti-brain"></i> Get coaching feedback');
   showEl('g-results',ldHTML('g-results','Watching your flying...'));
   const pi=tickP('g-results');
-  const prompt=`Expert RC ${craft} instructor. ${level} pilot. ${count} clip(s).${goals?'\nGoals: '+goals:''}\nFocus: ${fs}.\n\n## Overall assessment\n## Scores (out of 10)\n- Smoothness: X/10\n- Precision: X/10\n- Orientation: X/10\n- Consistency: X/10\n## Strengths\n2-3 positives.\n## Key weaknesses\n3-4 most critical — what I do wrong, what to do instead.\n## Bad habits to break\n## Practice plan\n5 sim drills in priority order.\n## Next 2-4 weeks focus\n\nSpecific and direct. Reference what you actually see.`;
+  const hasDrills=S['g-focuses'].has('drills');
+  const drillSection=hasDrills
+    ?`## Drill plan (6-8 drills, priority order)\nFor each: **Name** — skill it builds — exact execution (reps/duration) — success criteria — common mistake. One paragraph per drill. Base drills on actual weaknesses seen in video.`
+    :`## Practice plan\n5 sim drills in priority order.`;
+  const prompt=`Expert RC ${craft} instructor. ${level} pilot. ${count} clip(s).${goals?'\nGoals: '+goals:''}\nFocus: ${fs}.\n\n## Overall assessment\n## Scores (out of 10)\n- Smoothness: [N]/10\n- Precision: [N]/10\n- Orientation: [N]/10\n- Consistency: [N]/10\n(Replace [N] with actual integer score 1-10 based on video)\n## Strengths\n2-3 positives.\n## Key weaknesses\n3-4 most critical — what I do wrong, what to do instead.\n## Bad habits to break\n${drillSection}\n## Next 2-4 weeks focus\n\nSpecific and direct. Reference what you actually see.`;
   try{
     const parts=[];
     for(let s=1;s<=3;s++){if(!files[s])continue;parts.push({inline_data:{mime_type:files[s].type||'video/mp4',data:await toB64(files[s])}});parts.push({text:`[Clip ${s}]`});}
     parts.push({text:prompt});
-    const text=await callGemini(parts,2000);
+    const text=await callGemini(parts,hasDrills?5000:2500);
     stopP(pi,'g-results');
     const scores=[...text.matchAll(/:\s*(\d+)\/10/g)].slice(0,4).map(m=>parseInt(m[1]));
     const lbls=['Smooth','Precision','Orient.','Consist.'];
