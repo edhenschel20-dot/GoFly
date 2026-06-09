@@ -555,7 +555,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
       <div class="rhead bl"><i class="ti ti-video"></i> Upload your attempt</div>
       <div style="padding:12px">
         <div class="upload-grid" style="margin-bottom:10px">
-          <div class="ubox" id="lmb1"><input type="file" accept="video/*" onchange="handleFile('l',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 1</div><div class="u-sub" id="lms1">Tap to upload</div></div>
+          <div class="ubox" id="lmb1"><input type="file" accept="video/*" onchange="handleFile('l',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 1</div><div class="u-sub" id="lms1">Up to 200MB</div></div>
           <div class="ubox" id="lmb2"><input type="file" accept="video/*" onchange="handleFile('l',this,2)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 2</div><div class="u-sub" id="lms2">Optional</div></div>
         </div>
         <div class="hint" style="margin-bottom:10px">Even a messy attempt is fine — the AI tells you exactly which phase you're at.</div>
@@ -568,7 +568,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 
 <!-- GENERAL COACH -->
 <div class="panel" id="panel-general">
-  <div class="info-note">Upload your flying clips for a full AI coaching report — no reference video needed.</div>
+  <div class="info-note">Upload your flying clips for a full AI coaching report. Aim for 60 seconds, up to 200MB. Compress clips over 100MB using your phone's Photos app (Edit → trim) to save cost.</div>
   <div><div class="slabel">Craft</div><div class="toggle-row">
     <button class="tbtn on" id="g-heli" onclick="setSt('g-craft','helicopter',this,'g-heli,g-plane,g-quad')"><i class="ti ti-propeller"></i> Heli</button>
     <button class="tbtn" id="g-plane" onclick="setSt('g-craft','plane',this,'g-heli,g-plane,g-quad')"><i class="ti ti-plane"></i> Plane</button>
@@ -580,7 +580,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
     <button class="tbtn" id="g-adv" onclick="setSt('g-level','advanced',this,'g-beg,g-int,g-adv')"><i class="ti ti-star"></i> Advanced</button>
   </div></div>
   <div><div class="slabel">Clips (up to 3)</div><div class="upload-grid-3">
-    <div class="ubox" id="gmb1"><input type="file" accept="video/*" onchange="handleFile('g',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Clip 1</div><div class="u-sub" id="gms1">Tap</div></div>
+    <div class="ubox" id="gmb1"><input type="file" accept="video/*" onchange="handleFile('g',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Clip 1</div><div class="u-sub" id="gms1">Up to 200MB</div></div>
     <div class="ubox" id="gmb2"><input type="file" accept="video/*" onchange="handleFile('g',this,2)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Clip 2</div><div class="u-sub" id="gms2">Optional</div></div>
     <div class="ubox" id="gmb3"><input type="file" accept="video/*" onchange="handleFile('g',this,3)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Clip 3</div><div class="u-sub" id="gms3">Optional</div></div>
   </div></div>
@@ -605,7 +605,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 
 <!-- COMPARE -->
 <div class="panel" id="panel-compare">
-  <div class="info-note">Upload your attempt + a YouTube reference URL. The AI compares them and tells you exactly what to fix.</div>
+  <div class="info-note">Upload your attempt (60 sec ideal, up to 200MB) + a YouTube reference URL. Compress clips over 100MB to reduce cost.</div>
   <div><div class="slabel">Craft</div><div class="toggle-row">
     <button class="tbtn on" id="c-heli" onclick="setSt('c-craft','helicopter',this,'c-heli,c-plane,c-quad')"><i class="ti ti-propeller"></i> Heli</button>
     <button class="tbtn" id="c-plane" onclick="setSt('c-craft','plane',this,'c-heli,c-plane,c-quad')"><i class="ti ti-plane"></i> Plane</button>
@@ -613,7 +613,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   </div></div>
   <div><div class="slabel">Maneuver</div><input class="row-input" type="text" id="c-maneuver" placeholder="e.g. pirouette, inverted hover, loop..."/></div>
   <div><div class="slabel">Your attempts</div><div class="upload-grid">
-    <div class="ubox" id="cmb1"><input type="file" accept="video/*" onchange="handleFile('c',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 1</div><div class="u-sub" id="cms1">Tap</div></div>
+    <div class="ubox" id="cmb1"><input type="file" accept="video/*" onchange="handleFile('c',this,1)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 1</div><div class="u-sub" id="cms1">Up to 200MB</div></div>
     <div class="ubox" id="cmb2"><input type="file" accept="video/*" onchange="handleFile('c',this,2)"/><i class="ti ti-video-plus u-icon"></i><div class="u-title">Attempt 2</div><div class="u-sub" id="cms2">Optional</div></div>
   </div></div>
   <div><div class="slabel">Reference YouTube URL</div><input class="row-input" type="text" id="c-yturl" placeholder="https://www.youtube.com/watch?v=..."/></div>
@@ -975,7 +975,25 @@ function setLS(k,v,btn,ids,rerender){
 // ── GENERIC SETTERS ───────────────────────────
 function setSt(k,v,btn,ids){S[k]=v;ids.split(',').forEach(id=>{const e=document.getElementById(id);if(e)e.classList.remove('on');});btn.classList.add('on');}
 function toggleChip(k,v,btn){const s=S[k];s.has(v)?(s.delete(v),btn.classList.remove('on')):(s.add(v),btn.classList.add('on'));}
-function handleFile(p,input,slot){const f=input.files[0];if(!f)return;S[p+'-files'][slot]=f;document.getElementById(p+'mb'+slot).classList.add('done');document.getElementById(p+'ms'+slot).innerHTML='<span class="u-fname">✓ '+(f.size/1024/1024).toFixed(1)+' MB</span>';}
+function handleFile(p,input,slot){
+  const f=input.files[0];
+  if(!f)return;
+  if(f.size>200*1024*1024){
+    alert('File is '+( f.size/1024/1024).toFixed(0)+'MB — over the 200MB limit. Please trim or compress the clip first.');
+    input.value='';
+    return;
+  }
+  S[p+'-files'][slot]=f;
+  const mb=(f.size/1024/1024).toFixed(1);
+  document.getElementById(p+'mb'+slot).classList.add('done');
+  const sub=document.getElementById(p+'ms'+slot);
+  if(sub){
+    sub.innerHTML='<span class="u-fname">✓ '+mb+' MB</span>';
+    if(f.size>100*1024*1024){
+      sub.innerHTML+='<div style="font-size:9px;color:var(--warn);margin-top:2px">Large file — consider compressing</div>';
+    }
+  }
+}
 
 // ── API UTILS ─────────────────────────────────
 function toB64(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});}
@@ -1012,7 +1030,7 @@ function hideEl(id){const e=document.getElementById(id);if(e)e.style.display='no
 function ldHTML(aid,msg,c='g'){const cl=c==='b'?'b':c==='g2'?'g2':'';return `<div class="results-wrap"><div class="rhead${c==='b'?' bl':c==='g2'?' go':''}"><div class="spin ${cl}"></div> ${msg}</div><div style="padding:12px;color:var(--muted);font-size:12px">Please wait...<div class="pbar-wrap"><div class="pbar ${cl}" id="prog-${aid}" style="width:8%"></div></div></div></div>`;}
 function tickP(id){let p=8;return setInterval(()=>{p=Math.min(p+5,82);const e=document.getElementById('prog-'+id);if(e)e.style.width=p+'%';},1000);}
 function stopP(pi,id){clearInterval(pi);const e=document.getElementById('prog-'+id);if(e)e.style.width='100%';}
-function errHTML(msg){return `<div class="results-wrap"><div class="rhead" style="color:var(--danger)"><i class="ti ti-alert-circle"></i> Failed</div><div style="padding:12px;color:var(--muted);font-size:12px">${msg}<br><br>· Check API key &nbsp;· Clips under 50MB &nbsp;· Try 30-60 sec clips</div></div>`;}
+function errHTML(msg){return `<div class="results-wrap"><div class="rhead" style="color:var(--danger)"><i class="ti ti-alert-circle"></i> Failed</div><div style="padding:12px;color:var(--muted);font-size:12px">${msg}<br><br>· Check API key &nbsp;· Clips under 200MB &nbsp;· 60 sec clips work best &nbsp;· Compress if over 100MB</div></div>`;}
 
 // ── TEACH MOVE ────────────────────────────────
 async function teachMove(){
