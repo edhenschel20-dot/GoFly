@@ -1,11 +1,12 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-09T00:26:46.145Z",
+  "saved": "2026-06-09T03:05:48.400Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
-    "h2": "mastered"
+    "h2": "mastered",
+    "h21": "solid"
   },
   "notes": {},
   "lessons": {
