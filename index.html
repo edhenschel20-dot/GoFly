@@ -2680,6 +2680,45 @@ const PLANE_STATUSES=[
 ];
 function statusMeta(id){return PLANE_STATUSES.find(s=>s.id===id)||PLANE_STATUSES[0];}
 
+// ── PLANE TYPE / CLASS CONFIG ─────────────────────
+const CRAFT_TYPES=['Heli','Airplane','Quad'];
+const CRAFT_CLASSES={
+  Heli:['Giant','Mid','Mini','Micro'],
+  Airplane:['Jet','3D','Sport','Glider'],
+  Quad:[],
+};
+function normalizeCraftType(t){
+  if(t==='Plane')return 'Airplane';
+  return t||'';
+}
+function planeTypeOptionsHTML(selected){
+  const sel=normalizeCraftType(selected);
+  let opts=['<option value="">Select type</option>'];
+  let found=false;
+  CRAFT_TYPES.forEach(t=>{if(t===sel)found=true;opts.push(`<option value="${t}"${t===sel?' selected':''}>${t}</option>`);});
+  if(sel&&!found)opts.push(`<option value="${escHtml(sel)}" selected>${escHtml(sel)}</option>`);
+  return opts.join('');
+}
+function planeClassOptionsHTML(type,selected){
+  const classes=CRAFT_CLASSES[normalizeCraftType(type)]||[];
+  let opts=['<option value="">Select class</option>'];
+  let found=false;
+  classes.forEach(c=>{if(c===selected)found=true;opts.push(`<option value="${c}"${c===selected?' selected':''}>${c}</option>`);});
+  if(selected&&!found)opts.push(`<option value="${escHtml(selected)}" selected>${escHtml(selected)}</option>`);
+  return opts.join('');
+}
+function onPlaneTypeChange(){
+  const t=document.getElementById('pe-type').value;
+  const wrap=document.getElementById('pe-class-wrap');
+  const classes=CRAFT_CLASSES[normalizeCraftType(t)]||[];
+  if(!t||!classes.length){
+    wrap.style.display='none';
+  }else{
+    wrap.style.display='';
+    document.getElementById('pe-class').innerHTML=planeClassOptionsHTML(t,'');
+  }
+}
+
 // ── HANGAR SORT (cumulative, persisted) ──────────
 const HANGAR_SORT_KEY='rcfc_hangar_sort';
 function loadHangarSort(){try{return Object.assign({primary:'',secondary:''},JSON.parse(localStorage.getItem(HANGAR_SORT_KEY)||'{}'));}catch(e){return {primary:'',secondary:''};}}
@@ -2768,7 +2807,7 @@ function renderHangar(){
       ${photo}
       <div class="mr-info">
         <div class="mr-name">${escHtml(p.name)}</div>
-        <div class="mr-meta"><span class="dbadge" style="border-color:${sm.color};color:${sm.color}"><i class="ti ${sm.icon}"></i> ${sm.label}</span>${p.type?`<span class="mr-craft">${escHtml(p.type)}</span>`:''}</div>
+        <div class="mr-meta"><span class="dbadge" style="border-color:${sm.color};color:${sm.color}"><i class="ti ${sm.icon}"></i> ${sm.label}</span>${p.type?`<span class="mr-craft">${escHtml(p.type)}${p.class?' · '+escHtml(p.class):''}</span>`:''}</div>
       </div>
       <i class="ti ti-chevron-right mr-arr"></i>
     </div>`;
@@ -2808,8 +2847,16 @@ function openPlaneEditor(id){
     <input class="row-input" id="pe-name" type="text" placeholder="e.g. Bixler 3, Wasp 250" value="${p?escHtml(p.name):''}" style="margin-bottom:8px" />
     <button class="abtn" id="pe-lookup-btn" onclick="lookupPlaneSpecs()" style="margin-bottom:12px;padding:8px 12px;font-size:11px"><i class="ti ti-search"></i> Look up specs for this plane</button>
     <div id="pe-lookup-results"></div>
-    <div class="slabel">Type / class</div>
-    <input class="row-input" id="pe-type" type="text" placeholder="e.g. Trainer, 3D foamie, 5\\" FPV" value="${p?escHtml(p.type||''):''}" style="margin-bottom:12px" />
+    <div class="slabel">Type</div>
+    <select class="row-input" id="pe-type" onchange="onPlaneTypeChange()" style="margin-bottom:12px">
+      ${planeTypeOptionsHTML(p?p.type:'')}
+    </select>
+    <div id="pe-class-wrap" style="${p&&(CRAFT_CLASSES[normalizeCraftType(p.type)]||[]).length?'':'display:none;'}margin-bottom:12px">
+      <div class="slabel">Class</div>
+      <select class="row-input" id="pe-class">
+        ${planeClassOptionsHTML(p?p.type:'',p?(p.class||''):'')}
+      </select>
+    </div>
     <div class="slabel">Status</div>
     <div class="toggle-row" id="pe-status-row" style="flex-wrap:wrap;margin-bottom:12px">
       ${PLANE_STATUSES.map(s=>`<button class="tbtn${p&&p.status===s.id?' ob':(!p&&s.id==='ready'?' ob':'')}" data-status="${s.id}" onclick="setPlaneStatusBtn(this)"><i class="ti ${s.icon}"></i> ${s.label}</button>`).join('')}
@@ -2821,8 +2868,8 @@ function openPlaneEditor(id){
     <div class="slabel">Notes (repairs needed, setup details, etc.)</div>
     <textarea class="row-input" id="pe-notes" rows="4" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
     <div style="display:flex;gap:8px">
-      <button class="abtn" style="flex:1" onclick="savePlane()"><i class="ti ti-check"></i> Save</button>
       ${p?'<button class="abtn" style="flex:0 0 auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePlane()"><i class="ti ti-trash"></i></button>':''}
+      <button class="abtn" style="flex:1" onclick="savePlane()"><i class="ti ti-check"></i> Save</button>
     </div>
   `;
   document.getElementById('ov').classList.add('open');
@@ -2851,6 +2898,8 @@ function savePlane(){
   const statusBtn=document.querySelector('#pe-status-row .tbtn.ob');
   const status=statusBtn?statusBtn.dataset.status:'ready';
   const type=document.getElementById('pe-type').value.trim();
+  const classEl=document.getElementById('pe-class');
+  const craftClass=classEl?classEl.value.trim():'';
   const battSpec=document.getElementById('pe-batt').value.trim();
   const powerSpec=document.getElementById('pe-power').value.trim();
   const notes=document.getElementById('pe-notes').value.trim();
@@ -2858,11 +2907,11 @@ function savePlane(){
   if(_editingPlaneId){
     const idx=planes.findIndex(p=>p.id===_editingPlaneId);
     if(idx>-1){
-      planes[idx]={...planes[idx],name,type,status,battSpec,powerSpec,notes};
+      planes[idx]={...planes[idx],name,type,class:craftClass,status,battSpec,powerSpec,notes};
       if(_pendingPlanePhoto)planes[idx].photo=_pendingPlanePhoto;
     }
   }else{
-    const np={id:uid(),name,type,status,battSpec,powerSpec,notes};
+    const np={id:uid(),name,type,class:craftClass,status,battSpec,powerSpec,notes};
     if(_pendingPlanePhoto)np.photo=_pendingPlanePhoto;
     planes.push(np);
   }
@@ -3127,7 +3176,7 @@ async function runMatch(){
   const pi=tickP('match');
   try{
     const sys="You are an expert RC hobbyist assistant helping match batteries, motors, ESCs, servos and other parts to a specific RC plane from the owner's personal inventory. Be specific and practical. Flag any real safety/compatibility risk (voltage mismatch, connector mismatch, ESC current rating too low, weight/CG issues). If information is missing to be sure, say what's missing rather than guessing. Format with ## headers and - bullet points, no other markdown.";
-    const usr=`Plane: ${plane.name}\nType/class: ${plane.type||'unknown'}\nLogged battery/connector spec: ${plane.battSpec||'not logged'}\nLogged motor/ESC/servo specs: ${plane.powerSpec||'not logged'}\nNotes: ${plane.notes||'none'}\n\nParts inventory (with quantity on hand):\n${parts.map(p=>`- [${p.category}] ${p.name} — ${p.spec||'no spec'} (qty ${p.qty||1})`).join('\n')}\n\nFor this plane, go through the inventory and tell me:\n## Good Matches\nWhich specific parts (by name) are compatible and why.\n## Risky / Check First\nAny parts that might work but need verification (voltage, connector, current rating, weight).\n## Not Compatible\nParts that clearly don't fit, briefly why.\n## Missing\nAny critical part type not present in inventory at all for this plane to fly.`;
+    const usr=`Plane: ${plane.name}\nType: ${plane.type||'unknown'}\nClass: ${plane.class||'unknown'}\nLogged battery/connector spec: ${plane.battSpec||'not logged'}\nLogged motor/ESC/servo specs: ${plane.powerSpec||'not logged'}\nNotes: ${plane.notes||'none'}\n\nParts inventory (with quantity on hand):\n${parts.map(p=>`- [${p.category}] ${p.name} — ${p.spec||'no spec'} (qty ${p.qty||1})`).join('\n')}\n\nFor this plane, go through the inventory and tell me:\n## Good Matches\nWhich specific parts (by name) are compatible and why.\n## Risky / Check First\nAny parts that might work but need verification (voltage, connector, current rating, weight).\n## Not Compatible\nParts that clearly don't fit, briefly why.\n## Missing\nAny critical part type not present in inventory at all for this plane to fly.`;
     const text=await callClaude(sys,usr,1200);
     stopP(pi,'match');
     showEl('match-results',`<div class="results-wrap"><div class="rhead go"><i class="ti ti-plug-connected"></i> Compatibility for ${escHtml(plane.name)}</div><div style="padding:12px">${rMD(text,'g2')}</div></div>`);
