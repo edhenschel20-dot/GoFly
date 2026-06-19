@@ -2696,12 +2696,23 @@ function openPlaneEditor(id){
   document.getElementById('ov-badge').className='dbadge';
   document.getElementById('ov-body').innerHTML=`
     <div class="slabel">Photo</div>
-    <div class="ubox" id="plane-photo-box" style="margin-bottom:12px;${p&&p.photo?'background-image:url(\''+p.photo+'\');background-size:cover;background-position:center':''}">
-      <input type="file" accept="image/*" onchange="handlePlanePhoto(this)" />
-      <i class="ti ti-camera-plus u-icon"></i><div class="u-title">${p&&p.photo?'Change photo':'Add photo'}</div>
+    <div id="plane-photo-preview" style="${p&&p.photo?'':'display:none'}margin-bottom:8px">
+      <img src="${p&&p.photo?p.photo:''}" id="plane-photo-img" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--r2);border:1px solid var(--border2)" />
+    </div>
+    <div class="toggle-row" style="margin-bottom:12px">
+      <div class="ubox" style="flex:1;min-height:64px">
+        <input type="file" accept="image/*" capture="environment" onchange="handlePlanePhoto(this)" />
+        <i class="ti ti-camera u-icon"></i><div class="u-title">Take Photo</div>
+      </div>
+      <div class="ubox" style="flex:1;min-height:64px">
+        <input type="file" accept="image/*" onchange="handlePlanePhoto(this)" />
+        <i class="ti ti-photo u-icon"></i><div class="u-title">Gallery</div>
+      </div>
     </div>
     <div class="slabel">Name</div>
-    <input class="row-input" id="pe-name" type="text" placeholder="e.g. Bixler 3, Wasp 250" value="${p?escHtml(p.name):''}" style="margin-bottom:12px" />
+    <input class="row-input" id="pe-name" type="text" placeholder="e.g. Bixler 3, Wasp 250" value="${p?escHtml(p.name):''}" style="margin-bottom:8px" />
+    <button class="abtn" id="pe-lookup-btn" onclick="lookupPlaneSpecs()" style="margin-bottom:12px;padding:8px 12px;font-size:11px"><i class="ti ti-search"></i> Look up specs for this plane</button>
+    <div id="pe-lookup-results"></div>
     <div class="slabel">Type / class</div>
     <input class="row-input" id="pe-type" type="text" placeholder="e.g. Trainer, 3D foamie, 5\\" FPV" value="${p?escHtml(p.type||''):''}" style="margin-bottom:12px" />
     <div class="slabel">Status</div>
@@ -2710,6 +2721,8 @@ function openPlaneEditor(id){
     </div>
     <div class="slabel">Battery connector / size needed</div>
     <input class="row-input" id="pe-batt" type="text" placeholder="e.g. XT60, 3S 2200mAh, 4S 1300-1500mAh" value="${p?escHtml(p.battSpec||''):''}" style="margin-bottom:12px" />
+    <div class="slabel">Motor / ESC / Servo specs</div>
+    <textarea class="row-input" id="pe-power" rows="3" placeholder="e.g. Motor: 2306 2400kv · ESC: 30A · Servos: 9g micro" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.powerSpec||''):''}</textarea>
     <div class="slabel">Notes (repairs needed, setup details, etc.)</div>
     <textarea class="row-input" id="pe-notes" rows="4" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
     <div style="display:flex;gap:8px">
@@ -2730,9 +2743,10 @@ async function handlePlanePhoto(input){
   const f=input.files&&input.files[0];if(!f)return;
   try{
     _pendingPlanePhoto=await resizeImageFile(f,800);
-    document.getElementById('plane-photo-box').style.backgroundImage=`url('${_pendingPlanePhoto}')`;
-    document.getElementById('plane-photo-box').style.backgroundSize='cover';
-    document.getElementById('plane-photo-box').style.backgroundPosition='center';
+    const img=document.getElementById('plane-photo-img');
+    const preview=document.getElementById('plane-photo-preview');
+    if(img)img.src=_pendingPlanePhoto;
+    if(preview)preview.style.display='block';
   }catch(e){console.log('photo err',e);}
 }
 
@@ -2743,16 +2757,17 @@ function savePlane(){
   const status=statusBtn?statusBtn.dataset.status:'ready';
   const type=document.getElementById('pe-type').value.trim();
   const battSpec=document.getElementById('pe-batt').value.trim();
+  const powerSpec=document.getElementById('pe-power').value.trim();
   const notes=document.getElementById('pe-notes').value.trim();
   let planes=loadHangar();
   if(_editingPlaneId){
     const idx=planes.findIndex(p=>p.id===_editingPlaneId);
     if(idx>-1){
-      planes[idx]={...planes[idx],name,type,status,battSpec,notes};
+      planes[idx]={...planes[idx],name,type,status,battSpec,powerSpec,notes};
       if(_pendingPlanePhoto)planes[idx].photo=_pendingPlanePhoto;
     }
   }else{
-    const np={id:uid(),name,type,status,battSpec,notes};
+    const np={id:uid(),name,type,status,battSpec,powerSpec,notes};
     if(_pendingPlanePhoto)np.photo=_pendingPlanePhoto;
     planes.push(np);
   }
@@ -2824,9 +2839,18 @@ function openPartEditor(id){
   document.getElementById('ov-badge').className='dbadge';
   document.getElementById('ov-body').innerHTML=`
     <div class="slabel">Photo</div>
-    <div class="ubox" id="part-photo-box" style="margin-bottom:12px;${p&&p.photo?'background-image:url(\''+p.photo+'\');background-size:cover;background-position:center':''}">
-      <input type="file" accept="image/*" onchange="handlePartPhoto(this)" />
-      <i class="ti ti-camera-plus u-icon"></i><div class="u-title">${p&&p.photo?'Change photo':'Add photo'}</div>
+    <div id="part-photo-preview" style="${p&&p.photo?'':'display:none'}margin-bottom:8px">
+      <img src="${p&&p.photo?p.photo:''}" id="part-photo-img" style="width:100%;max-height:180px;object-fit:cover;border-radius:var(--r2);border:1px solid var(--border2)" />
+    </div>
+    <div class="toggle-row" style="margin-bottom:12px">
+      <div class="ubox" style="flex:1;min-height:64px">
+        <input type="file" accept="image/*" capture="environment" onchange="handlePartPhoto(this)" />
+        <i class="ti ti-camera u-icon"></i><div class="u-title">Take Photo</div>
+      </div>
+      <div class="ubox" style="flex:1;min-height:64px">
+        <input type="file" accept="image/*" onchange="handlePartPhoto(this)" />
+        <i class="ti ti-photo u-icon"></i><div class="u-title">Gallery</div>
+      </div>
     </div>
     <div class="slabel">Category</div>
     <select class="row-input" id="pa-category" style="margin-bottom:12px">
@@ -2853,9 +2877,10 @@ async function handlePartPhoto(input){
   const f=input.files&&input.files[0];if(!f)return;
   try{
     _pendingPartPhoto=await resizeImageFile(f,800);
-    document.getElementById('part-photo-box').style.backgroundImage=`url('${_pendingPartPhoto}')`;
-    document.getElementById('part-photo-box').style.backgroundSize='cover';
-    document.getElementById('part-photo-box').style.backgroundPosition='center';
+    const img=document.getElementById('part-photo-img');
+    const preview=document.getElementById('part-photo-preview');
+    if(img)img.src=_pendingPartPhoto;
+    if(preview)preview.style.display='block';
   }catch(e){console.log('photo err',e);}
 }
 
@@ -2892,7 +2917,85 @@ function deletePart(){
   renderParts();
 }
 
-// ── MATCH (battery/parts compatibility via Claude) ──
+// ── CLAUDE WITH WEB SEARCH (for spec lookups) ────
+async function callClaudeWithSearch(sys,usr,max){
+  const k=getCKey();if(!k)throw new Error('Claude API key not set. Enter it in Learn tab API Keys.');
+  const res=await fetch('https://api.anthropic.com/v1/messages',
+    {method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:max,system:sys,messages:[{role:'user',content:usr}],
+       tools:[{type:'web_search_20250305',name:'web_search'}]})});
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Claude error '+res.status);}
+  const d=await res.json();trackCall('claude');
+  // Collect all text blocks (there can be several, interleaved with tool_use/tool_result blocks)
+  const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  return text;
+}
+
+// ── PLANE SPEC LOOKUP ─────────────────────────────
+let _pendingLookupSpecs=null;
+
+async function lookupPlaneSpecs(){
+  const name=document.getElementById('pe-name').value.trim();
+  if(!name){alert('Enter the plane name first.');return;}
+  const type=document.getElementById('pe-type').value.trim();
+
+  setBtn('pe-lookup-btn',true,'Look up specs for this plane');
+  showEl('pe-lookup-results',ldHTML('pelookup','Searching for specs...','g'));
+  const pi=tickP('pelookup');
+  try{
+    const sys="You are an RC hobbyist research assistant. Search the web for the real, documented specs of the exact RC plane named. Only report what you actually find — if you can't find reliable specs for this exact model, say so plainly instead of guessing or substituting a similar model's specs. Respond in EXACTLY this format, nothing else, no markdown headers:\nBATTERY: <connector type, cell count, mAh range, e.g. XT60, 3S 2200-2600mAh>\nMOTOR: <kv rating, size, e.g. 2306 2400kv brushless>\nESC: <current rating, e.g. 30A>\nSERVO: <size/torque, e.g. 9g micro>\nCONFIDENCE: <high|medium|low — high only if you found this exact model's specs from a real source>\nSOURCE: <brief note on where this came from, or 'not found' if confidence is low>";
+    const usr=`Plane name: ${name}${type?`\nType/class given by owner: ${type}`:''}\n\nFind this exact RC plane's documented specs.`;
+    const text=await callClaudeWithSearch(sys,usr,800);
+    stopP(pi,'pelookup');
+
+    const get=(label)=>{const m=text.match(new RegExp(label+':\\s*(.+)'));return m?m[1].trim():'';};
+    const batt=get('BATTERY'),motor=get('MOTOR'),esc=get('ESC'),servo=get('SERVO'),conf=get('CONFIDENCE').toLowerCase(),src=get('SOURCE');
+
+    if(!batt&&!motor&&!esc&&!servo){
+      showEl('pe-lookup-results',`<div class="hint" style="color:var(--danger)">Couldn't find reliable specs for this plane. Try entering it more specifically (full model name) or enter specs manually.</div>`);
+      setBtn('pe-lookup-btn',false,'<i class="ti ti-search"></i> Look up specs for this plane');
+      return;
+    }
+
+    _pendingLookupSpecs={batt,motor,esc,servo};
+    const confColor=conf==='high'?'var(--accent)':conf==='medium'?'var(--gold)':'var(--danger)';
+    showEl('pe-lookup-results',`
+      <div class="results-wrap" style="margin-bottom:10px">
+        <div class="rhead"><i class="ti ti-search"></i> Found specs &nbsp;<span class="dbadge" style="border-color:${confColor};color:${confColor}">${conf||'unknown'} confidence</span></div>
+        <div style="padding:12px;font-size:12px;color:var(--text)">
+          ${batt?`<div style="margin-bottom:6px"><strong>Battery:</strong> ${escHtml(batt)}</div>`:''}
+          ${motor?`<div style="margin-bottom:6px"><strong>Motor:</strong> ${escHtml(motor)}</div>`:''}
+          ${esc?`<div style="margin-bottom:6px"><strong>ESC:</strong> ${escHtml(esc)}</div>`:''}
+          ${servo?`<div style="margin-bottom:6px"><strong>Servos:</strong> ${escHtml(servo)}</div>`:''}
+          ${src?`<div class="hint" style="margin-top:6px">${escHtml(src)}</div>`:''}
+        </div>
+        <div style="padding:0 12px 12px;display:flex;gap:8px">
+          <button class="abtn" style="flex:1;padding:8px;font-size:11px" onclick="applyLookupSpecs()"><i class="ti ti-check"></i> Use these specs</button>
+          <button class="abtn" style="flex:0 0 auto;padding:8px 12px;font-size:11px;background:var(--ddim)" onclick="hideEl('pe-lookup-results')"><i class="ti ti-x"></i> Discard</button>
+        </div>
+      </div>
+    `);
+  }catch(e){
+    stopP(pi,'pelookup');
+    showEl('pe-lookup-results',`<div class="hint" style="color:var(--danger)">${escHtml(e.message||'Lookup failed.')}</div>`);
+  }
+  setBtn('pe-lookup-btn',false,'<i class="ti ti-search"></i> Look up specs for this plane');
+}
+
+function applyLookupSpecs(){
+  if(!_pendingLookupSpecs)return;
+  const {batt,motor,esc,servo}=_pendingLookupSpecs;
+  if(batt)document.getElementById('pe-batt').value=batt;
+  const powerLines=[];
+  if(motor)powerLines.push('Motor: '+motor);
+  if(esc)powerLines.push('ESC: '+esc);
+  if(servo)powerLines.push('Servos: '+servo);
+  if(powerLines.length)document.getElementById('pe-power').value=powerLines.join(' · ');
+  hideEl('pe-lookup-results');
+  _pendingLookupSpecs=null;
+}
+
+
 function populateMatchPlaneSelect(){
   const sel=document.getElementById('match-plane-select');
   if(!sel)return;
@@ -2929,7 +3032,7 @@ async function runMatch(){
   const pi=tickP('match');
   try{
     const sys="You are an expert RC hobbyist assistant helping match batteries, motors, ESCs, servos and other parts to a specific RC plane from the owner's personal inventory. Be specific and practical. Flag any real safety/compatibility risk (voltage mismatch, connector mismatch, ESC current rating too low, weight/CG issues). If information is missing to be sure, say what's missing rather than guessing. Format with ## headers and - bullet points, no other markdown.";
-    const usr=`Plane: ${plane.name}\nType/class: ${plane.type||'unknown'}\nLogged battery/connector spec: ${plane.battSpec||'not logged'}\nNotes: ${plane.notes||'none'}\n\nParts inventory (with quantity on hand):\n${parts.map(p=>`- [${p.category}] ${p.name} — ${p.spec||'no spec'} (qty ${p.qty||1})`).join('\n')}\n\nFor this plane, go through the inventory and tell me:\n## Good Matches\nWhich specific parts (by name) are compatible and why.\n## Risky / Check First\nAny parts that might work but need verification (voltage, connector, current rating, weight).\n## Not Compatible\nParts that clearly don't fit, briefly why.\n## Missing\nAny critical part type not present in inventory at all for this plane to fly.`;
+    const usr=`Plane: ${plane.name}\nType/class: ${plane.type||'unknown'}\nLogged battery/connector spec: ${plane.battSpec||'not logged'}\nLogged motor/ESC/servo specs: ${plane.powerSpec||'not logged'}\nNotes: ${plane.notes||'none'}\n\nParts inventory (with quantity on hand):\n${parts.map(p=>`- [${p.category}] ${p.name} — ${p.spec||'no spec'} (qty ${p.qty||1})`).join('\n')}\n\nFor this plane, go through the inventory and tell me:\n## Good Matches\nWhich specific parts (by name) are compatible and why.\n## Risky / Check First\nAny parts that might work but need verification (voltage, connector, current rating, weight).\n## Not Compatible\nParts that clearly don't fit, briefly why.\n## Missing\nAny critical part type not present in inventory at all for this plane to fly.`;
     const text=await callClaude(sys,usr,1200);
     stopP(pi,'match');
     showEl('match-results',`<div class="results-wrap"><div class="rhead go"><i class="ti ti-plug-connected"></i> Compatibility for ${escHtml(plane.name)}</div><div style="padding:12px">${rMD(text,'g2')}</div></div>`);
