@@ -660,6 +660,30 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 <!-- HANGAR -->
 <div class="panel" id="panel-hangar">
   <div class="info-note" style="border-color:var(--aborder)"><strong style="color:var(--accent)">Your fleet.</strong> Track every plane, its build status, and what it needs.</div>
+  <div class="toggle-row" id="hangar-sort-row" style="gap:8px;margin-bottom:10px">
+    <div style="flex:1">
+      <div class="slabel" style="margin-bottom:4px">Sort by</div>
+      <select class="row-input" id="hangar-sort-1" onchange="setHangarSort()">
+        <option value="">Default order</option>
+        <option value="name">Name</option>
+        <option value="status">Status</option>
+        <option value="type">Type</option>
+        <option value="battSpec">Battery spec</option>
+        <option value="added">Date added</option>
+      </select>
+    </div>
+    <div style="flex:1">
+      <div class="slabel" style="margin-bottom:4px">Then by</div>
+      <select class="row-input" id="hangar-sort-2" onchange="setHangarSort()">
+        <option value="">None</option>
+        <option value="name">Name</option>
+        <option value="status">Status</option>
+        <option value="type">Type</option>
+        <option value="battSpec">Battery spec</option>
+        <option value="added">Date added</option>
+      </select>
+    </div>
+  </div>
   <div id="hangar-list"></div>
   <button class="abtn" id="hangar-add-btn" onclick="openPlaneEditor(null)"><i class="ti ti-plus"></i> Add a plane</button>
   <button class="abtn" id="hangar-import-btn" onclick="importFleetFromSpreadsheet()" style="margin-top:8px;background:var(--ddim)"><i class="ti ti-file-spreadsheet"></i> Import fleet from spreadsheet</button>
@@ -2656,6 +2680,27 @@ const PLANE_STATUSES=[
 ];
 function statusMeta(id){return PLANE_STATUSES.find(s=>s.id===id)||PLANE_STATUSES[0];}
 
+// ── HANGAR SORT (cumulative, persisted) ──────────
+const HANGAR_SORT_KEY='rcfc_hangar_sort';
+function loadHangarSort(){try{return Object.assign({primary:'',secondary:''},JSON.parse(localStorage.getItem(HANGAR_SORT_KEY)||'{}'));}catch(e){return {primary:'',secondary:''};}}
+function saveHangarSort(s){try{localStorage.setItem(HANGAR_SORT_KEY,JSON.stringify(s));}catch(e){console.log('hangar sort save err',e);}}
+function setHangarSort(){
+  const s1=document.getElementById('hangar-sort-1'),s2=document.getElementById('hangar-sort-2');
+  saveHangarSort({primary:s1?s1.value:'',secondary:s2?s2.value:''});
+  renderHangar();
+}
+function hangarSortVal(p,field){
+  if(field==='status')return PLANE_STATUSES.findIndex(s=>s.id===p.status);
+  if(field==='added')return p.id||'';
+  return (p[field]||'').toString().toLowerCase();
+}
+function compareHangarField(a,b,field){
+  const va=hangarSortVal(a,field),vb=hangarSortVal(b,field);
+  if(va<vb)return -1;
+  if(va>vb)return 1;
+  return 0;
+}
+
 const PART_CATEGORIES=['Battery','Motor','ESC','Servo','Propeller','Receiver','Flight Controller','Frame/Airframe Part','Hardware','Other'];
 
 // ── ONE-TIME SPREADSHEET IMPORT (fleet + parts) ──
@@ -2700,10 +2745,21 @@ function importFleetFromSpreadsheet(){
 function renderHangar(){
   const list=document.getElementById('hangar-list');
   if(!list)return;
-  const planes=loadHangar();
+  const sortState=loadHangarSort();
+  const s1=document.getElementById('hangar-sort-1'),s2=document.getElementById('hangar-sort-2');
+  if(s1&&s1.value!==sortState.primary)s1.value=sortState.primary;
+  if(s2&&s2.value!==sortState.secondary)s2.value=sortState.secondary;
+  let planes=loadHangar();
   if(!planes.length){
     list.innerHTML='<div class="no-results"><i class="ti ti-plane"></i><p>No planes yet — add your first one</p></div>';
     return;
+  }
+  if(sortState.primary){
+    planes=planes.slice().sort((a,b)=>{
+      let c=compareHangarField(a,b,sortState.primary);
+      if(c===0&&sortState.secondary)c=compareHangarField(a,b,sortState.secondary);
+      return c;
+    });
   }
   list.innerHTML=planes.map(p=>{
     const sm=statusMeta(p.status);
