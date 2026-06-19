@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-19T19:34:19.980Z",
+  "saved": "2026-06-19T20:26:55.431Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -30,8 +30,8 @@
       "name": "Goblin 700",
       "type": "Heli",
       "status": "ready",
-      "battSpec": "",
-      "powerSpec": "",
+      "battSpec": "12S LiPo, 4500–5500 mAh",
+      "powerSpec": "Motor: 4525 series brushless, 450–560 KV (e.g. 4525-500 560KV) · ESC: 120–200A, high-voltage (HV) with BEC, 12S-rated · Servos: Cyclic (swashplate): Standard size 40mm (x3); Tail servo: Standard size 40mm",
       "notes": "On DX9"
     },
     {
