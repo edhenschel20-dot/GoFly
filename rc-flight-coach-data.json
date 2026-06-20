@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T03:46:28.413Z",
+  "saved": "2026-06-20T03:46:45.354Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -322,8 +322,8 @@
     {
       "id": "mqltfrwhhci580",
       "name": "Eflite 330 SC",
-      "type": "",
-      "class": "",
+      "type": "Airplane",
+      "class": "3D",
       "status": "ready",
       "battSpec": "IC3 or EC3 connector, 3S 11.1V or 4S 14.8V, 2200–3200mAh LiPo",
       "powerSpec": "Motor: Spektrum Brushless Outrunner (factory installed); kV rating and exact size designation not published in available documentation · ESC: 85A — Spektrum Avian Smart Lite Brushless ESC · Servos: Digital, metal-geared (4 installed); specific torque/size figures not published in available documentation",
