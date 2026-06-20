@@ -2868,7 +2868,7 @@ function openPlaneEditor(id){
     <div class="slabel">Notes (repairs needed, setup details, etc.)</div>
     <textarea class="row-input" id="pe-notes" rows="4" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
     <div style="display:flex;gap:8px">
-      ${p?'<button class="abtn" style="flex:0 0 auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePlane()"><i class="ti ti-trash"></i></button>':''}
+      ${p?'<button class="abtn" style="flex:0 0 auto;width:auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePlane()"><i class="ti ti-trash"></i></button>':''}
       <button class="abtn" style="flex:1" onclick="savePlane()"><i class="ti ti-check"></i> Save</button>
     </div>
   `;
@@ -3010,7 +3010,7 @@ function openPartEditor(id){
     <textarea class="row-input" id="pa-notes" rows="3" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
     <div style="display:flex;gap:8px">
       <button class="abtn bbtn" style="flex:1" onclick="savePart()"><i class="ti ti-check"></i> Save</button>
-      ${p?'<button class="abtn" style="flex:0 0 auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePart()"><i class="ti ti-trash"></i></button>':''}
+      ${p?'<button class="abtn" style="flex:0 0 auto;width:auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePart()"><i class="ti ti-trash"></i></button>':''}
     </div>
   `;
   document.getElementById('ov').classList.add('open');
