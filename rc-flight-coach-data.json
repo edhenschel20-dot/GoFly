@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T00:13:25.236Z",
+  "saved": "2026-06-20T00:13:46.614Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -56,11 +56,12 @@
     {
       "id": "mqlbustg3iqt5l",
       "name": "Pitts S-12",
-      "type": "Plane",
-      "status": "ready",
+      "type": "Airplane",
+      "status": "repair",
       "battSpec": "4s 2200 / 4s 1800 x 2",
       "powerSpec": "Motor: Sunnysky x2820 1100kv\nESC: Hobbywing Skywalker 60Amp ESC\nServos (wanted): EMAX ES08MAII 12g metal gear(authentic)",
-      "notes": "Work on Ailerons/Sand"
+      "notes": "Work on Ailerons/Sand",
+      "class": ""
     },
     {
       "id": "mqlbustgowsapz",
