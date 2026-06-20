@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T03:46:45.354Z",
+  "saved": "2026-06-20T03:47:04.814Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -161,7 +161,8 @@
       "status": "ready",
       "battSpec": "",
       "powerSpec": "",
-      "notes": "On DX9"
+      "notes": "On DX9",
+      "class": ""
     },
     {
       "id": "mqlbustgdl84u8",
