@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T00:05:27.489Z",
+  "saved": "2026-06-20T00:05:35.292Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -164,10 +164,11 @@
       "id": "mqlbustgdl84u8",
       "name": "Align Leap",
       "type": "Quad",
-      "status": "ready",
+      "status": "repair",
       "battSpec": "",
       "powerSpec": "",
-      "notes": "On DX9"
+      "notes": "On DX9",
+      "class": ""
     },
     {
       "id": "mqlbustg8xtdgd",
