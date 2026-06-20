@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T00:12:54.419Z",
+  "saved": "2026-06-20T00:13:25.236Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -275,11 +275,12 @@
     {
       "id": "mqlbustgoyrifm",
       "name": "X-100 Infinity Wing",
-      "type": "Plane",
-      "status": "ready",
+      "type": "Airplane",
+      "status": "retired",
       "battSpec": "3s 2200 or 4s 2200-3300 / 4s 1800",
       "powerSpec": "Motor: Leopard 3536-7T 1100vk\nESC: Hobbywing Skywalker 50Amp ESC\nServos (wanted): EMAX ES08MAII 12g metal gear (generic)",
-      "notes": "Needs Electronics setup\n[Imported from 'Building' section]"
+      "notes": "Needs Electronics setup\n[Imported from 'Building' section]",
+      "class": ""
     },
     {
       "id": "mqlbustgkivx2l",
