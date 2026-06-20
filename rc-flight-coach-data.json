@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T00:08:59.235Z",
+  "saved": "2026-06-20T00:11:59.013Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -201,11 +201,12 @@
     {
       "id": "mqlbustgq5bheo",
       "name": "Shmiggen",
-      "type": "Plane",
-      "status": "building",
+      "type": "Airplane",
+      "status": "retired",
       "battSpec": "",
       "powerSpec": "",
-      "notes": "Pieces not glued together but printed in garage"
+      "notes": "Pieces not glued together but printed in garage",
+      "class": ""
     },
     {
       "id": "mqlbustgjkv71d",
