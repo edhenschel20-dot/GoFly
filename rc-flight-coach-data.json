@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T14:07:41.256Z",
+  "saved": "2026-06-20T14:12:43.530Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -20,9 +20,9 @@
   },
   "curriculum": {},
   "learnState": {
-    "craft": "quadcopter",
+    "craft": "plane",
     "level": "advanced",
-    "selected": "q12"
+    "selected": "p8"
   },
   "hangar": [
     {
