@@ -3153,14 +3153,43 @@ function populateMatchPlaneSelect(){
   renderMatchPreview();
 }
 
+// ── MATCH RESULT CACHE (avoid re-spending credits on repeat lookups) ──
+const MATCH_CACHE_KEY='rcfc_match_cache';
+function loadMatchCache(){try{return JSON.parse(localStorage.getItem(MATCH_CACHE_KEY)||'{}');}catch(e){return {};}}
+function saveMatchCache(c){try{localStorage.setItem(MATCH_CACHE_KEY,JSON.stringify(c));}catch(e){console.log('match cache save err',e);}}
+function matchInputHash(plane,parts){
+  const str=JSON.stringify({n:plane.name,t:plane.type,c:plane.class,b:plane.battSpec,p:plane.powerSpec,no:plane.notes,parts:parts.map(x=>({n:x.name,c:x.category,s:x.spec,q:x.qty}))});
+  let h=0;
+  for(let i=0;i<str.length;i++){h=(h*31+str.charCodeAt(i))|0;}
+  return h.toString(36);
+}
+function fmtMatchTime(ts){
+  try{return new Date(ts).toLocaleString([],{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});}catch(e){return '';}
+}
+function renderCachedMatch(planeId){
+  const results=document.getElementById('match-results');
+  if(!results)return;
+  const entry=loadMatchCache()[planeId];
+  if(!entry){results.innerHTML='';return;}
+  const plane=loadHangar().find(x=>x.id===planeId);
+  const stale=plane?matchInputHash(plane,loadParts())!==entry.hash:false;
+  results.innerHTML=`<div class="results-wrap"><div class="rhead go"><i class="ti ti-plug-connected"></i> Compatibility for ${escHtml(plane?plane.name:'')}</div><div style="padding:0 12px 4px;font-size:11px;color:var(--muted2)">${stale?'<span style="color:var(--accent)"><i class="ti ti-alert-triangle"></i> Plane or parts changed since this check — </span>':''}Checked ${fmtMatchTime(entry.ts)} · saved result, no credits used to view this</div><div style="padding:12px">${rMD(entry.text,'g2')}</div></div>`;
+}
+
 function renderMatchPreview(){
   const sel=document.getElementById('match-plane-select');
   const prev=document.getElementById('match-preview');
   if(!sel||!prev)return;
   const planes=loadHangar();
   const p=planes.find(x=>x.id===sel.value);
-  if(!p){prev.innerHTML='';return;}
+  if(!p){prev.innerHTML='';const r=document.getElementById('match-results');if(r)r.innerHTML='';return;}
   prev.innerHTML=`<div class="hint">${p.battSpec?'Logged spec: '+escHtml(p.battSpec):'No battery spec logged for this plane yet — Claude will reason from name/type/notes only. Adding a spec in Hangar will improve accuracy.'}</div>`;
+  renderCachedMatch(p.id);
+  const btn=document.getElementById('match-btn');
+  if(btn){
+    const hasCache=!!loadMatchCache()[p.id];
+    btn.innerHTML=hasCache?'<i class="ti ti-refresh"></i> Re-check (uses credits)':'<i class="ti ti-plug-connected"></i> Find compatible parts';
+  }
 }
 
 async function runMatch(){
@@ -3179,12 +3208,16 @@ async function runMatch(){
     const usr=`Plane: ${plane.name}\nType: ${plane.type||'unknown'}\nClass: ${plane.class||'unknown'}\nLogged battery/connector spec: ${plane.battSpec||'not logged'}\nLogged motor/ESC/servo specs: ${plane.powerSpec||'not logged'}\nNotes: ${plane.notes||'none'}\n\nParts inventory (with quantity on hand):\n${parts.map(p=>`- [${p.category}] ${p.name} — ${p.spec||'no spec'} (qty ${p.qty||1})`).join('\n')}\n\nFor this plane, go through the inventory and tell me:\n## Good Matches\nWhich specific parts (by name) are compatible and why.\n## Risky / Check First\nAny parts that might work but need verification (voltage, connector, current rating, weight).\n## Not Compatible\nParts that clearly don't fit, briefly why.\n## Missing\nAny critical part type not present in inventory at all for this plane to fly.`;
     const text=await callClaude(sys,usr,1200);
     stopP(pi,'match');
-    showEl('match-results',`<div class="results-wrap"><div class="rhead go"><i class="ti ti-plug-connected"></i> Compatibility for ${escHtml(plane.name)}</div><div style="padding:12px">${rMD(text,'g2')}</div></div>`);
+    const cache=loadMatchCache();
+    cache[plane.id]={text,ts:Date.now(),hash:matchInputHash(plane,parts)};
+    saveMatchCache(cache);
+    renderCachedMatch(plane.id);
   }catch(e){
     stopP(pi,'match');
     showEl('match-results',errHTML(e.message||'Match failed.'));
   }
   setBtn('match-btn',false,'<i class="ti ti-plug-connected"></i> Find compatible parts');
+  renderMatchPreview();
 }
 
 // ── BUILD: from stock ─────────────────────────────
