@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-20T03:47:04.814Z",
+  "saved": "2026-06-20T03:58:41.945Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -410,7 +410,7 @@
       "name": "Pulse 3S 2250",
       "category": "Battery",
       "spec": "3S 2250",
-      "qty": 2,
+      "qty": 3,
       "notes": ""
     },
     {
