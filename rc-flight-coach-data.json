@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-22T04:43:55.523Z",
+  "saved": "2026-06-22T04:45:04.840Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -223,11 +223,12 @@
     {
       "id": "mqlbustg156zr5",
       "name": "F-15 (Kyle)",
-      "type": "Plane",
-      "status": "retired",
+      "type": "Airplane",
+      "status": "building",
       "battSpec": "4S 1300 mah-1500 mah / 4S 1500 / 4S 1300",
       "powerSpec": "Motor: X-Fly 40mm (x2)\nESC: 20A (HawkWorx) (x2)\nServos: Generic MG90S 9G",
-      "notes": "Flys great\nSpreadsheet status: Destroyed\nConnector: XT 60"
+      "notes": "Flys great\nConnector: XT 60",
+      "class": ""
     },
     {
       "id": "mqlbustg4i4i1j",
