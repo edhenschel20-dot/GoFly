@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Flight Coach",
-  "saved": "2026-06-22T04:45:04.840Z",
+  "saved": "2026-06-22T04:45:18.914Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -228,7 +228,7 @@
       "battSpec": "4S 1300 mah-1500 mah / 4S 1500 / 4S 1300",
       "powerSpec": "Motor: X-Fly 40mm (x2)\nESC: 20A (HawkWorx) (x2)\nServos: Generic MG90S 9G",
       "notes": "Flys great\nConnector: XT 60",
-      "class": ""
+      "class": "Jet"
     },
     {
       "id": "mqlbustg4i4i1j",
