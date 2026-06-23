@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- RC Flight Coach v2026-06-05 03:33:11 -->
+<!-- RC Sidekick -->
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -10,7 +10,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
-<title>RC Flight Coach</title>
+<title>RC Sidekick</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet" />
@@ -352,7 +352,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div class="header-top">
     <div class="logo-icon"><i class="ti ti-propeller"></i></div>
     <div>
-      <div class="logo-text">RC Flight Coach</div>
+      <div class="logo-text">RC Sidekick</div>
       <div class="logo-sub">AI-powered · Gemini + Claude</div>
     </div>
     <div class="usage-pill" onclick="openUsage()" title="API usage this session">
@@ -686,7 +686,6 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   </div>
   <div id="hangar-list"></div>
   <button class="abtn" id="hangar-add-btn" onclick="openPlaneEditor(null)"><i class="ti ti-plus"></i> Add a plane</button>
-  <button class="abtn" id="hangar-import-btn" onclick="importFleetFromSpreadsheet()" style="margin-top:8px;background:var(--ddim)"><i class="ti ti-file-spreadsheet"></i> Import fleet from spreadsheet</button>
 </div>
 
 <!-- PARTS -->
@@ -1547,7 +1546,7 @@ function exportBackup(){
   const data={
     version:1,
     exported:new Date().toISOString(),
-    app:'RC Flight Coach',
+    app:'RC Sidekick',
     summary:{moves_rated:total,notes_saved:noteCount,lessons_saved:Object.keys(loadLessons()).length},
     proficiency:profs,
     notes:notes,
@@ -2396,7 +2395,7 @@ function ghEnabled(){
 function buildDataBundle(){
   return {
     version:2,
-    app:'RC Flight Coach',
+    app:'RC Sidekick',
     saved:new Date().toISOString(),
     proficiency:loadProfs(),
     notes:loadNotes(),
@@ -2457,7 +2456,7 @@ async function ghPutFile(bundle){
   const url=`https://api.github.com/repos/${c.username}/${c.repo}/contents/rc-flight-coach-data.json`;
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(bundle,null,2))));
   const body={
-    message:'RC Flight Coach auto-sync '+new Date().toISOString(),
+    message:'RC Sidekick auto-sync '+new Date().toISOString(),
     content:content,
   };
   if(_ghSha)body.sha=_ghSha;
@@ -2742,44 +2741,6 @@ function compareHangarField(a,b,field){
 
 const PART_CATEGORIES=['Battery','Motor','ESC','Servo','Propeller','Receiver','Flight Controller','Frame/Airframe Part','Hardware','Other'];
 
-// ── ONE-TIME SPREADSHEET IMPORT (fleet + parts) ──
-const _FLEET_IMPORT_DATA = {"planes": [{"name": "Goblin 700", "type": "Heli", "status": "ready", "notes": "On DX9"}, {"name": "Gaui X7", "type": "Heli", "status": "ready", "notes": "On DX9"}, {"name": "Delta Fighter", "type": "Plane", "status": "ready", "battSpec": "6S / 6S 2200", "powerSpec": "Motor: Freewing 64mm 12-blade 6s EDF 2300KV (installed) — wanted: 60mm EDF\nESC: 60A\nServos: Generic MG90S 9G", "notes": "Needs programming and paint\nReceiver: Lemon 1"}, {"name": "Pitts S-12", "type": "Plane", "battSpec": "4s 2200 / 4s 1800 x 2", "powerSpec": "Motor: Sunnysky x2820 1100kv\nESC: Hobbywing Skywalker 60Amp ESC\nServos (wanted): EMAX ES08MAII 12g metal gear(authentic)", "notes": "Work on Ailerons/Sand"}, {"name": "Corsair", "type": "Plane", "status": "retired", "powerSpec": "Motor: 2804 2300kv\nESC: Flight Test 20amp esc\nServos (wanted): Flight Test ES9051 5g", "notes": "Small Park Flier/Antiquated design but I want to try it again\nSpreadsheet status: Destroyed"}, {"name": "Zero (3DLabPrint)", "type": "Plane", "status": "repair", "battSpec": "4S 1500mah", "powerSpec": "Motor: flash hobby d2830 1000kv (installed) — wanted: Leopard LC2830 980kv\nESC: 30A 3A UBEC wXT60\nServos (wanted): 9g micro servos", "notes": "Check Travle and setup on Controller\nSpreadsheet status: Needs Controller Setup"}, {"name": "Cub (3DLabPrint)", "type": "Plane", "status": "repair", "powerSpec": "Motor: Flash Hobby D2830 1000kv", "notes": "Check Travle and setup on Controller\nSpreadsheet status: Needs Controller Setup"}, {"name": "Mustang", "type": "Plane", "status": "repair", "powerSpec": "ESC: GForce 30A Brushless ESC (XT60)", "notes": "Landing Gear doesn't work right\nSpreadsheet status: Needs Repairs"}, {"name": "F-18", "type": "Plane", "status": "repair", "battSpec": "3S 1300mah", "powerSpec": "Motor: 64mm EDF 4300kv\nESC: 25 amp", "notes": "Test out everything/Purchased used\nSpreadsheet status: Needs Controller Setup"}, {"name": "Cobra", "type": "Plane", "status": "building", "powerSpec": "Motor: Powerfun 50mm 11 Blades EDF 4300kv (installed) — wanted: FMS 50mm 11 Blades EDF 4500kv\nESC (wanted): 50A Skywalker or Aerostar\nServos (wanted): Micro servo 9g", "notes": "Still Building"}, {"name": "Visionaire", "type": "Heli", "status": "ready", "notes": "Healthy"}, {"name": "Goblin 500", "type": "Heli", "status": "repair", "notes": "Needs ESC connected and setup done in Ikon. On DX9\nSpreadsheet status: Needs Repairs"}, {"name": "Blade 270cfx", "type": "Heli", "status": "ready", "notes": "On DX9"}, {"name": "Trex 470", "type": "Heli"}, {"name": "Blade 230S", "type": "Heli", "status": "ready", "notes": "On DX9"}, {"name": "Align Leap", "type": "Heli", "notes": "On DX9"}, {"name": "Align Leap", "type": "Heli", "notes": "On DX9"}, {"name": "Trex 550E", "type": "Heli", "status": "repair", "notes": "Spreadsheet status: Needs Repairs"}, {"name": "Blade 300x", "type": "Heli"}, {"name": "Batwing Ver1", "type": "Plane", "status": "repair", "battSpec": "4S 3300", "notes": "Doesn't fly well, looks good.\nSpreadsheet status: Needs Electronics"}, {"name": "Shmiggen", "type": "Plane", "status": "building", "notes": "Pieces not glued together but printed in garage"}, {"name": "F-18 (Kyle)", "type": "Plane", "status": "ready", "battSpec": "4S 1300 mah-1500 mah / 4S 1500 / 4S 1300", "powerSpec": "Motor: X-Fly 40mm (x2)\nESC: 20A (HawkWorx) (x2)\nServos: Generic MG90S 9G", "notes": "Good flying, Needs some paint\nConnector: XT 60"}, {"name": "F-15 (Kyle)", "type": "Plane", "status": "retired", "battSpec": "4S 1300 mah-1500 mah / 4S 1500 / 4S 1300", "powerSpec": "Motor: X-Fly 40mm (x2)\nESC: 20A (HawkWorx) (x2)\nServos: Generic MG90S 9G", "notes": "Flys great\nSpreadsheet status: Destroyed\nConnector: XT 60"}, {"name": "F-35c (kyle)", "type": "Plane", "notes": "Not printed"}, {"name": "F-22 (Kyle)", "type": "Plane", "status": "repair", "notes": "Needs gear added\nSpreadsheet status: Needs Gear"}, {"name": "C-17 (Kyle)", "type": "Plane", "status": "building", "powerSpec": "Motor: X-Fly 40mm (x2)\nESC: 20A (HawkWorx) (x2)\nServos: Generic MG90S 9G", "notes": "Building"}, {"name": "Draken", "type": "Plane", "status": "repair", "powerSpec": "Motor: 50mm Xfly", "notes": "Spreadsheet status: Needs Repairs"}, {"name": "Space Shuttle", "type": "Plane", "status": "building", "notes": "Receiver: Lemon 2"}, {"name": "X-100 Infinity Wing", "type": "Plane", "battSpec": "3s 2200 or 4s 2200-3300 / 4s 1800", "powerSpec": "Motor: Leopard 3536-7T 1100vk\nESC: Hobbywing Skywalker 50Amp ESC\nServos (wanted): EMAX ES08MAII 12g metal gear (generic)", "notes": "Needs Electronics setup\n[Imported from 'Building' section]"}, {"name": "Ziggy", "type": "Plane", "status": "retired", "battSpec": "2s 650mah / 2s 650mah  x2", "powerSpec": "Motor: sunnysky x1806-s 2000kv (installed) — wanted: AXI 2203/40 VPP\nESC: 12 Amp ESC\nServos: 1 4.8g and for aielorns 8g (installed) — wanted: Emax ES9250MD (4.8g)", "notes": "Rebuilding\nSpreadsheet status: Destroyed\nProp: have 7x6e, want APC 6x6e\n[Imported from 'Building' section]"}, {"name": "Paper Airplane", "type": "Plane", "status": "repair", "battSpec": "2S Lipo, 900 MaH / Urgenex 2S 900mah", "powerSpec": "Motor: FlightTest 2205 - 2300kv (installed) — wanted: AXI 2203/40 VPP\nESC: ZTW Mantis Slim 15A (installed) — wanted: 15A\nServos: Generic MG90S 9G (installed) — wanted: Hitec HS-55", "notes": "Spreadsheet status: Unsure\nProp: have 8x3.8 SF, want 8x3.8, 8x4.3\nConnector: pH 2.0 /use adapter\n[Imported from 'Past Models' section]"}, {"name": "EWW-180 (WhiteWing)", "type": "Plane", "status": "retired", "battSpec": "3s and 4s 1800", "powerSpec": "Motor: Gbrand 2212 kv1400\nESC: Flite Test 35A ESC\nServos (wanted): Flight Test ES08AII 9g", "notes": "Not Built (OLD PLA ONLY)\nSpreadsheet status: OLD Style\n[Imported from 'Past Models' section]"}, {"name": "Fun Bus", "type": "Plane", "status": "retired", "battSpec": "2s  350-650mah / 2s 650mah x 2", "powerSpec": "Motor: Flash Hobby BE1806 2300kv (installed) — wanted: AXI 2203/40 VPP      -   motor should be 20g\nESC: 12 Amp ESC\nServos (wanted): Emax ES9250MD (4.8g)", "notes": "Not Buil\nSpreadsheet status: Destroyed\nProp: want APC 9x3.7\n[Imported from 'Past Models' section]"}], "parts": [{"category": "Battery", "name": "ZEEE 6S 2200", "spec": "6S 2200", "qty": 2, "notes": ""}, {"category": "Battery", "name": "Pulse 6S 1050", "spec": "6S 1050", "qty": 4, "notes": "Used in: Blade 270 CFX"}, {"category": "Battery", "name": "Pulse 6S 1800", "spec": "6S 1800", "qty": 2, "notes": ""}, {"category": "Battery", "name": "HRB 4S 2600", "spec": "4S 2600", "qty": 2, "notes": ""}, {"category": "Battery", "name": "HOOVO 4S 3300", "spec": "4S 3300", "qty": 2, "notes": ""}, {"category": "Battery", "name": "ZEEE 4S 1300", "spec": "4S 1300", "qty": 2, "notes": "Used in: F-15, F-22"}, {"category": "Battery", "name": "ZEEE 4S 1500", "spec": "4S 1500", "qty": 2, "notes": "Used in: F-15, F-22"}, {"category": "Battery", "name": "CNHL Black 4S 1500", "spec": "4S 1500", "qty": 1, "notes": ""}, {"category": "Battery", "name": "Pulse 4S 1800", "spec": "4S 1800", "qty": 1, "notes": "Used in: F-22"}, {"category": "Battery", "name": "Pulse 3S 2250", "spec": "3S 2250", "qty": 2, "notes": ""}, {"category": "Battery", "name": "Eflite 3S 1350", "spec": "3S 1350", "qty": 1, "notes": ""}, {"category": "Battery", "name": "MiniStar 3S 350", "spec": "3S 350", "qty": 1, "notes": ""}, {"category": "Battery", "name": "Outrage 3S 860", "spec": "3S 860", "qty": 1, "notes": ""}, {"category": "Battery", "name": "Pulse 3S 860", "spec": "3S 860", "qty": 1, "notes": ""}, {"category": "Battery", "name": "ThunderPower 3S 850", "spec": "3S 850", "qty": 1, "notes": ""}, {"category": "Battery", "name": "Turnigy 2S 1600", "spec": "2S 1600", "qty": 2, "notes": ""}, {"category": "Battery", "name": "Urgenex 2S 900", "spec": "2S 900", "qty": 2, "notes": ""}, {"category": "Battery", "name": "MiniStar 2S 650", "spec": "2S 650", "qty": 2, "notes": ""}, {"category": "Battery", "name": "Eflite 3s 450", "spec": "3s 450", "qty": 1, "notes": ""}, {"category": "Battery", "name": "Eflite 3s 800", "spec": "3s 800", "qty": 2, "notes": ""}, {"category": "Battery", "name": "OutRage 3s 800", "spec": "3s 800", "qty": 1, "notes": ""}, {"category": "Motor", "name": "Xfly 40mm EDF", "spec": "5000KV, 12-blade, runs on 3s/4s", "qty": 4, "notes": "Used in: F-15, F-18"}, {"category": "Motor", "name": "Vgeby 50mm EDF", "spec": "4600KV, 12-blade, runs on 3s/4s", "qty": 1, "notes": ""}, {"category": "Motor", "name": "Xfly 50mm EDF", "spec": "4600KV, 12-blade, runs on 4s", "qty": 2, "notes": "Used in: Dagger 1"}, {"category": "Motor", "name": "PowerFun 50mm EDF", "spec": "4300KV, 11-blade, runs on 4s", "qty": 1, "notes": "Used in: Cobra"}, {"category": "Receiver", "name": "Lemon 1", "spec": "Lemon, 7.0ch, built-in gyro", "qty": 1, "notes": "Setup: Delta"}, {"category": "Receiver", "name": "Lemon 2", "spec": "Lemon, 7.0ch, built-in gyro", "qty": 1, "notes": "Setup: Delta"}, {"category": "Receiver", "name": "Lemon 3", "spec": "", "qty": 1, "notes": ""}, {"category": "Receiver", "name": "Lemon 4", "spec": "", "qty": 1, "notes": ""}]};
-
-function importFleetFromSpreadsheet(){
-  if(localStorage.getItem('rcfc_fleet_import_done')==='1'){
-    if(!confirm('This looks like it was already imported once. Import again? (Items already in your Hangar/Parts with matching names will be skipped, not duplicated.)')) return;
-  }
-  const existingPlanes=loadHangar();
-  const existingParts=loadParts();
-  const existingPlaneNames=new Set(existingPlanes.map(p=>p.name.toLowerCase()));
-  const existingPartNames=new Set(existingParts.map(p=>p.name.toLowerCase()));
-
-  let addedPlanes=0,addedParts=0,skippedPlanes=0,skippedParts=0;
-
-  _FLEET_IMPORT_DATA.planes.forEach(p=>{
-    if(existingPlaneNames.has(p.name.toLowerCase())){skippedPlanes++;return;}
-    existingPlanes.push({id:uid(),name:p.name,type:p.type||'',status:p.status||'ready',battSpec:p.battSpec||'',powerSpec:p.powerSpec||'',notes:p.notes||''});
-    existingPlaneNames.add(p.name.toLowerCase());
-    addedPlanes++;
-  });
-
-  _FLEET_IMPORT_DATA.parts.forEach(p=>{
-    if(existingPartNames.has(p.name.toLowerCase())){skippedParts++;return;}
-    existingParts.push({id:uid(),name:p.name,category:p.category||'Other',spec:p.spec||'',qty:p.qty||1,notes:p.notes||''});
-    existingPartNames.add(p.name.toLowerCase());
-    addedParts++;
-  });
-
-  saveHangar(existingPlanes);
-  saveParts(existingParts);
-  localStorage.setItem('rcfc_fleet_import_done','1');
-  renderHangar();
-  renderParts();
-  populateMatchPlaneSelect();
-  alert(`Import complete!\n\nPlanes added: ${addedPlanes} (skipped ${skippedPlanes} already in Hangar)\nParts added: ${addedParts} (skipped ${skippedParts} already in Parts)`);
-}
-
-
 // ── HANGAR RENDER ────────────────────────────────
 function renderHangar(){
   const list=document.getElementById('hangar-list');
@@ -2815,6 +2776,29 @@ function renderHangar(){
 }
 
 function escHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+// ── PART <-> PLANE ASSIGNMENTS ─────────────────────
+function partAssignedQty(part){return (part.assigned||[]).reduce((s,a)=>s+(parseInt(a.qty,10)||0),0);}
+function partAvailableQty(part){return Math.max(0,(part.qty||0)-partAssignedQty(part));}
+function planeNameById(id){const pl=loadHangar().find(p=>p.id===id);return pl?pl.name:'(deleted plane)';}
+function partsAssignedToPlane(planeId){
+  return loadParts().map(p=>{
+    const a=(p.assigned||[]).find(x=>x.planeId===planeId);
+    return a?{part:p,qty:a.qty}:null;
+  }).filter(Boolean);
+}
+function renderInstalledPartsHTML(planeId){
+  const rows=partsAssignedToPlane(planeId);
+  if(!rows.length)return '<div class="mr-craft" style="opacity:.6">No parts currently assigned to this plane</div>';
+  return rows.map(r=>`<div class="move-row" onclick="openPartEditor('${r.part.id}')">
+    <div class="logo-icon" style="width:36px;height:36px;font-size:16px"><i class="ti ti-package"></i></div>
+    <div class="mr-info">
+      <div class="mr-name">${escHtml(r.part.name)}</div>
+      <div class="mr-meta"><span class="dbadge">${escHtml(r.part.category)}</span><span class="mr-craft">x${r.qty}</span></div>
+    </div>
+    <i class="ti ti-chevron-right mr-arr"></i>
+  </div>`).join('');
+}
 
 // ── PLANE EDITOR (uses existing overlay #ov) ─────
 let _editingPlaneId=null;
@@ -2867,6 +2851,8 @@ function openPlaneEditor(id){
     <textarea class="row-input" id="pe-power" rows="3" placeholder="e.g. Motor: 2306 2400kv · ESC: 30A · Servos: 9g micro" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.powerSpec||''):''}</textarea>
     <div class="slabel">Notes (repairs needed, setup details, etc.)</div>
     <textarea class="row-input" id="pe-notes" rows="4" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
+    ${p?`<div class="slabel">Installed Parts</div>
+    <div style="margin-bottom:14px">${renderInstalledPartsHTML(p.id)}</div>`:''}
     <div style="display:flex;gap:8px">
       ${p?'<button class="abtn" style="flex:0 0 auto;width:auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePlane()"><i class="ti ti-trash"></i></button>':''}
       <button class="abtn" style="flex:1" onclick="savePlane()"><i class="ti ti-check"></i> Save</button>
@@ -2926,6 +2912,16 @@ function deletePlane(){
   if(!confirm('Delete this plane?'))return;
   let planes=loadHangar().filter(p=>p.id!==_editingPlaneId);
   saveHangar(planes);
+  let parts=loadParts();
+  let partsChanged=false;
+  parts=parts.map(p=>{
+    if(p.assigned&&p.assigned.some(a=>a.planeId===_editingPlaneId)){
+      partsChanged=true;
+      return {...p,assigned:p.assigned.filter(a=>a.planeId!==_editingPlaneId)};
+    }
+    return p;
+  });
+  if(partsChanged)saveParts(parts);
   closeOv();
   renderHangar();
   populateMatchPlaneSelect();
@@ -2958,11 +2954,15 @@ function renderParts(){
   }
   list.innerHTML=parts.map(p=>{
     const photo=p.photo?`<img src="${p.photo}" style="width:44px;height:44px;border-radius:var(--r);object-fit:cover;flex-shrink:0" />`:`<div class="logo-icon" style="width:44px;height:44px;font-size:18px"><i class="ti ti-package"></i></div>`;
+    const assignedQty=partAssignedQty(p);
+    const availQty=partAvailableQty(p);
+    const assignBadges=(p.assigned||[]).filter(a=>a.qty>0).map(a=>`<span class="dbadge" style="border-color:var(--accent);color:var(--accent)">${a.qty} in ${escHtml(planeNameById(a.planeId))}</span>`).join('');
     return `<div class="move-row" onclick="openPartEditor('${p.id}')">
       ${photo}
       <div class="mr-info">
         <div class="mr-name">${escHtml(p.name)}</div>
-        <div class="mr-meta"><span class="dbadge">${escHtml(p.category)}</span>${p.spec?`<span class="mr-craft">${escHtml(p.spec)}</span>`:''}${p.qty&&p.qty>1?`<span class="mr-craft">x${p.qty}</span>`:''}</div>
+        <div class="mr-meta"><span class="dbadge">${escHtml(p.category)}</span>${p.spec?`<span class="mr-craft">${escHtml(p.spec)}</span>`:''}${p.qty&&p.qty>1?`<span class="mr-craft">x${p.qty}</span>`:''}${assignedQty>0?`<span class="mr-craft" style="color:var(--accent)">${availQty} avail</span>`:''}</div>
+        ${assignBadges?`<div class="mr-meta" style="margin-top:4px">${assignBadges}</div>`:''}
       </div>
       <i class="ti ti-chevron-right mr-arr"></i>
     </div>`;
@@ -2978,6 +2978,7 @@ function openPartEditor(id){
   _pendingPartPhoto=null;
   const parts=loadParts();
   const p=id?parts.find(x=>x.id===id):null;
+  _partAssignWorking=(p&&p.assigned)?JSON.parse(JSON.stringify(p.assigned)):[];
   document.getElementById('ov-title').textContent=p?'Edit Part':'Add Part';
   document.getElementById('ov-badge').textContent='';
   document.getElementById('ov-badge').className='dbadge';
@@ -3005,7 +3006,18 @@ function openPartEditor(id){
     <div class="slabel">Spec / details</div>
     <input class="row-input" id="pa-spec" type="text" placeholder="e.g. XT60 connector, 14.8V, 35x35x90mm" value="${p?escHtml(p.spec||''):''}" style="margin-bottom:12px" />
     <div class="slabel">Quantity on hand</div>
-    <input class="row-input" id="pa-qty" type="number" min="0" value="${p?p.qty||1:1}" style="margin-bottom:12px" />
+    <input class="row-input" id="pa-qty" type="number" min="0" value="${p?p.qty||1:1}" oninput="renderPartAssignRows()" style="margin-bottom:12px" />
+    <div class="slabel">Installed in / assigned to plane</div>
+    <div id="pa-assign-list" style="margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:4px">
+      <select class="row-input" id="pa-assign-plane" style="flex:1">
+        <option value="">Select plane...</option>
+        ${loadHangar().map(pl=>`<option value="${pl.id}">${escHtml(pl.name)}</option>`).join('')}
+      </select>
+      <input class="row-input" id="pa-assign-qty" type="number" min="1" value="1" style="width:60px;flex:0 0 auto" />
+      <button class="abtn" style="flex:0 0 auto;width:auto;padding:8px 12px" onclick="addPartAssignRow()"><i class="ti ti-plus"></i></button>
+    </div>
+    <div id="pa-avail-info" class="mr-craft" style="margin-bottom:12px"></div>
     <div class="slabel">Notes</div>
     <textarea class="row-input" id="pa-notes" rows="3" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
     <div style="display:flex;gap:8px">
@@ -3015,6 +3027,7 @@ function openPartEditor(id){
   `;
   document.getElementById('ov').classList.add('open');
   document.body.style.overflow='hidden';
+  renderPartAssignRows();
 }
 
 async function handlePartPhoto(input){
@@ -3028,6 +3041,51 @@ async function handlePartPhoto(input){
   }catch(e){console.log('photo err',e);}
 }
 
+let _partAssignWorking=[];
+
+function renderPartAssignRows(){
+  const listEl=document.getElementById('pa-assign-list');
+  const infoEl=document.getElementById('pa-avail-info');
+  if(!listEl)return;
+  if(!_partAssignWorking.length){
+    listEl.innerHTML='<div class="mr-craft" style="opacity:.6">None yet</div>';
+  }else{
+    listEl.innerHTML=_partAssignWorking.map((a,i)=>`<div class="toggle-row" style="margin-bottom:6px;align-items:center">
+      <span class="mr-craft" style="flex:1">${escHtml(planeNameById(a.planeId))}</span>
+      <input class="row-input" type="number" min="1" value="${a.qty}" style="width:60px;flex:0 0 auto" onchange="updatePartAssignQty(${i},this.value)" />
+      <button class="abtn" style="flex:0 0 auto;width:auto;padding:6px 10px;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="removePartAssignRow(${i})"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+  }
+  const qtyEl=document.getElementById('pa-qty');
+  const onHand=qtyEl?(parseInt(qtyEl.value,10)||0):0;
+  const installed=_partAssignWorking.reduce((s,a)=>s+(parseInt(a.qty,10)||0),0);
+  if(infoEl)infoEl.textContent=`On hand: ${onHand} · Installed: ${installed} · Available: ${Math.max(0,onHand-installed)}`;
+}
+
+function addPartAssignRow(){
+  const sel=document.getElementById('pa-assign-plane');
+  const qtyEl=document.getElementById('pa-assign-qty');
+  const planeId=sel.value;
+  const qty=parseInt(qtyEl.value,10)||1;
+  if(!planeId){alert('Pick a plane first.');return;}
+  const existing=_partAssignWorking.find(a=>a.planeId===planeId);
+  if(existing)existing.qty=(parseInt(existing.qty,10)||0)+qty;
+  else _partAssignWorking.push({planeId,qty});
+  sel.value='';
+  qtyEl.value=1;
+  renderPartAssignRows();
+}
+
+function updatePartAssignQty(i,val){
+  _partAssignWorking[i].qty=parseInt(val,10)||1;
+  renderPartAssignRows();
+}
+
+function removePartAssignRow(i){
+  _partAssignWorking.splice(i,1);
+  renderPartAssignRows();
+}
+
 function savePart(){
   const name=document.getElementById('pa-name').value.trim();
   if(!name){alert('Give the part a name first.');return;}
@@ -3035,15 +3093,16 @@ function savePart(){
   const spec=document.getElementById('pa-spec').value.trim();
   const qty=parseInt(document.getElementById('pa-qty').value,10)||1;
   const notes=document.getElementById('pa-notes').value.trim();
+  const assigned=_partAssignWorking.filter(a=>a.planeId&&a.qty>0).map(a=>({planeId:a.planeId,qty:parseInt(a.qty,10)||1}));
   let parts=loadParts();
   if(_editingPartId){
     const idx=parts.findIndex(p=>p.id===_editingPartId);
     if(idx>-1){
-      parts[idx]={...parts[idx],name,category,spec,qty,notes};
+      parts[idx]={...parts[idx],name,category,spec,qty,notes,assigned};
       if(_pendingPartPhoto)parts[idx].photo=_pendingPartPhoto;
     }
   }else{
-    const np={id:uid(),name,category,spec,qty,notes};
+    const np={id:uid(),name,category,spec,qty,notes,assigned};
     if(_pendingPartPhoto)np.photo=_pendingPartPhoto;
     parts.push(np);
   }
