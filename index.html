@@ -2809,6 +2809,7 @@ function openPlaneEditor(id){
   _pendingPlanePhoto=null;
   const planes=loadHangar();
   const p=id?planes.find(x=>x.id===id):null;
+  _planeAssignWorking=p?loadParts().filter(pt=>(pt.assigned||[]).some(a=>a.planeId===p.id)).map(pt=>({partId:pt.id,qty:(pt.assigned.find(a=>a.planeId===p.id)||{}).qty||1})):[];
   document.getElementById('ov-title').textContent=p?'Edit Plane':'Add Plane';
   document.getElementById('ov-badge').textContent='';
   document.getElementById('ov-badge').className='dbadge';
@@ -2851,8 +2852,16 @@ function openPlaneEditor(id){
     <textarea class="row-input" id="pe-power" rows="3" placeholder="e.g. Motor: 2306 2400kv · ESC: 30A · Servos: 9g micro" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.powerSpec||''):''}</textarea>
     <div class="slabel">Notes (repairs needed, setup details, etc.)</div>
     <textarea class="row-input" id="pe-notes" rows="4" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
-    ${p?`<div class="slabel">Installed Parts</div>
-    <div style="margin-bottom:14px">${renderInstalledPartsHTML(p.id)}</div>`:''}
+    ${p?`<div class="slabel">Parts installed on this plane</div>
+    <div id="pe-parts-list" style="margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <select class="row-input" id="pe-parts-select" style="flex:1">
+        <option value="">Select part...</option>
+        ${loadParts().map(pt=>`<option value="${pt.id}">${escHtml(pt.name)}${pt.spec?' — '+escHtml(pt.spec):''} (${partAvailableQty(pt)} avail)</option>`).join('')}
+      </select>
+      <input class="row-input" id="pe-parts-qty" type="number" min="1" value="1" style="width:60px;flex:0 0 auto" />
+      <button class="abtn" style="flex:0 0 auto;width:auto;padding:8px 12px" onclick="addPlaneAssignRow()"><i class="ti ti-plus"></i></button>
+    </div>`:''}
     <div style="display:flex;gap:8px">
       ${p?'<button class="abtn" style="flex:0 0 auto;width:auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePlane()"><i class="ti ti-trash"></i></button>':''}
       <button class="abtn" style="flex:1" onclick="savePlane()"><i class="ti ti-check"></i> Save</button>
@@ -2860,6 +2869,7 @@ function openPlaneEditor(id){
   `;
   document.getElementById('ov').classList.add('open');
   document.body.style.overflow='hidden';
+  renderPlaneAssignRows();
 }
 
 function setPlaneStatusBtn(btn){
@@ -2878,6 +2888,64 @@ async function handlePlanePhoto(input){
   }catch(e){console.log('photo err',e);}
 }
 
+let _planeAssignWorking=[];
+
+function renderPlaneAssignRows(){
+  const listEl=document.getElementById('pe-parts-list');
+  if(!listEl)return;
+  if(!_planeAssignWorking.length){
+    listEl.innerHTML='<div class="mr-craft" style="opacity:.6">No parts assigned yet</div>';
+    return;
+  }
+  const allParts=loadParts();
+  listEl.innerHTML=_planeAssignWorking.map((a,i)=>{
+    const pt=allParts.find(x=>x.id===a.partId);
+    const label=pt?(escHtml(pt.name)+(pt.spec?' — '+escHtml(pt.spec):'')):'(deleted part)';
+    return `<div class="toggle-row" style="margin-bottom:6px;align-items:center">
+      <span class="mr-craft" style="flex:1">${label}</span>
+      <input class="row-input" type="number" min="1" value="${a.qty}" style="width:60px;flex:0 0 auto" onchange="updatePlaneAssignQty(${i},this.value)" />
+      <button class="abtn" style="flex:0 0 auto;width:auto;padding:6px 10px;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="removePlaneAssignRow(${i})"><i class="ti ti-x"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function addPlaneAssignRow(){
+  const sel=document.getElementById('pe-parts-select');
+  const qtyEl=document.getElementById('pe-parts-qty');
+  const partId=sel.value;
+  const qty=parseInt(qtyEl.value,10)||1;
+  if(!partId){alert('Pick a part first.');return;}
+  const existing=_planeAssignWorking.find(a=>a.partId===partId);
+  if(existing)existing.qty=(parseInt(existing.qty,10)||0)+qty;
+  else _planeAssignWorking.push({partId,qty});
+  sel.value='';
+  qtyEl.value=1;
+  renderPlaneAssignRows();
+}
+
+function updatePlaneAssignQty(i,val){
+  _planeAssignWorking[i].qty=parseInt(val,10)||1;
+  renderPlaneAssignRows();
+}
+
+function removePlaneAssignRow(i){
+  _planeAssignWorking.splice(i,1);
+  renderPlaneAssignRows();
+}
+
+// Writes _planeAssignWorking back onto the parts store for this plane,
+// replacing whatever assignment that plane previously had on each part.
+function applyPlaneAssignmentsToParts(planeId){
+  let parts=loadParts();
+  parts=parts.map(pt=>{
+    let assigned=(pt.assigned||[]).filter(a=>a.planeId!==planeId);
+    const w=_planeAssignWorking.find(x=>x.partId===pt.id);
+    if(w&&w.qty>0)assigned=[...assigned,{planeId,qty:parseInt(w.qty,10)||1}];
+    return {...pt,assigned};
+  });
+  saveParts(parts);
+}
+
 function savePlane(){
   const name=document.getElementById('pe-name').value.trim();
   if(!name){alert('Give the plane a name first.');return;}
@@ -2890,6 +2958,7 @@ function savePlane(){
   const powerSpec=document.getElementById('pe-power').value.trim();
   const notes=document.getElementById('pe-notes').value.trim();
   let planes=loadHangar();
+  let savedPlaneId=_editingPlaneId;
   if(_editingPlaneId){
     const idx=planes.findIndex(p=>p.id===_editingPlaneId);
     if(idx>-1){
@@ -2900,10 +2969,13 @@ function savePlane(){
     const np={id:uid(),name,type,class:craftClass,status,battSpec,powerSpec,notes};
     if(_pendingPlanePhoto)np.photo=_pendingPlanePhoto;
     planes.push(np);
+    savedPlaneId=np.id;
   }
   saveHangar(planes);
+  if(savedPlaneId)applyPlaneAssignmentsToParts(savedPlaneId);
   closeOv();
   renderHangar();
+  renderParts();
   populateMatchPlaneSelect();
 }
 
