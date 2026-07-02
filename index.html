@@ -3183,8 +3183,24 @@ async function identifyPartFromPhoto(){
     const text=await callClaudeVisionSearch(sys,photo,usr,700);
     stopP(pi,'paident');
 
-    const get=(label)=>{const m=text.match(new RegExp(label+':\\s*(.+)'));return m?m[1].trim():'';};
-    const category=get('CATEGORY'),name=get('NAME'),spec=get('SPEC'),conf=get('CONFIDENCE').toLowerCase(),notes=get('NOTES');
+    // Robust label parser: grabs everything from "LABEL:" up to the next
+    // known label or end of text, so multi-line/wrapped values (like SPEC)
+    // don't get truncated to their first line.
+    const FIELD_LABELS=['CATEGORY','NAME','SPEC','CONFIDENCE','NOTES'];
+    const getField=(label)=>{
+      const startRe=new RegExp(label+':\\s*');
+      const sm=text.match(startRe);
+      if(!sm)return '';
+      let rest=text.slice(sm.index+sm[0].length);
+      let cut=rest.length;
+      for(const other of FIELD_LABELS){
+        if(other===label)continue;
+        const om=rest.match(new RegExp('\\n\\s*'+other+':'));
+        if(om&&om.index<cut)cut=om.index;
+      }
+      return rest.slice(0,cut).trim();
+    };
+    const category=getField('CATEGORY'),name=getField('NAME'),spec=getField('SPEC'),conf=getField('CONFIDENCE').toLowerCase(),notes=getField('NOTES');
 
     if(!name&&!spec){
       showEl('pa-identify-results',`<div class="hint" style="color:var(--danger)">Couldn't identify this part from the photo. Try a clearer, closer shot of any printed labels or text, or fill in the details manually.</div>`);
@@ -3192,7 +3208,7 @@ async function identifyPartFromPhoto(){
       return;
     }
 
-    _pendingPartIdent={category,name,spec};
+    _pendingPartIdent={category,name,spec,notes};
     const confColor=conf==='high'?'var(--accent)':conf==='medium'?'var(--gold)':'var(--danger)';
     showEl('pa-identify-results',`
       <div class="results-wrap" style="margin-bottom:10px">
@@ -3218,7 +3234,7 @@ async function identifyPartFromPhoto(){
 
 function applyPartIdent(){
   if(!_pendingPartIdent)return;
-  const {category,name,spec}=_pendingPartIdent;
+  const {category,name,spec,notes}=_pendingPartIdent;
   if(category){
     const catSel=document.getElementById('pa-category');
     const match=PART_CATEGORIES.find(c=>c.toLowerCase()===category.toLowerCase())||PART_CATEGORIES.find(c=>category.toLowerCase().includes(c.toLowerCase()));
@@ -3226,6 +3242,13 @@ function applyPartIdent(){
   }
   if(name){const nEl=document.getElementById('pa-name');if(nEl)nEl.value=name;}
   if(spec){const sEl=document.getElementById('pa-spec');if(sEl)sEl.value=spec;}
+  if(notes){
+    const notesEl=document.getElementById('pa-notes');
+    if(notesEl){
+      const aiBlock='AI identification: '+notes;
+      notesEl.value=notesEl.value.trim()?notesEl.value.trim()+'\n\n'+aiBlock:aiBlock;
+    }
+  }
   hideEl('pa-identify-results');
   _pendingPartIdent=null;
 }
