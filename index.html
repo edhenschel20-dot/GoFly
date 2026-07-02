@@ -3098,6 +3098,8 @@ function openPartEditor(id){
         <i class="ti ti-photo u-icon"></i><div class="u-title">Gallery</div>
       </div>
     </div>
+    <div id="pa-identify-results"></div>
+    <button class="abtn" id="pa-identify-btn" onclick="identifyPartFromPhoto()" style="margin-bottom:12px;padding:8px 12px;font-size:11px"><i class="ti ti-sparkles"></i> Identify from photo</button>
     <div class="slabel">Category</div>
     <select class="row-input" id="pa-category" style="margin-bottom:12px">
       ${PART_CATEGORIES.map(c=>`<option value="${c}"${p&&p.category===c?' selected':''}>${c}</option>`).join('')}
@@ -3140,6 +3142,92 @@ async function handlePartPhoto(input){
     if(img)img.src=_pendingPartPhoto;
     if(preview)preview.style.display='block';
   }catch(e){console.log('photo err',e);}
+}
+
+// ── IDENTIFY PART FROM PHOTO (Claude vision + web search) ──
+function dataUrlToImagePart(dataUrl){
+  const m=dataUrl&&dataUrl.match(/^data:(image\/[a-zA-Z]+);base64,(.+)$/);
+  if(!m)return null;
+  return {media_type:m[1],data:m[2]};
+}
+async function callClaudeVisionSearch(sys,imgDataUrl,usrText,max){
+  const k=getCKey();if(!k)throw new Error('Claude API key not set. Enter it in Learn tab API Keys.');
+  const img=dataUrlToImagePart(imgDataUrl);
+  if(!img)throw new Error('Could not read photo data.');
+  const res=await fetch('https://api.anthropic.com/v1/messages',
+    {method:'POST',headers:{'Content-Type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+     body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:max,system:sys,
+       messages:[{role:'user',content:[
+         {type:'image',source:{type:'base64',media_type:img.media_type,data:img.data}},
+         {type:'text',text:usrText}
+       ]}],
+       tools:[{type:'web_search_20250305',name:'web_search'}]})});
+  if(!res.ok){const e=await res.json();throw new Error(e.error?.message||'Claude error '+res.status);}
+  const d=await res.json();trackCall('claude');
+  const text=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  return text;
+}
+
+let _pendingPartIdent=null;
+
+async function identifyPartFromPhoto(){
+  const imgEl=document.getElementById('part-photo-img');
+  const photo=_pendingPartPhoto||(imgEl&&imgEl.src&&imgEl.src.startsWith('data:')?imgEl.src:'');
+  if(!photo){alert('Add a photo of the part first (Take Photo or Gallery, above).');return;}
+  setBtn('pa-identify-btn',true,'Identify from photo');
+  showEl('pa-identify-results',ldHTML('paident','Analyzing photo...','g'));
+  const pi=tickP('paident');
+  try{
+    const sys="You are an RC hobbyist parts expert. Look closely at the photo of an RC part (ESC, motor, battery, servo, receiver, flight controller, propeller, or hardware). Identify it as specifically as you can from visible text, printed labels, part numbers, connector shapes, and form factor. If you can read any brand or model text, use web search to confirm the exact model and its documented specs. Only report what you can actually see or verify from search — if you're inferring or guessing, say so plainly in NOTES rather than presenting a guess as fact. Respond in EXACTLY this format, nothing else, no markdown headers:\nCATEGORY: <one of Battery, Motor, ESC, Servo, Propeller, Receiver, Flight Controller, Frame/Airframe Part, Hardware, Other>\nNAME: <brand + model if identifiable, e.g. 'Hobbywing XRotor 40A'>\nSPEC: <key specs visible or found — connector type, current/voltage rating, kv, size, weight, etc.>\nCONFIDENCE: <high|medium|low>\nNOTES: <what you read directly off the label vs. what you're inferring>";
+    const usr="Identify this RC part from the photo and find its documented specs if possible.";
+    const text=await callClaudeVisionSearch(sys,photo,usr,700);
+    stopP(pi,'paident');
+
+    const get=(label)=>{const m=text.match(new RegExp(label+':\\s*(.+)'));return m?m[1].trim():'';};
+    const category=get('CATEGORY'),name=get('NAME'),spec=get('SPEC'),conf=get('CONFIDENCE').toLowerCase(),notes=get('NOTES');
+
+    if(!name&&!spec){
+      showEl('pa-identify-results',`<div class="hint" style="color:var(--danger)">Couldn't identify this part from the photo. Try a clearer, closer shot of any printed labels or text, or fill in the details manually.</div>`);
+      setBtn('pa-identify-btn',false,'<i class="ti ti-sparkles"></i> Identify from photo');
+      return;
+    }
+
+    _pendingPartIdent={category,name,spec};
+    const confColor=conf==='high'?'var(--accent)':conf==='medium'?'var(--gold)':'var(--danger)';
+    showEl('pa-identify-results',`
+      <div class="results-wrap" style="margin-bottom:10px">
+        <div class="rhead"><i class="ti ti-sparkles"></i> Identified &nbsp;<span class="dbadge" style="border-color:${confColor};color:${confColor}">${conf||'unknown'} confidence</span></div>
+        <div style="padding:12px;font-size:12px;color:var(--text)">
+          ${category?`<div style="margin-bottom:6px"><strong>Category:</strong> ${escHtml(category)}</div>`:''}
+          ${name?`<div style="margin-bottom:6px"><strong>Name:</strong> ${escHtml(name)}</div>`:''}
+          ${spec?`<div style="margin-bottom:6px"><strong>Spec:</strong> ${escHtml(spec)}</div>`:''}
+          ${notes?`<div class="hint" style="margin-top:6px">${escHtml(notes)}</div>`:''}
+        </div>
+        <div style="padding:0 12px 12px;display:flex;gap:8px">
+          <button class="abtn" style="flex:1;padding:8px;font-size:11px" onclick="applyPartIdent()"><i class="ti ti-check"></i> Use these details</button>
+          <button class="abtn" style="flex:0 0 auto;padding:8px 12px;font-size:11px;background:var(--ddim)" onclick="hideEl('pa-identify-results')"><i class="ti ti-x"></i> Discard</button>
+        </div>
+      </div>
+    `);
+  }catch(e){
+    stopP(pi,'paident');
+    showEl('pa-identify-results',`<div class="hint" style="color:var(--danger)">${escHtml(e.message||'Identification failed.')}</div>`);
+  }
+  setBtn('pa-identify-btn',false,'<i class="ti ti-sparkles"></i> Identify from photo');
+}
+
+function applyPartIdent(){
+  if(!_pendingPartIdent)return;
+  const {category,name,spec}=_pendingPartIdent;
+  if(category){
+    const catSel=document.getElementById('pa-category');
+    const match=PART_CATEGORIES.find(c=>c.toLowerCase()===category.toLowerCase())||PART_CATEGORIES.find(c=>category.toLowerCase().includes(c.toLowerCase()));
+    if(catSel&&match)catSel.value=match;
+  }
+  if(name){const nEl=document.getElementById('pa-name');if(nEl)nEl.value=name;}
+  if(spec){const sEl=document.getElementById('pa-spec');if(sEl)sEl.value=spec;}
+  hideEl('pa-identify-results');
+  _pendingPartIdent=null;
 }
 
 let _partAssignWorking=[];
