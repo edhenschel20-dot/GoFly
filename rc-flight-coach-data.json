@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Sidekick",
-  "saved": "2026-07-02T03:45:18.059Z",
+  "saved": "2026-07-02T03:45:44.500Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -510,7 +510,13 @@
       "category": "Motor",
       "spec": "5000KV, 12-blade, runs on 3s/4s",
       "qty": 4,
-      "notes": "Used in: F-15, F-18"
+      "notes": "Used in: F-15, F-18",
+      "assigned": [
+        {
+          "planeId": "mqlbustg156zr5",
+          "qty": 2
+        }
+      ]
     },
     {
       "id": "mqlbusthn85cp3",
