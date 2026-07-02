@@ -2800,6 +2800,13 @@ function renderHangar(){
 
 function escHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function todayISO(){return new Date().toISOString().slice(0,10);}
+// Short, single-line spec highlight for compact lists (e.g. plane's installed-parts
+// list) — full multi-line spec detail stays intact on the part itself / Parts tab.
+function partShortSpec(pt){
+  if(!pt||!pt.spec)return '';
+  const first=pt.spec.split('\n')[0].trim();
+  return first.length>50?first.slice(0,47)+'...':first;
+}
 
 // ── PART <-> PLANE ASSIGNMENTS ─────────────────────
 function partAssignedQty(part){return (part.assigned||[]).reduce((s,a)=>s+(parseInt(a.qty,10)||0),0);}
@@ -2827,12 +2834,14 @@ function renderInstalledPartsHTML(planeId){
 // ── PLANE EDITOR (uses existing overlay #ov) ─────
 let _editingPlaneId=null;
 let _pendingPlanePhoto=null;
+let _originalPowerSpec='';
 
 function openPlaneEditor(id){
   _editingPlaneId=id;
   _pendingPlanePhoto=null;
   const planes=loadHangar();
   const p=id?planes.find(x=>x.id===id):null;
+  _originalPowerSpec=p?(p.powerSpec||''):'';
   _planeAssignWorking=p?loadParts().filter(pt=>(pt.assigned||[]).some(a=>a.planeId===p.id)).map(pt=>({partId:pt.id,qty:(pt.assigned.find(a=>a.planeId===p.id)||{}).qty||1})):[];
   document.getElementById('ov-title').textContent=p?'Edit Plane':'Add Plane';
   document.getElementById('ov-badge').textContent='';
@@ -2873,7 +2882,10 @@ function openPlaneEditor(id){
     <div class="slabel">Battery connector / size needed</div>
     <input class="row-input" id="pe-batt" type="text" placeholder="e.g. XT60, 3S 2200mAh, 4S 1300-1500mAh" value="${p?escHtml(p.battSpec||''):''}" style="margin-bottom:12px" />
     <div class="slabel">Motor / ESC / Servo specs</div>
-    <textarea class="row-input" id="pe-power" rows="3" placeholder="e.g. Motor: 2306 2400kv · ESC: 30A · Servos: 9g micro" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.powerSpec||''):''}</textarea>
+    <div style="margin-bottom:12px">
+      <textarea class="row-input" id="pe-power" rows="3" placeholder="e.g. Motor: 2306 2400kv · ESC: 30A · Servos: 9g micro" style="resize:vertical;margin-bottom:4px">${p?escHtml(p.powerSpec||''):''}</textarea>
+      <div class="hint" id="pe-power-hint" style="display:none">Auto-generated from the motor/ESC/servo parts linked below — unlink them to edit this manually.</div>
+    </div>
     <div class="slabel">Notes (repairs needed, setup details, etc.)</div>
     <textarea class="row-input" id="pe-notes" rows="4" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
     <div class="slabel">Last updated</div>
@@ -2884,7 +2896,7 @@ function openPlaneEditor(id){
     <div style="display:flex;gap:8px;margin-bottom:14px">
       <select class="row-input" id="pe-parts-select" style="flex:1">
         <option value="">Select part...</option>
-        ${loadParts().map(pt=>`<option value="${pt.id}">${escHtml(pt.name)}${pt.spec?' — '+escHtml(pt.spec):''} (${partAvailableQty(pt)} avail)</option>`).join('')}
+        ${loadParts().map(pt=>`<option value="${pt.id}">${pt.category?'['+escHtml(pt.category)+'] ':''}${escHtml(pt.name)}${partShortSpec(pt)?' — '+escHtml(partShortSpec(pt)):''} (${partAvailableQty(pt)} avail)</option>`).join('')}
       </select>
       <input class="row-input" id="pe-parts-qty" type="number" min="1" value="1" style="width:60px;flex:0 0 auto" />
       <button class="abtn" style="flex:0 0 auto;width:auto;padding:8px 12px" onclick="addPlaneAssignRow()"><i class="ti ti-plus"></i></button>
@@ -2919,21 +2931,27 @@ let _planeAssignWorking=[];
 
 function renderPlaneAssignRows(){
   const listEl=document.getElementById('pe-parts-list');
-  if(!listEl)return;
+  if(!listEl){refreshPowerSpecField();return;}
   if(!_planeAssignWorking.length){
     listEl.innerHTML='<div class="mr-craft" style="opacity:.6">No parts assigned yet</div>';
+    refreshPowerSpecField();
     return;
   }
   const allParts=loadParts();
   listEl.innerHTML=_planeAssignWorking.map((a,i)=>{
     const pt=allParts.find(x=>x.id===a.partId);
-    const label=pt?(escHtml(pt.name)+(pt.spec?' — '+escHtml(pt.spec):'')):'(deleted part)';
+    const sp=partShortSpec(pt);
+    const row=pt?`<div style="flex:1;min-width:0">
+        <div class="mr-name" style="font-size:12px">${escHtml(pt.name)}</div>
+        <div class="mr-meta" style="margin-top:2px">${pt.category?`<span class="dbadge">${escHtml(pt.category)}</span>`:''}${sp?`<span class="mr-craft">${escHtml(sp)}</span>`:''}</div>
+      </div>`:'<span class="mr-craft" style="flex:1">(deleted part)</span>';
     return `<div class="toggle-row" style="margin-bottom:6px;align-items:center">
-      <span class="mr-craft" style="flex:1">${label}</span>
+      ${row}
       <input class="row-input" type="number" min="1" value="${a.qty}" style="width:60px;flex:0 0 auto" onchange="updatePlaneAssignQty(${i},this.value)" />
       <button class="abtn" style="flex:0 0 auto;width:auto;padding:6px 10px;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="removePlaneAssignRow(${i})"><i class="ti ti-x"></i></button>
     </div>`;
   }).join('');
+  refreshPowerSpecField();
 }
 
 function addPlaneAssignRow(){
@@ -2958,6 +2976,49 @@ function updatePlaneAssignQty(i,val){
 function removePlaneAssignRow(i){
   _planeAssignWorking.splice(i,1);
   renderPlaneAssignRows();
+}
+
+// Builds "Motor: X-Fly 40mm (5000kv, x2)" style lines from whichever
+// Motor/ESC/Servo-category parts are currently linked to this plane.
+function computePowerSpecFromParts(){
+  const allParts=loadParts();
+  const cats=['Motor','ESC','Servo'];
+  const lines=[];
+  cats.forEach(cat=>{
+    const matches=_planeAssignWorking.map(a=>{
+      const pt=allParts.find(x=>x.id===a.partId);
+      return pt&&pt.category===cat?{pt,qty:a.qty}:null;
+    }).filter(Boolean);
+    if(matches.length){
+      const entries=matches.map(m=>{
+        const sp=partShortSpec(m.pt);
+        const qty=parseInt(m.qty,10)||1;
+        return `${m.pt.name}${sp?' ('+sp+')':''}${qty>1?' x'+qty:''}`;
+      });
+      lines.push(`${cat}: ${entries.join(', ')}`);
+    }
+  });
+  return lines.join('\n');
+}
+
+// Switches the Motor/ESC/Servo specs field between auto-generated (read-only,
+// reflects linked parts) and manual free text (editable, no parts linked).
+function refreshPowerSpecField(){
+  const el=document.getElementById('pe-power');
+  const hintEl=document.getElementById('pe-power-hint');
+  if(!el)return;
+  const auto=computePowerSpecFromParts();
+  if(auto){
+    el.value=auto;
+    el.setAttribute('readonly','readonly');
+    el.style.opacity='0.8';
+    if(hintEl)hintEl.style.display='block';
+  }else{
+    el.value=_originalPowerSpec;
+    el.removeAttribute('readonly');
+    el.style.opacity='';
+    if(hintEl)hintEl.style.display='none';
+  }
 }
 
 // Writes _planeAssignWorking back onto the parts store for this plane,
@@ -3107,7 +3168,7 @@ function openPartEditor(id){
     <div class="slabel">Name</div>
     <input class="row-input" id="pa-name" type="text" placeholder="e.g. CNHL 4S 1300mAh 100C" value="${p?escHtml(p.name):''}" style="margin-bottom:12px" />
     <div class="slabel">Spec / details</div>
-    <input class="row-input" id="pa-spec" type="text" placeholder="e.g. XT60 connector, 14.8V, 35x35x90mm" value="${p?escHtml(p.spec||''):''}" style="margin-bottom:12px" />
+    <textarea class="row-input" id="pa-spec" rows="3" placeholder="e.g. XT60 connector, 14.8V, 35x35x90mm" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.spec||''):''}</textarea>
     <div class="slabel">Quantity on hand</div>
     <input class="row-input" id="pa-qty" type="number" min="0" value="${p?p.qty||1:1}" oninput="renderPartAssignRows()" style="margin-bottom:12px" />
     <div class="slabel">Installed in / assigned to plane</div>
@@ -3201,6 +3262,9 @@ async function identifyPartFromPhoto(){
       return rest.slice(0,cut).trim();
     };
     const category=getField('CATEGORY'),name=getField('NAME'),spec=getField('SPEC'),conf=getField('CONFIDENCE').toLowerCase(),notes=getField('NOTES');
+    // The model tends to pack specs as "Voltage: X | Current: Y | ..." on one
+    // line — split those into one line per spec so it's readable, not a wall of text.
+    const specLines=spec.split(/\s*\|\s*/).filter(Boolean).join('\n');
 
     if(!name&&!spec){
       showEl('pa-identify-results',`<div class="hint" style="color:var(--danger)">Couldn't identify this part from the photo. Try a clearer, closer shot of any printed labels or text, or fill in the details manually.</div>`);
@@ -3208,7 +3272,7 @@ async function identifyPartFromPhoto(){
       return;
     }
 
-    _pendingPartIdent={category,name,spec,notes};
+    _pendingPartIdent={category,name,spec:specLines,notes};
     const confColor=conf==='high'?'var(--accent)':conf==='medium'?'var(--gold)':'var(--danger)';
     showEl('pa-identify-results',`
       <div class="results-wrap" style="margin-bottom:10px">
@@ -3216,7 +3280,7 @@ async function identifyPartFromPhoto(){
         <div style="padding:12px;font-size:12px;color:var(--text)">
           ${category?`<div style="margin-bottom:6px"><strong>Category:</strong> ${escHtml(category)}</div>`:''}
           ${name?`<div style="margin-bottom:6px"><strong>Name:</strong> ${escHtml(name)}</div>`:''}
-          ${spec?`<div style="margin-bottom:6px"><strong>Spec:</strong> ${escHtml(spec)}</div>`:''}
+          ${spec?`<div style="margin-bottom:6px"><strong>Spec:</strong><br>${escHtml(specLines).replace(/\n/g,'<br>')}</div>`:''}
           ${notes?`<div class="hint" style="margin-top:6px">${escHtml(notes)}</div>`:''}
         </div>
         <div style="padding:0 12px 12px;display:flex;gap:8px">
@@ -3401,6 +3465,13 @@ function applyLookupSpecs(){
   if(!_pendingLookupSpecs)return;
   const {batt,motor,esc,servo}=_pendingLookupSpecs;
   if(batt)document.getElementById('pe-batt').value=batt;
+  const powerEl=document.getElementById('pe-power');
+  if(powerEl&&powerEl.hasAttribute('readonly')){
+    hideEl('pe-lookup-results');
+    _pendingLookupSpecs=null;
+    alert('Motor/ESC/Servo specs are auto-generated from linked parts, so those fields were skipped. Battery spec was applied.');
+    return;
+  }
   const powerLines=[];
   if(motor)powerLines.push('Motor: '+motor);
   if(esc)powerLines.push('ESC: '+esc);
