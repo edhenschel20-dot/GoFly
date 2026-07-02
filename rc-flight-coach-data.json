@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Sidekick",
-  "saved": "2026-07-02T03:17:43.418Z",
+  "saved": "2026-07-02T03:18:07.056Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -542,7 +542,8 @@
       "category": "Receiver",
       "spec": "Lemon, 7.0ch, built-in gyro",
       "qty": 1,
-      "notes": "Setup: Delta"
+      "notes": "Setup: Delta",
+      "assigned": []
     },
     {
       "id": "mqlbusthu6scvx",
