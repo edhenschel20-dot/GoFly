@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Sidekick",
-  "saved": "2026-07-02T03:18:17.335Z",
+  "saved": "2026-07-02T03:18:28.949Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -543,7 +543,12 @@
       "spec": "Lemon, 7.0ch, built-in gyro",
       "qty": 1,
       "notes": "Setup: Delta",
-      "assigned": []
+      "assigned": [
+        {
+          "planeId": "mqlbustgzgdpja",
+          "qty": 1
+        }
+      ]
     },
     {
       "id": "mqlbusthu6scvx",
