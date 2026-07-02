@@ -1,7 +1,7 @@
 {
   "version": 2,
   "app": "RC Sidekick",
-  "saved": "2026-07-02T03:15:29.935Z",
+  "saved": "2026-07-02T03:17:43.418Z",
   "proficiency": {
     "h1": "mastered",
     "h3": "mastered",
@@ -564,9 +564,15 @@
       "id": "mqlbusth1wq8mh",
       "name": "Lemon 4",
       "category": "Receiver",
-      "spec": "",
+      "spec": "Lemon, 7.0ch, built-in gyro",
       "qty": 1,
-      "notes": ""
+      "notes": "Delta setup, wires back",
+      "assigned": [
+        {
+          "planeId": "mqlbustg156zr5",
+          "qty": 1
+        }
+      ]
     }
   ]
 }
