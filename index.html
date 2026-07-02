@@ -2466,7 +2466,8 @@ async function ghPutFile(bundle){
     const res=await fetch(url,{
       method:'PUT',
       headers:{'Authorization':'token '+c.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-      body:JSON.stringify(body)
+      body:JSON.stringify(body),
+      keepalive:true
     });
     if(!res.ok){
       const err=await res.json();
@@ -2487,6 +2488,7 @@ function scheduleSync(){
   if(!ghEnabled())return;
   if(_ghSyncTimer)clearTimeout(_ghSyncTimer);
   _ghSyncTimer=setTimeout(async function(){
+    _ghSyncTimer=null;
     const indicator=document.getElementById('gh-sync-indicator');
     if(indicator){indicator.textContent='↑ Syncing...';indicator.style.color='var(--gold)';}
     const bundle=buildDataBundle();
@@ -2496,8 +2498,34 @@ function scheduleSync(){
       indicator.style.color=ok?'var(--accent)':'var(--danger)';
       setTimeout(()=>{if(indicator)indicator.textContent='';},3000);
     }
-  },3000);
+  },1200);
 }
+
+// Immediately push to GitHub, skipping the debounce — used right after
+// deliberate "Save" actions (plane/part edits) so a quick reload right
+// after saving can't race the debounce and pull back stale remote data.
+async function flushSyncNow(){
+  if(!ghEnabled())return;
+  if(_ghSyncTimer){clearTimeout(_ghSyncTimer);_ghSyncTimer=null;}
+  const indicator=document.getElementById('gh-sync-indicator');
+  if(indicator){indicator.textContent='↑ Syncing...';indicator.style.color='var(--gold)';}
+  const bundle=buildDataBundle();
+  const ok=await ghPutFile(bundle);
+  if(indicator){
+    indicator.textContent=ok?'✓ Synced':'⚠ Sync failed';
+    indicator.style.color=ok?'var(--accent)':'var(--danger)';
+    setTimeout(()=>{if(indicator)indicator.textContent='';},3000);
+  }
+}
+
+// Safety net: if the page is being hidden/closed/reloaded while a debounced
+// sync is still pending, push immediately instead of losing that edit.
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden'&&_ghSyncTimer)flushSyncNow();
+});
+window.addEventListener('pagehide',function(){
+  if(_ghSyncTimer)flushSyncNow();
+});
 
 // Load from GitHub on startup
 async function ghLoadOnStartup(){
@@ -3063,6 +3091,7 @@ function savePlane(){
   }
   saveHangar(planes);
   if(savedPlaneId)applyPlaneAssignmentsToParts(savedPlaneId);
+  flushSyncNow();
   closeOv();
   renderHangar();
   renderParts();
@@ -3383,6 +3412,7 @@ function savePart(){
     parts.push(np);
   }
   saveParts(parts);
+  flushSyncNow();
   closeOv();
   renderParts();
 }
