@@ -670,6 +670,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
         <option value="type">Type</option>
         <option value="battSpec">Battery spec</option>
         <option value="added">Date added</option>
+        <option value="lastUpdated">Last updated</option>
       </select>
     </div>
     <div style="flex:1">
@@ -681,6 +682,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
         <option value="type">Type</option>
         <option value="battSpec">Battery spec</option>
         <option value="added">Date added</option>
+        <option value="lastUpdated">Last updated</option>
       </select>
     </div>
   </div>
@@ -2730,7 +2732,26 @@ function setHangarSort(){
 function hangarSortVal(p,field){
   if(field==='status')return PLANE_STATUSES.findIndex(s=>s.id===p.status);
   if(field==='added')return p.id||'';
+  if(field==='lastUpdated')return p.lastUpdated||'0000-00-00';
   return (p[field]||'').toString().toLowerCase();
+}
+
+// ── LAST UPDATED HELPERS ─────────────────────────
+function formatLastUpdated(dateStr){
+  if(!dateStr)return {text:'Never updated',color:'var(--danger)'};
+  const d=new Date(dateStr+'T00:00:00');
+  const now=new Date();
+  const diffDays=Math.floor((now-d)/86400000);
+  let text;
+  if(diffDays<=0)text='Updated today';
+  else if(diffDays<30)text=`Updated ${diffDays}d ago`;
+  else if(diffDays<365){const m=Math.floor(diffDays/30);text=`Updated ${m}mo ago`;}
+  else{const y=Math.floor(diffDays/365);const remM=Math.floor((diffDays%365)/30);text=`Updated ${y}y${remM?' '+remM+'mo':''} ago`;}
+  let color;
+  if(diffDays<90)color='var(--accent)';
+  else if(diffDays<365)color='var(--gold)';
+  else color='var(--danger)';
+  return {text,color};
 }
 function compareHangarField(a,b,field){
   const va=hangarSortVal(a,field),vb=hangarSortVal(b,field);
@@ -2764,11 +2785,13 @@ function renderHangar(){
   list.innerHTML=planes.map(p=>{
     const sm=statusMeta(p.status);
     const photo=p.photo?`<img src="${p.photo}" style="width:48px;height:48px;border-radius:var(--r);object-fit:cover;flex-shrink:0" />`:`<div class="logo-icon" style="width:48px;height:48px;font-size:20px"><i class="ti ti-plane"></i></div>`;
+    const lu=formatLastUpdated(p.lastUpdated);
     return `<div class="move-row" onclick="openPlaneEditor('${p.id}')">
       ${photo}
       <div class="mr-info">
         <div class="mr-name">${escHtml(p.name)}</div>
         <div class="mr-meta"><span class="dbadge" style="border-color:${sm.color};color:${sm.color}"><i class="ti ${sm.icon}"></i> ${sm.label}</span>${p.type?`<span class="mr-craft">${escHtml(p.type)}${p.class?' · '+escHtml(p.class):''}</span>`:''}</div>
+        <div class="mr-meta" style="margin-top:2px"><span class="dbadge" style="border-color:${lu.color};color:${lu.color}"><i class="ti ti-clock"></i> ${lu.text}</span></div>
       </div>
       <i class="ti ti-chevron-right mr-arr"></i>
     </div>`;
@@ -2776,6 +2799,7 @@ function renderHangar(){
 }
 
 function escHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function todayISO(){return new Date().toISOString().slice(0,10);}
 
 // ── PART <-> PLANE ASSIGNMENTS ─────────────────────
 function partAssignedQty(part){return (part.assigned||[]).reduce((s,a)=>s+(parseInt(a.qty,10)||0),0);}
@@ -2852,6 +2876,9 @@ function openPlaneEditor(id){
     <textarea class="row-input" id="pe-power" rows="3" placeholder="e.g. Motor: 2306 2400kv · ESC: 30A · Servos: 9g micro" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.powerSpec||''):''}</textarea>
     <div class="slabel">Notes (repairs needed, setup details, etc.)</div>
     <textarea class="row-input" id="pe-notes" rows="4" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
+    <div class="slabel">Last updated</div>
+    <input class="row-input" id="pe-lastupdated" type="date" value="${p&&p.lastUpdated?p.lastUpdated:todayISO()}" style="margin-bottom:4px" />
+    <div class="hint" style="margin-bottom:14px">Auto-set to today on save — bump it back if you're logging older maintenance.</div>
     ${p?`<div class="slabel">Parts installed on this plane</div>
     <div id="pe-parts-list" style="margin-bottom:8px"></div>
     <div style="display:flex;gap:8px;margin-bottom:14px">
@@ -2957,16 +2984,18 @@ function savePlane(){
   const battSpec=document.getElementById('pe-batt').value.trim();
   const powerSpec=document.getElementById('pe-power').value.trim();
   const notes=document.getElementById('pe-notes').value.trim();
+  const luEl=document.getElementById('pe-lastupdated');
+  const lastUpdated=(luEl&&luEl.value)?luEl.value:todayISO();
   let planes=loadHangar();
   let savedPlaneId=_editingPlaneId;
   if(_editingPlaneId){
     const idx=planes.findIndex(p=>p.id===_editingPlaneId);
     if(idx>-1){
-      planes[idx]={...planes[idx],name,type,class:craftClass,status,battSpec,powerSpec,notes};
+      planes[idx]={...planes[idx],name,type,class:craftClass,status,battSpec,powerSpec,notes,lastUpdated};
       if(_pendingPlanePhoto)planes[idx].photo=_pendingPlanePhoto;
     }
   }else{
-    const np={id:uid(),name,type,class:craftClass,status,battSpec,powerSpec,notes};
+    const np={id:uid(),name,type,class:craftClass,status,battSpec,powerSpec,notes,lastUpdated};
     if(_pendingPlanePhoto)np.photo=_pendingPlanePhoto;
     planes.push(np);
     savedPlaneId=np.id;
