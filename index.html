@@ -700,7 +700,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 
 <!-- MATCH -->
 <div class="panel" id="panel-match">
-  <div class="info-note" style="border-color:var(--gborder)"><strong style="color:var(--gold)">Compatibility check.</strong> Pick a plane — Claude checks your parts bin and tells you what fits.</div>
+  <div class="info-note" style="border-color:var(--gborder)"><strong style="color:var(--gold)">Compatibility check.</strong> Pick a plane — Claude checks your parts bin and tells you what fits. Any batteries it confirms compatible are auto-added to that plane’s “works in” list.</div>
   <div>
     <div class="slabel">Plane</div>
     <select class="row-input" id="match-plane-select" onchange="renderMatchPreview()"></select>
@@ -2788,7 +2788,8 @@ function compareHangarField(a,b,field){
   return 0;
 }
 
-const PART_CATEGORIES=['Battery','Motor','ESC','Servo','Propeller','Receiver','Flight Controller','Frame/Airframe Part','Hardware','Other'];
+const PART_CATEGORIES=['Battery','Charger','Motor','ESC','Servo','Propeller','Receiver','Flight Controller','Frame/Airframe Part','Hardware','Other'];
+const CONNECTOR_TYPES=['XT30','XT60','XT90','EC3','EC5','EC6','EC8','Deans (T-Plug)','JST','JST-XH (balance)','Traxxas','Tamiya','Bullet 3.5mm','Bullet 4mm','Bullet 5mm','Bare wire / none','Other'];
 
 // ── HANGAR RENDER ────────────────────────────────
 function renderHangar(){
@@ -3148,13 +3149,14 @@ function renderParts(){
     const assignedQty=partAssignedQty(p);
     const availQty=partAvailableQty(p);
     const assignBadges=(p.assigned||[]).filter(a=>a.qty>0).map(a=>`<span class="dbadge" style="border-color:var(--accent);color:var(--accent)">${a.qty} in ${escHtml(planeNameById(a.planeId))}</span>`).join('');
+    const relBadges=(p.category==='Battery')?(((p.worksIn&&p.worksIn.length)?p.worksIn:(p.assigned||[]).map(a=>a.planeId)).map(pid=>`<span class="dbadge" style="border-color:var(--accent);color:var(--accent)"><i class="ti ti-plane"></i> ${escHtml(planeNameById(pid))}</span>`).join('')):assignBadges;
     const luP=formatLastUpdated(p.lastUpdated);
     return `<div class="move-row" onclick="openPartEditor('${p.id}')">
       ${photo}
       <div class="mr-info">
         <div class="mr-name">${escHtml(p.name)}</div>
-        <div class="mr-meta"><span class="dbadge">${escHtml(p.category)}</span>${p.spec?`<span class="mr-craft">${escHtml(p.spec)}</span>`:''}${p.qty&&p.qty>1?`<span class="mr-craft">x${p.qty}</span>`:''}${assignedQty>0?`<span class="mr-craft" style="color:var(--accent)">${availQty} avail</span>`:''}</div>
-        ${assignBadges?`<div class="mr-meta" style="margin-top:4px">${assignBadges}</div>`:''}
+        <div class="mr-meta"><span class="dbadge">${escHtml(p.category)}</span>${p.connector?`<span class="dbadge" style="border-color:var(--gold);color:var(--gold)"><i class="ti ti-plug"></i> ${escHtml(p.connector)}</span>`:''}${p.spec?`<span class="mr-craft">${escHtml(p.spec)}</span>`:''}${p.qty&&p.qty>1?`<span class="mr-craft">x${p.qty}</span>`:''}${assignedQty>0?`<span class="mr-craft" style="color:var(--accent)">${availQty} avail</span>`:''}</div>
+        ${relBadges?`<div class="mr-meta" style="margin-top:4px">${relBadges}</div>`:''}
         <div class="mr-meta" style="margin-top:2px"><span class="dbadge" style="border-color:${luP.color};color:${luP.color}"><i class="ti ti-clock"></i> ${luP.text}</span></div>
       </div>
       <i class="ti ti-chevron-right mr-arr"></i>
@@ -3166,12 +3168,24 @@ function renderParts(){
 let _editingPartId=null;
 let _pendingPartPhoto=null;
 
+function togglePartCategoryFields(){
+  const cat=document.getElementById('pa-category');
+  if(!cat)return;
+  const isBattery=cat.value==='Battery';
+  const setVis=(id,show)=>{const el=document.getElementById(id);if(el)el.style.display=show?'':'none';};
+  setVis('pa-connector-wrap',isBattery);
+  setVis('pa-worksin-wrap',isBattery);
+  setVis('pa-assign-wrap',!isBattery);
+}
+
 function openPartEditor(id){
   _editingPartId=id;
   _pendingPartPhoto=null;
   const parts=loadParts();
   const p=id?parts.find(x=>x.id===id):null;
   _partAssignWorking=(p&&p.assigned)?JSON.parse(JSON.stringify(p.assigned)):[];
+  const _wiSeed=(p&&p.worksIn&&p.worksIn.length)?p.worksIn:(p?(p.assigned||[]).map(a=>a.planeId):[]);
+  const _partWorksInSet=new Set(_wiSeed);
   document.getElementById('ov-title').textContent=p?'Edit Part':'Add Part';
   document.getElementById('ov-badge').textContent='';
   document.getElementById('ov-badge').className='dbadge';
@@ -3193,15 +3207,27 @@ function openPartEditor(id){
     <div id="pa-identify-results"></div>
     <button class="abtn" id="pa-identify-btn" onclick="identifyPartFromPhoto()" style="margin-bottom:12px;padding:8px 12px;font-size:11px"><i class="ti ti-sparkles"></i> Identify from photo</button>
     <div class="slabel">Category</div>
-    <select class="row-input" id="pa-category" style="margin-bottom:12px">
+    <select class="row-input" id="pa-category" onchange="togglePartCategoryFields()" style="margin-bottom:12px">
       ${PART_CATEGORIES.map(c=>`<option value="${c}"${p&&p.category===c?' selected':''}>${c}</option>`).join('')}
     </select>
     <div class="slabel">Name</div>
     <input class="row-input" id="pa-name" type="text" placeholder="e.g. CNHL 4S 1300mAh 100C" value="${p?escHtml(p.name):''}" style="margin-bottom:12px" />
     <div class="slabel">Spec / details</div>
     <textarea class="row-input" id="pa-spec" rows="3" placeholder="e.g. XT60 connector, 14.8V, 35x35x90mm" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.spec||''):''}</textarea>
+    <div id="pa-connector-wrap" style="${(p&&p.category!=='Battery')?'display:none':''}">
+      <div class="slabel">Connector</div>
+      <select class="row-input" id="pa-connector" style="margin-bottom:12px">
+        <option value="">— Select connector —</option>
+        ${CONNECTOR_TYPES.map(c=>`<option value="${c}"${p&&p.connector===c?' selected':''}>${c}</option>`).join('')}
+      </select>
+    </div>
     <div class="slabel">Quantity on hand</div>
     <input class="row-input" id="pa-qty" type="number" min="0" value="${p?p.qty||1:1}" oninput="renderPartAssignRows()" style="margin-bottom:12px" />
+    <div id="pa-worksin-wrap" style="${(!p||p.category==='Battery')?'':'display:none'}">
+      <div class="slabel">Which planes do these work in?</div>
+      <div id="pa-worksin-list" style="margin-bottom:12px">${loadHangar().length?loadHangar().map(pl=>`<label style="display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:13px;cursor:pointer"><input type="checkbox" value="${pl.id}"${_partWorksInSet.has(pl.id)?' checked':''} style="width:auto;flex:0 0 auto" /> ${escHtml(pl.name)}</label>`).join(''):'<div class="mr-craft" style="opacity:.6">No planes in your hangar yet — add planes first.</div>'}</div>
+    </div>
+    <div id="pa-assign-wrap"${(!p||p.category==='Battery')?' style="display:none"':''}>
     <div class="slabel">Installed in / assigned to plane</div>
     <div id="pa-assign-list" style="margin-bottom:8px"></div>
     <div style="display:flex;gap:8px;margin-bottom:4px">
@@ -3213,6 +3239,7 @@ function openPartEditor(id){
       <button class="abtn" style="flex:0 0 auto;width:auto;padding:8px 12px" onclick="addPartAssignRow()"><i class="ti ti-plus"></i></button>
     </div>
     <div id="pa-avail-info" class="mr-craft" style="margin-bottom:12px"></div>
+    </div>
     <div class="slabel">Notes</div>
     <textarea class="row-input" id="pa-notes" rows="3" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.notes||''):''}</textarea>
     <div class="slabel">Last updated</div>
@@ -3225,6 +3252,7 @@ function openPartEditor(id){
   document.getElementById('ov').classList.add('open');
   document.body.style.overflow='hidden';
   renderPartAssignRows();
+  togglePartCategoryFields();
 }
 
 async function handlePartPhoto(input){
@@ -3336,6 +3364,7 @@ function applyPartIdent(){
     const catSel=document.getElementById('pa-category');
     const match=PART_CATEGORIES.find(c=>c.toLowerCase()===category.toLowerCase())||PART_CATEGORIES.find(c=>category.toLowerCase().includes(c.toLowerCase()));
     if(catSel&&match)catSel.value=match;
+    togglePartCategoryFields();
   }
   if(name){const nEl=document.getElementById('pa-name');if(nEl)nEl.value=name;}
   if(spec){const sEl=document.getElementById('pa-spec');if(sEl)sEl.value=spec;}
@@ -3399,21 +3428,24 @@ function savePart(){
   const name=document.getElementById('pa-name').value.trim();
   if(!name){alert('Give the part a name first.');return;}
   const category=document.getElementById('pa-category').value;
+  const connEl=document.getElementById('pa-connector');
+  const connector=(category==='Battery'&&connEl)?connEl.value:'';
+  const worksIn=(category==='Battery')?Array.from(document.querySelectorAll('#pa-worksin-list input[type=checkbox]:checked')).map(cb=>cb.value):[];
   const spec=document.getElementById('pa-spec').value.trim();
   const qty=parseInt(document.getElementById('pa-qty').value,10)||1;
   const notes=document.getElementById('pa-notes').value.trim();
   const luEl=document.getElementById('pa-lastupdated');
   const lastUpdated=(luEl&&luEl.value)?luEl.value:todayISO();
-  const assigned=_partAssignWorking.filter(a=>a.planeId&&a.qty>0).map(a=>({planeId:a.planeId,qty:parseInt(a.qty,10)||1}));
+  const assigned=(category==='Battery')?[]:_partAssignWorking.filter(a=>a.planeId&&a.qty>0).map(a=>({planeId:a.planeId,qty:parseInt(a.qty,10)||1}));
   let parts=loadParts();
   if(_editingPartId){
     const idx=parts.findIndex(p=>p.id===_editingPartId);
     if(idx>-1){
-      parts[idx]={...parts[idx],name,category,spec,qty,notes,assigned,lastUpdated};
+      parts[idx]={...parts[idx],name,category,spec,qty,notes,assigned,lastUpdated,connector,worksIn};
       if(_pendingPartPhoto)parts[idx].photo=_pendingPartPhoto;
     }
   }else{
-    const np={id:uid(),name,category,spec,qty,notes,assigned,lastUpdated};
+    const np={id:uid(),name,category,spec,qty,notes,assigned,lastUpdated,connector,worksIn};
     if(_pendingPartPhoto)np.photo=_pendingPartPhoto;
     parts.push(np);
   }
@@ -3570,6 +3602,25 @@ function renderMatchPreview(){
   }
 }
 
+function applyBatteryWorksIn(plane,compatNames){
+  if(!compatNames||!compatNames.length)return [];
+  const norm=s=>(s||'').trim().toLowerCase();
+  let parts=loadParts();
+  const applied=[];
+  parts=parts.map(pt=>{
+    if(pt.category!=='Battery')return pt;
+    const n=norm(pt.name);
+    const hit=compatNames.some(cn=>{const c=norm(cn);return c===n||(c.length>=6&&(n.includes(c)||c.includes(n)));});
+    if(!hit)return pt;
+    const wi=Array.isArray(pt.worksIn)?pt.worksIn.slice():[];
+    if(wi.includes(plane.id))return pt;
+    wi.push(plane.id);applied.push(pt.name);
+    return {...pt,worksIn:wi};
+  });
+  if(applied.length){saveParts(parts);flushSyncNow();renderParts();}
+  return applied;
+}
+
 async function runMatch(){
   const sel=document.getElementById('match-plane-select');
   const planes=loadHangar();
@@ -3583,9 +3634,15 @@ async function runMatch(){
   const pi=tickP('match');
   try{
     const sys="You are an expert RC hobbyist assistant helping match batteries, motors, ESCs, servos and other parts to a specific RC plane from the owner's personal inventory. Be specific and practical. Flag any real safety/compatibility risk (voltage mismatch, connector mismatch, ESC current rating too low, weight/CG issues). If information is missing to be sure, say what's missing rather than guessing. Format with ## headers and - bullet points, no other markdown.";
-    const usr=`Plane: ${plane.name}\nType: ${plane.type||'unknown'}\nClass: ${plane.class||'unknown'}\nLogged battery/connector spec: ${plane.battSpec||'not logged'}\nLogged motor/ESC/servo specs: ${plane.powerSpec||'not logged'}\nNotes: ${plane.notes||'none'}\n\nParts inventory (with quantity on hand):\n${parts.map(p=>`- [${p.category}] ${p.name} — ${p.spec||'no spec'} (qty ${p.qty||1})`).join('\n')}\n\nFor this plane, go through the inventory and tell me:\n## Good Matches\nWhich specific parts (by name) are compatible and why.\n## Risky / Check First\nAny parts that might work but need verification (voltage, connector, current rating, weight).\n## Not Compatible\nParts that clearly don't fit, briefly why.\n## Missing\nAny critical part type not present in inventory at all for this plane to fly.`;
-    const text=await callClaude(sys,usr,1200);
+    const usr=`Plane: ${plane.name}\nType: ${plane.type||'unknown'}\nClass: ${plane.class||'unknown'}\nLogged battery/connector spec: ${plane.battSpec||'not logged'}\nLogged motor/ESC/servo specs: ${plane.powerSpec||'not logged'}\nNotes: ${plane.notes||'none'}\n\nParts inventory (with quantity on hand):\n${parts.map(p=>`- [${p.category}] ${p.name} — ${p.spec||'no spec'} (qty ${p.qty||1})`).join('\n')}\n\nFor this plane, go through the inventory and tell me:\n## Good Matches\nWhich specific parts (by name) are compatible and why.\n## Risky / Check First\nAny parts that might work but need verification (voltage, connector, current rating, weight).\n## Not Compatible\nParts that clearly don't fit, briefly why.\n## Missing\nAny critical part type not present in inventory at all for this plane to fly.\n## Battery Compatibility (machine-readable)\nAfter the sections above, for EACH battery in the inventory that is a confirmed good match for this plane (cell count / voltage and connector both suitable), output one line exactly in this format: COMPATIBLE_BATTERY: <exact battery name copied verbatim from the inventory list>. Only include batteries you are confident fit. If none fit, output exactly: COMPATIBLE_BATTERY: none`;
+    const rawText=await callClaude(sys,usr,1400);
     stopP(pi,'match');
+    const compatNames=[...rawText.matchAll(/COMPATIBLE_BATTERY:\s*(.+)/gi)].map(m=>m[1].trim()).filter(n=>n&&n.toLowerCase()!=='none');
+    let text=rawText.replace(/\n?#{1,6}[^\n]*Battery Compatibility[^\n]*/i,'').replace(/^[ \t]*COMPATIBLE_BATTERY:.*$/gim,'').replace(/\n{3,}/g,'\n\n').trim();
+    const applied=applyBatteryWorksIn(plane,compatNames);
+    if(applied.length){
+      text+='\n\n## Batteries auto-filled\n'+applied.map(n=>'- '+n+' \u2192 now marked \u201cworks in\u201d '+plane.name).join('\n');
+    }
     const cache=loadMatchCache();
     cache[plane.id]={text,ts:Date.now(),hash:matchInputHash(plane,parts)};
     saveMatchCache(cache);
