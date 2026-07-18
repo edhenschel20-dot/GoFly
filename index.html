@@ -666,6 +666,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 <!-- HANGAR -->
 <div class="panel" id="panel-hangar">
   <div class="info-note" style="border-color:var(--aborder)"><strong style="color:var(--accent)">Your fleet.</strong> Track every plane, its build status, and what it needs.</div>
+  <div class="ref-search" style="margin-bottom:10px"><i class="ti ti-search si"></i><input type="text" id="hangar-q" placeholder="Search planes..." autocomplete="off" oninput="setHangarSearch(this.value)" /></div>
   <div class="toggle-row" id="hangar-sort-row" style="gap:8px;margin-bottom:10px">
     <div style="flex:1">
       <div class="slabel" style="margin-bottom:4px">Sort by</div>
@@ -700,6 +701,36 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 <div class="panel" id="panel-parts">
   <div class="info-note" style="border-color:var(--bborder)"><strong style="color:var(--blue)">Your parts bin.</strong> Batteries, motors, ESCs, servos, props — everything on the shelf.</div>
   <div class="ref-search" style="margin-bottom:10px"><i class="ti ti-search si"></i><input type="text" id="parts-q" placeholder="Search parts..." autocomplete="off" oninput="setPartsSearch(this.value)" /></div>
+  <div class="toggle-row" id="parts-sort-row" style="gap:8px;margin-bottom:10px">
+    <div style="flex:1">
+      <div class="slabel" style="margin-bottom:4px">Sort by</div>
+      <select class="row-input" id="parts-sort-1" onchange="setPartsSort()">
+        <option value="">Default order</option>
+        <option value="name">Name</option>
+        <option value="category">Category</option>
+        <option value="connector">Connector</option>
+        <option value="qty">Qty on hand</option>
+        <option value="available">Qty available</option>
+        <option value="assigned">Qty installed</option>
+        <option value="added">Date added</option>
+        <option value="lastUpdated">Last updated</option>
+      </select>
+    </div>
+    <div style="flex:1">
+      <div class="slabel" style="margin-bottom:4px">Then by</div>
+      <select class="row-input" id="parts-sort-2" onchange="setPartsSort()">
+        <option value="">None</option>
+        <option value="name">Name</option>
+        <option value="category">Category</option>
+        <option value="connector">Connector</option>
+        <option value="qty">Qty on hand</option>
+        <option value="available">Qty available</option>
+        <option value="assigned">Qty installed</option>
+        <option value="added">Date added</option>
+        <option value="lastUpdated">Last updated</option>
+      </select>
+    </div>
+  </div>
   <div class="toggle-row" id="parts-filter-row" style="flex-wrap:wrap"></div>
   <div id="parts-list"></div>
   <button class="abtn bbtn" id="parts-add-btn" onclick="openPartEditor(null)"><i class="ti ti-plus"></i> Add a part</button>
@@ -2826,6 +2857,22 @@ const PART_CATEGORIES=['Battery','Charger','Motor','ESC','Servo','Propeller','Re
 const CONNECTOR_TYPES=['XT30','XT60','XT90','EC3','EC5','EC6','EC8','Deans (T-Plug)','JST','JST-XH (balance)','Traxxas','Tamiya','Bullet 3.5mm','Bullet 4mm','Bullet 5mm','Bare wire / none','Other'];
 
 // ── HANGAR RENDER ────────────────────────────────
+let _hangarSearch='';
+function setHangarSearch(v){_hangarSearch=(v||'').trim().toLowerCase();renderHangar();}
+function planeMatchesSearch(p){
+  if(!_hangarSearch)return true;
+  const sm=statusMeta(p.status);
+  const hay=([p.name,p.type,p.class,p.battSpec,p.powerSpec,p.notes,(sm&&sm.label)||p.status]
+    .filter(Boolean).join(' ')+' '+partNamesForPlane(p.id)).toLowerCase();
+  return _hangarSearch.split(/\s+/).every(t=>hay.includes(t));
+}
+// Names of parts installed in a given plane — lets you search the fleet by part.
+function partNamesForPlane(planeId){
+  try{
+    return loadParts().filter(pt=>(pt.assigned||[]).some(a=>a.planeId===planeId&&a.qty>0))
+      .map(pt=>pt.name).join(' ');
+  }catch(e){return '';}
+}
 function renderHangar(){
   const list=document.getElementById('hangar-list');
   if(!list)return;
@@ -2834,8 +2881,10 @@ function renderHangar(){
   if(s1&&s1.value!==sortState.primary)s1.value=sortState.primary;
   if(s2&&s2.value!==sortState.secondary)s2.value=sortState.secondary;
   let planes=loadHangar();
+  if(_hangarSearch)planes=planes.filter(planeMatchesSearch);
   if(!planes.length){
-    list.innerHTML='<div class="no-results"><i class="ti ti-plane"></i><p>No planes yet — add your first one</p></div>';
+    const msg=_hangarSearch?'No planes match your search':'No planes yet — add your first one';
+    list.innerHTML='<div class="no-results"><i class="ti ti-plane"></i><p>'+msg+'</p></div>';
     return;
   }
   if(sortState.primary){
@@ -3155,6 +3204,30 @@ function deletePlane(){
 
 // ── PARTS RENDER ──────────────────────────────────
 let _partsFilter='All';
+// ── PARTS SORT ───────────────────────────────────
+const PARTS_SORT_KEY='rcfc_parts_sort';
+function loadPartsSort(){try{return Object.assign({primary:'',secondary:''},JSON.parse(localStorage.getItem(PARTS_SORT_KEY)||'{}'));}catch(e){return {primary:'',secondary:''};}}
+function savePartsSort(s){try{localStorage.setItem(PARTS_SORT_KEY,JSON.stringify(s));}catch(e){console.log('parts sort save err',e);}}
+function setPartsSort(){
+  const s1=document.getElementById('parts-sort-1'),s2=document.getElementById('parts-sort-2');
+  savePartsSort({primary:s1?s1.value:'',secondary:s2?s2.value:''});
+  renderParts();
+}
+function partsSortVal(p,field){
+  if(field==='category')return PART_CATEGORIES.indexOf(p.category);
+  if(field==='qty')return Number(p.qty)||0;
+  if(field==='assigned')return partAssignedQty(p);
+  if(field==='available')return partAvailableQty(p);
+  if(field==='added')return p.id||'';
+  if(field==='lastUpdated')return p.lastUpdated||'0000-00-00';
+  return (p[field]||'').toString().toLowerCase();
+}
+function comparePartsField(a,b,field){
+  const va=partsSortVal(a,field),vb=partsSortVal(b,field);
+  if(va<vb)return -1;
+  if(va>vb)return 1;
+  return 0;
+}
 let _partsSearch='';
 function setPartsSearch(v){_partsSearch=(v||'').trim().toLowerCase();renderParts();}
 function partMatchesSearch(p){
@@ -3181,8 +3254,19 @@ function renderParts(){
   const list=document.getElementById('parts-list');
   if(!list)return;
   let parts=loadParts();
+  const psort=loadPartsSort();
+  const ps1=document.getElementById('parts-sort-1'),ps2=document.getElementById('parts-sort-2');
+  if(ps1&&ps1.value!==psort.primary)ps1.value=psort.primary;
+  if(ps2&&ps2.value!==psort.secondary)ps2.value=psort.secondary;
   if(_partsFilter!=='All')parts=parts.filter(p=>p.category===_partsFilter);
   if(_partsSearch)parts=parts.filter(partMatchesSearch);
+  if(psort.primary){
+    parts=parts.slice().sort((a,b)=>{
+      let c=comparePartsField(a,b,psort.primary);
+      if(c===0&&psort.secondary)c=comparePartsField(a,b,psort.secondary);
+      return c;
+    });
+  }
   if(!parts.length){
     const msg=_partsSearch?'No parts match your search':'No parts here yet';
     list.innerHTML='<div class="no-results"><i class="ti ti-package"></i><p>'+msg+'</p></div>';
