@@ -2386,6 +2386,7 @@ function testLessonSave(){
 const GH_KEY = 'rcfc_github';
 let _ghSyncTimer = null;
 let _ghSha = null; // current file SHA needed for updates
+let _ghLastError = ''; // last GitHub sync error (for user-facing messages)
 
 function loadGHConfig(){
   try{return JSON.parse(localStorage.getItem(GH_KEY)||'{}');}catch(e){return {};}
@@ -2461,8 +2462,24 @@ async function ghGetFile(){
 // Write file to GitHub
 async function ghPutFile(bundle){
   const c=loadGHConfig();
-  if(!c.token||!c.repo||!c.username)return false;
+  if(!c.token||!c.repo||!c.username){_ghLastError='Not configured — need username, repo, and token.';return false;}
   const url=`https://api.github.com/repos/${c.username}/${c.repo}/contents/rc-flight-coach-data.json`;
+  const authHeaders={'Authorization':'token '+c.token,'Accept':'application/vnd.github.v3+json'};
+  // Updating an existing file via the GitHub API REQUIRES its current SHA.
+  // If we don't have it yet (e.g. no successful load this session), fetch it
+  // now — otherwise GitHub rejects the write with 422.
+  if(!_ghSha){
+    try{
+      const g=await fetch(url,{headers:authHeaders});
+      if(g.ok){const gd=await g.json();_ghSha=gd.sha;}
+      else if(g.status!==404){
+        const ge=await g.json().catch(()=>({}));
+        _ghLastError='Read check failed ('+g.status+') '+(ge.message||g.statusText||'');
+        return false;
+      }
+      // 404 => file doesn't exist yet; we'll create it (no SHA needed).
+    }catch(e){_ghLastError='Network error reaching GitHub: '+(e&&e.message||e);return false;}
+  }
   const content=btoa(unescape(encodeURIComponent(JSON.stringify(bundle,null,2))));
   const body={
     message:'RC Sidekick auto-sync '+new Date().toISOString(),
@@ -2472,19 +2489,27 @@ async function ghPutFile(bundle){
   try{
     const res=await fetch(url,{
       method:'PUT',
-      headers:{'Authorization':'token '+c.token,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
+      headers:{...authHeaders,'Content-Type':'application/json'},
       body:JSON.stringify(body),
       keepalive:true
     });
     if(!res.ok){
-      const err=await res.json();
-      console.log('ghPutFile error:',err);
+      const err=await res.json().catch(()=>({}));
+      let hint='';
+      if(res.status===401)hint=' — token is invalid or expired. Generate a new one.';
+      else if(res.status===403||res.status===404)hint=' — token lacks Contents: Read & Write on this repo. Fine-grained tokens must grant access to the GoFly repo specifically.';
+      else if(res.status===409||res.status===422)hint=' — file changed on GitHub since last load. Tap "Load from GitHub", then Sync again.';
+      _ghLastError=res.status+' '+(err.message||res.statusText||'')+hint;
+      if(res.status===409||res.status===422)_ghSha=null; // force re-fetch next attempt
+      console.log('ghPutFile error:',res.status,err);
       return false;
     }
     const data=await res.json();
     if(data.content)_ghSha=data.content.sha;
+    _ghLastError='';
     return true;
   }catch(e){
+    _ghLastError='Network error: '+(e&&e.message||e);
     console.log('ghPutFile error:',e);
     return false;
   }
@@ -2561,7 +2586,7 @@ async function ghSyncNow(){
   const bundle=buildDataBundle();
   const ok=await ghPutFile(bundle);
   if(btn){btn.disabled=false;btn.textContent='Sync now';}
-  alert(ok?'✓ Synced to GitHub successfully':'⚠ Sync failed — check your token and repo settings');
+  alert(ok?'✓ Synced to GitHub successfully':'⚠ Sync failed — '+(_ghLastError||'check your token and repo settings'));
 }
 
 // Load from GitHub manually
