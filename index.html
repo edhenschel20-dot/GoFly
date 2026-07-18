@@ -11,6 +11,12 @@
 <meta http-equiv="Pragma" content="no-cache" />
 <meta http-equiv="Expires" content="0" />
 <title>RC Sidekick</title>
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="application-name" content="RC Sidekick" />
+<meta name="apple-mobile-web-app-title" content="RC Sidekick" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="icon" type="image/png" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet" />
@@ -864,6 +870,7 @@ function switchTab(id,cls){
   // Restore scroll position for this tab
   if(scrollArea) scrollArea.scrollTop = _tabScrollPos[id] || 0;
   if(id==='learn') setTimeout(function(){checkSavedLesson(true);},50);
+  if(typeof _pushTabHistory==='function') _pushTabHistory(id,cls);
 }
 let activeTab='ref';
 
@@ -938,7 +945,7 @@ function openMove(id){
   document.getElementById('ov').classList.add('open');
   document.body.style.overflow='hidden';
 }
-function closeOv(){document.getElementById('ov').classList.remove('open');document.body.style.overflow='';}
+function closeOv(){if(history.state&&history.state.v==='ov'){history.back();return;}document.getElementById('ov').classList.remove('open');document.body.style.overflow='';}
 
 function buildDetail(m){
   let h='';
@@ -3811,6 +3818,58 @@ renderPartsFilterRow();
 renderParts();
 populateMatchPlaneSelect();
 
+// ══════════════════════════════════════════════
+// BACK-BUTTON NAVIGATION (tabs + overlay) — RC Sidekick
+// Makes the phone/browser Back button move between tabs and
+// close an open editor overlay, instead of closing the app.
+// ══════════════════════════════════════════════
+var _navFromPop=false;
+function _pushTabHistory(id,cls){
+  if(_navFromPop) return;
+  var st={v:'tab',tab:id,cls:cls};
+  try{
+    if(history.state){ history.pushState(st,'','#'+id); }
+    else { history.replaceState(st,'','#'+id); }
+  }catch(e){}
+}
+window.addEventListener('popstate',function(e){
+  // If a full-screen overlay (plane/part editor, move detail) is open,
+  // Back closes it first rather than navigating away.
+  var ov=document.getElementById('ov');
+  if(ov && ov.classList.contains('open')){
+    ov.classList.remove('open');
+    document.body.style.overflow='';
+    return;
+  }
+  var st=e.state;
+  if(st && st.v==='tab'){
+    _navFromPop=true;
+    try{ switchTab(st.tab, st.cls); }finally{ _navFromPop=false; }
+  }
+});
+// Seed an initial history entry for the default tab on load.
+(function(){
+  try{ if(!history.state){ history.replaceState({v:'tab',tab:(typeof activeTab!=='undefined'?activeTab:'ref'),cls:'au'}, '', '#'+(typeof activeTab!=='undefined'?activeTab:'ref')); } }catch(e){}
+})();
+// When the overlay opens, push a history entry so Back closes it.
+(function(){
+  var ov=document.getElementById('ov'); if(!ov) return;
+  var wasOpen=ov.classList.contains('open');
+  new MutationObserver(function(){
+    var isOpen=ov.classList.contains('open');
+    if(isOpen && !wasOpen && !_navFromPop){ try{ history.pushState({v:'ov'}, ''); }catch(e){} }
+    wasOpen=isOpen;
+  }).observe(ov,{attributes:true,attributeFilter:['class']});
+})();
+
+// ══════════════════════════════════════════════
+// PWA — installable app + offline shell (RC Sidekick)
+// ══════════════════════════════════════════════
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(err){console.log('SW register failed',err);});
+  });
+}
 </script>
 </body>
 </html>
