@@ -3168,6 +3168,61 @@ function renderParts(){
 let _editingPartId=null;
 let _pendingPartPhoto=null;
 
+function renderWorksInChips(){
+  const chips=document.getElementById('pa-worksin-chips');
+  const addSel=document.getElementById('pa-worksin-add');
+  if(!chips)return;
+  const planes=loadHangar();
+  const nameOf=id=>{const pl=planes.find(x=>x.id===id);return pl?pl.name:'(deleted plane)';};
+  if(!_partWorksInWorking.length){
+    chips.innerHTML='<span class="mr-craft" style="opacity:.6">None yet — use Auto-fill, or add one below.</span>';
+  }else{
+    chips.innerHTML=_partWorksInWorking.map(id=>`<span class="dbadge" style="border-color:var(--accent);color:var(--accent);display:inline-flex;align-items:center;gap:6px"><i class="ti ti-plane"></i> ${escHtml(nameOf(id))} <i class="ti ti-x" onclick="removeWorksInPlane('${id}')" style="cursor:pointer;opacity:.75"></i></span>`).join('');
+  }
+  if(addSel){
+    const avail=planes.filter(pl=>!_partWorksInWorking.includes(pl.id));
+    addSel.innerHTML='<option value="">＋ Add a plane manually…</option>'+avail.map(pl=>`<option value="${pl.id}">${escHtml(pl.name)}</option>`).join('');
+    addSel.style.display=avail.length?'':'none';
+  }
+}
+function addWorksInPlane(id){
+  if(!id)return;
+  if(!_partWorksInWorking.includes(id))_partWorksInWorking.push(id);
+  renderWorksInChips();
+}
+function removeWorksInPlane(id){
+  _partWorksInWorking=_partWorksInWorking.filter(x=>x!==id);
+  renderWorksInChips();
+}
+async function autofillWorksInAI(){
+  const statusEl=document.getElementById('pa-worksin-status');
+  const planes=loadHangar();
+  if(!planes.length){if(statusEl)statusEl.textContent='Add planes to your Hangar first.';return;}
+  const nameEl=document.getElementById('pa-name');const specEl=document.getElementById('pa-spec');const connEl=document.getElementById('pa-connector');
+  const name=nameEl?nameEl.value.trim():'';const spec=specEl?specEl.value.trim():'';const connector=connEl?connEl.value:'';
+  if(!name&&!spec){if(statusEl)statusEl.textContent='Enter the battery name or spec first, then Auto-fill.';return;}
+  const btn=document.getElementById('pa-worksin-ai');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Checking…';}
+  if(statusEl){statusEl.style.color='';statusEl.textContent='Asking Claude which planes this pack fits…';}
+  try{
+    const sys="You are an expert RC hobbyist. Given ONE battery and a list of the owner's RC aircraft, decide which of those aircraft this specific battery is a suitable flight pack for, based on cell count / voltage, capacity, C-rating, connector, and rough size/weight class. Be conservative: only include an aircraft when the battery is a realistic fit. Output ONLY machine-readable lines, one per compatible aircraft, exactly: PLANE: <exact aircraft name copied verbatim from the list>. If none clearly fit, output exactly: PLANE: none";
+    const usr=`Battery:\nName: ${name||'(unnamed)'}\nSpec: ${spec||'(none)'}\nConnector: ${connector||'(unspecified)'}\n\nOwner's aircraft:\n${planes.map(pl=>`- ${pl.name}${pl.type?' ('+pl.type+(pl.class?' / '+pl.class:'')+')':''}${pl.battSpec?' — logged pack: '+pl.battSpec:''}`).join('\n')}`;
+    const text=await callClaude(sys,usr,600);
+    const names=[...text.matchAll(/PLANE:\s*(.+)/gi)].map(m=>m[1].trim()).filter(n=>n&&n.toLowerCase()!=='none');
+    const norm=v=>(v||'').trim().toLowerCase();
+    let added=0;
+    names.forEach(nm=>{
+      const pl=planes.find(x=>norm(x.name)===norm(nm))||planes.find(x=>norm(nm).length>=4&&(norm(x.name).includes(norm(nm))||norm(nm).includes(norm(x.name))));
+      if(pl&&!_partWorksInWorking.includes(pl.id)){_partWorksInWorking.push(pl.id);added++;}
+    });
+    renderWorksInChips();
+    if(statusEl)statusEl.textContent=added?`Added ${added} plane${added>1?'s':''} — review the chips and remove any that don't fit. Nothing saves until you hit Save.`:'Claude found no clear matches. Add manually if needed.';
+  }catch(e){
+    if(statusEl){statusEl.style.color='var(--danger)';statusEl.textContent='Auto-fill failed: '+(e.message||'error')+'. Check your Claude API key in Settings.';}
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-sparkles"></i> Auto-fill with AI';}
+}
+
 function togglePartCategoryFields(){
   const cat=document.getElementById('pa-category');
   if(!cat)return;
@@ -3185,7 +3240,7 @@ function openPartEditor(id){
   const p=id?parts.find(x=>x.id===id):null;
   _partAssignWorking=(p&&p.assigned)?JSON.parse(JSON.stringify(p.assigned)):[];
   const _wiSeed=(p&&p.worksIn&&p.worksIn.length)?p.worksIn:(p?(p.assigned||[]).map(a=>a.planeId):[]);
-  const _partWorksInSet=new Set(_wiSeed);
+  _partWorksInWorking=Array.from(new Set(_wiSeed));
   document.getElementById('ov-title').textContent=p?'Edit Part':'Add Part';
   document.getElementById('ov-badge').textContent='';
   document.getElementById('ov-badge').className='dbadge';
@@ -3225,7 +3280,10 @@ function openPartEditor(id){
     <input class="row-input" id="pa-qty" type="number" min="0" value="${p?p.qty||1:1}" oninput="renderPartAssignRows()" style="margin-bottom:12px" />
     <div id="pa-worksin-wrap" style="${(!p||p.category==='Battery')?'':'display:none'}">
       <div class="slabel">Which planes do these work in?</div>
-      <div id="pa-worksin-list" style="margin-bottom:12px">${loadHangar().length?loadHangar().map(pl=>`<label style="display:flex;align-items:center;gap:8px;padding:6px 2px;font-size:13px;cursor:pointer"><input type="checkbox" value="${pl.id}"${_partWorksInSet.has(pl.id)?' checked':''} style="width:auto;flex:0 0 auto" /> ${escHtml(pl.name)}</label>`).join(''):'<div class="mr-craft" style="opacity:.6">No planes in your hangar yet — add planes first.</div>'}</div>
+      <div id="pa-worksin-chips" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px"></div>
+      <button class="abtn gbtn" id="pa-worksin-ai" onclick="autofillWorksInAI()" style="width:100%;padding:9px 12px;font-size:12px;margin-bottom:6px"><i class="ti ti-sparkles"></i> Auto-fill with AI</button>
+      <select class="row-input" id="pa-worksin-add" onchange="addWorksInPlane(this.value);this.value=''" style="margin-bottom:6px"><option value="">＋ Add a plane manually…</option></select>
+      <div id="pa-worksin-status" class="mr-craft" style="margin-bottom:12px;min-height:0"></div>
     </div>
     <div id="pa-assign-wrap"${(!p||p.category==='Battery')?' style="display:none"':''}>
     <div class="slabel">Installed in / assigned to plane</div>
@@ -3253,6 +3311,7 @@ function openPartEditor(id){
   document.body.style.overflow='hidden';
   renderPartAssignRows();
   togglePartCategoryFields();
+  renderWorksInChips();
 }
 
 async function handlePartPhoto(input){
@@ -3380,6 +3439,7 @@ function applyPartIdent(){
 }
 
 let _partAssignWorking=[];
+let _partWorksInWorking=[];
 
 function renderPartAssignRows(){
   const listEl=document.getElementById('pa-assign-list');
@@ -3430,7 +3490,7 @@ function savePart(){
   const category=document.getElementById('pa-category').value;
   const connEl=document.getElementById('pa-connector');
   const connector=(category==='Battery'&&connEl)?connEl.value:'';
-  const worksIn=(category==='Battery')?Array.from(document.querySelectorAll('#pa-worksin-list input[type=checkbox]:checked')).map(cb=>cb.value):[];
+  const worksIn=(category==='Battery')?_partWorksInWorking.slice():[];
   const spec=document.getElementById('pa-spec').value.trim();
   const qty=parseInt(document.getElementById('pa-qty').value,10)||1;
   const notes=document.getElementById('pa-notes').value.trim();
