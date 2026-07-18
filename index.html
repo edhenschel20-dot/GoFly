@@ -3148,12 +3148,14 @@ function renderParts(){
     const assignedQty=partAssignedQty(p);
     const availQty=partAvailableQty(p);
     const assignBadges=(p.assigned||[]).filter(a=>a.qty>0).map(a=>`<span class="dbadge" style="border-color:var(--accent);color:var(--accent)">${a.qty} in ${escHtml(planeNameById(a.planeId))}</span>`).join('');
+    const luP=formatLastUpdated(p.lastUpdated);
     return `<div class="move-row" onclick="openPartEditor('${p.id}')">
       ${photo}
       <div class="mr-info">
         <div class="mr-name">${escHtml(p.name)}</div>
         <div class="mr-meta"><span class="dbadge">${escHtml(p.category)}</span>${p.spec?`<span class="mr-craft">${escHtml(p.spec)}</span>`:''}${p.qty&&p.qty>1?`<span class="mr-craft">x${p.qty}</span>`:''}${assignedQty>0?`<span class="mr-craft" style="color:var(--accent)">${availQty} avail</span>`:''}</div>
         ${assignBadges?`<div class="mr-meta" style="margin-top:4px">${assignBadges}</div>`:''}
+        <div class="mr-meta" style="margin-top:2px"><span class="dbadge" style="border-color:${luP.color};color:${luP.color}"><i class="ti ti-clock"></i> ${luP.text}</span></div>
       </div>
       <i class="ti ti-chevron-right mr-arr"></i>
     </div>`;
@@ -3212,7 +3214,9 @@ function openPartEditor(id){
     </div>
     <div id="pa-avail-info" class="mr-craft" style="margin-bottom:12px"></div>
     <div class="slabel">Notes</div>
-    <textarea class="row-input" id="pa-notes" rows="3" style="resize:vertical;margin-bottom:14px">${p?escHtml(p.notes||''):''}</textarea>
+    <textarea class="row-input" id="pa-notes" rows="3" style="resize:vertical;margin-bottom:12px">${p?escHtml(p.notes||''):''}</textarea>
+    <div class="slabel">Last updated</div>
+    <input class="row-input" id="pa-lastupdated" type="date" value="${p&&p.lastUpdated?p.lastUpdated:todayISO()}" style="margin-bottom:14px" />
     <div style="display:flex;gap:8px">
       <button class="abtn bbtn" style="flex:1" onclick="savePart()"><i class="ti ti-check"></i> Save</button>
       ${p?'<button class="abtn" style="flex:0 0 auto;width:auto;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="deletePart()"><i class="ti ti-trash"></i></button>':''}
@@ -3398,16 +3402,18 @@ function savePart(){
   const spec=document.getElementById('pa-spec').value.trim();
   const qty=parseInt(document.getElementById('pa-qty').value,10)||1;
   const notes=document.getElementById('pa-notes').value.trim();
+  const luEl=document.getElementById('pa-lastupdated');
+  const lastUpdated=(luEl&&luEl.value)?luEl.value:todayISO();
   const assigned=_partAssignWorking.filter(a=>a.planeId&&a.qty>0).map(a=>({planeId:a.planeId,qty:parseInt(a.qty,10)||1}));
   let parts=loadParts();
   if(_editingPartId){
     const idx=parts.findIndex(p=>p.id===_editingPartId);
     if(idx>-1){
-      parts[idx]={...parts[idx],name,category,spec,qty,notes,assigned};
+      parts[idx]={...parts[idx],name,category,spec,qty,notes,assigned,lastUpdated};
       if(_pendingPartPhoto)parts[idx].photo=_pendingPartPhoto;
     }
   }else{
-    const np={id:uid(),name,category,spec,qty,notes,assigned};
+    const np={id:uid(),name,category,spec,qty,notes,assigned,lastUpdated};
     if(_pendingPartPhoto)np.photo=_pendingPartPhoto;
     parts.push(np);
   }
