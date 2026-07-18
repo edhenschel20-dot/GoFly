@@ -33,6 +33,40 @@
   --warn:#f0b44a;--danger:#f05a4a;--ddim:rgba(240,90,74,0.1);
   --r:8px;--r2:12px;
 }
+
+/* ---- Sunlight (high-contrast light) theme ---- */
+html[data-theme="sun"]{
+  --bg:#ffffff;--surface:#ffffff;--surface2:#e9edf2;
+  --border:rgba(0,0,0,0.20);--border2:rgba(0,0,0,0.38);
+  --text:#000000;--muted:#2f353c;--muted2:#5a626b;
+  --accent:#00633b;--adim:rgba(0,99,59,0.12);--aborder:rgba(0,99,59,0.55);
+  --blue:#0a4c9e;--bdim:rgba(10,76,158,0.12);--bborder:rgba(10,76,158,0.55);
+  --gold:#7a5000;--gdim:rgba(122,80,0,0.13);--gborder:rgba(122,80,0,0.55);
+  --warn:#8a5600;--danger:#b00000;--ddim:rgba(176,0,0,0.10);
+  color-scheme:light;
+}
+html[data-theme="sun"] .rbody ul,
+html[data-theme="sun"] .ci-text,
+html[data-theme="sun"] .ref-sec-body,
+html[data-theme="sun"] .ph-body,
+html[data-theme="sun"] .stick-tbl td{color:#1a1f26;}
+html[data-theme="sun"] .restore-confirm p,
+html[data-theme="sun"] .warn-box{color:#8a0000;}
+html[data-theme="sun"] .warn-box{border-color:rgba(176,0,0,0.45);}
+html[data-theme="sun"] .logo-sub,
+html[data-theme="sun"] .slabel,
+html[data-theme="sun"] .up-text,
+html[data-theme="sun"] .up-icon{color:#2f353c;}
+html[data-theme="sun"] .tab{color:#3a424b;}
+html[data-theme="sun"] body{font-weight:500;}
+html[data-theme="sun"] .row-input,
+html[data-theme="sun"] textarea,
+html[data-theme="sun"] select,
+html[data-theme="sun"] input{background:#ffffff;color:#000000;}
+.theme-btn{margin-left:auto;display:flex;align-items:center;justify-content:center;gap:5px;background:var(--surface2);border:1px solid var(--border2);border-radius:99px;padding:5px 10px;cursor:pointer;flex-shrink:0;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;}
+.theme-btn:active{opacity:0.7;}
+.theme-btn i{font-size:14px;}
+html[data-theme="sun"] .theme-btn{color:var(--gold);border-color:var(--gborder);background:var(--gdim);}
 html,body{height:100%;overflow:hidden;}
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font-size:14px;display:flex;flex-direction:column;}
 .header{flex-shrink:0;padding:12px 16px 0;border-bottom:1px solid var(--border);background:var(--surface);}
@@ -351,6 +385,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 .mc.sel .mc-name{color:var(--blue);}
 .mc-diff{font-size:10px;color:var(--muted2);font-family:'Barlow Condensed',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;}
 </style>
+<script>
+(function(){try{var t=localStorage.getItem('rc_theme');if(t==='sun'){document.documentElement.setAttribute('data-theme','sun');var m=document.querySelector('meta[name="theme-color"]');if(m)m.setAttribute('content','#ffffff');}}catch(e){}})();
+</script>
 </head>
 <body>
 
@@ -361,6 +398,9 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
       <div class="logo-text">RC Sidekick</div>
       <div class="logo-sub">AI-powered · Gemini + Claude</div>
     </div>
+    <button class="theme-btn" onclick="toggleTheme()" title="Toggle sunlight mode" aria-label="Toggle sunlight mode">
+      <i class="ti ti-sun" id="theme-btn-icon"></i><span id="theme-btn-text">Sun</span>
+    </button>
     <div class="usage-pill" onclick="openUsage()" title="API usage this session">
       <i class="ti ti-activity up-icon"></i>
       <span class="up-text" id="usage-pill-text">0 calls</span>
@@ -3991,6 +4031,28 @@ if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(function(err){console.log('SW register failed',err);});
   });
 }
+/* ---- Sunlight theme toggle ---- */
+function _applyThemeUI(){
+  var sun=document.documentElement.getAttribute('data-theme')==='sun';
+  var i=document.getElementById('theme-btn-icon'), t=document.getElementById('theme-btn-text');
+  if(i)i.className='ti '+(sun?'ti-moon':'ti-sun');
+  if(t)t.textContent=sun?'Dark':'Sun';
+  var m=document.querySelector('meta[name="theme-color"]');
+  if(m)m.setAttribute('content',sun?'#ffffff':'#0d0f12');
+  var sb=document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if(sb)sb.setAttribute('content',sun?'default':'black-translucent');
+}
+function setTheme(mode){
+  if(mode==='sun')document.documentElement.setAttribute('data-theme','sun');
+  else document.documentElement.removeAttribute('data-theme');
+  try{localStorage.setItem('rc_theme',mode);}catch(e){}
+  _applyThemeUI();
+}
+function toggleTheme(){
+  setTheme(document.documentElement.getAttribute('data-theme')==='sun'?'dark':'sun');
+}
+try{_applyThemeUI();}catch(e){}
+
 </script>
 </body>
 </html>
