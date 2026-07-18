@@ -2460,7 +2460,8 @@ async function ghGetFile(){
 }
 
 // Write file to GitHub
-async function ghPutFile(bundle){
+async function ghPutFile(bundle,opts){
+  opts=opts||{};
   const c=loadGHConfig();
   if(!c.token||!c.repo||!c.username){_ghLastError='Not configured — need username, repo, and token.';return false;}
   const url=`https://api.github.com/repos/${c.username}/${c.repo}/contents/rc-flight-coach-data.json`;
@@ -2491,7 +2492,7 @@ async function ghPutFile(bundle){
       method:'PUT',
       headers:{...authHeaders,'Content-Type':'application/json'},
       body:JSON.stringify(body),
-      keepalive:true
+      keepalive:opts.keepalive===true
     });
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
