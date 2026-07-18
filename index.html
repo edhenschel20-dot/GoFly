@@ -699,6 +699,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
 <!-- PARTS -->
 <div class="panel" id="panel-parts">
   <div class="info-note" style="border-color:var(--bborder)"><strong style="color:var(--blue)">Your parts bin.</strong> Batteries, motors, ESCs, servos, props — everything on the shelf.</div>
+  <div class="ref-search" style="margin-bottom:10px"><i class="ti ti-search si"></i><input type="text" id="parts-q" placeholder="Search parts..." autocomplete="off" oninput="setPartsSearch(this.value)" /></div>
   <div class="toggle-row" id="parts-filter-row" style="flex-wrap:wrap"></div>
   <div id="parts-list"></div>
   <button class="abtn bbtn" id="parts-add-btn" onclick="openPartEditor(null)"><i class="ti ti-plus"></i> Add a part</button>
@@ -3154,6 +3155,14 @@ function deletePlane(){
 
 // ── PARTS RENDER ──────────────────────────────────
 let _partsFilter='All';
+let _partsSearch='';
+function setPartsSearch(v){_partsSearch=(v||'').trim().toLowerCase();renderParts();}
+function partMatchesSearch(p){
+  if(!_partsSearch)return true;
+  const hay=([p.name,p.category,p.connector,p.spec,p.brand,p.model,p.notes]
+    .filter(Boolean).join(' ')+' '+(p.assigned||[]).map(a=>planeNameById(a.planeId)).join(' ')).toLowerCase();
+  return _partsSearch.split(/\s+/).every(t=>hay.includes(t));
+}
 
 function renderPartsFilterRow(){
   const row=document.getElementById('parts-filter-row');
@@ -3173,8 +3182,10 @@ function renderParts(){
   if(!list)return;
   let parts=loadParts();
   if(_partsFilter!=='All')parts=parts.filter(p=>p.category===_partsFilter);
+  if(_partsSearch)parts=parts.filter(partMatchesSearch);
   if(!parts.length){
-    list.innerHTML='<div class="no-results"><i class="ti ti-package"></i><p>No parts here yet</p></div>';
+    const msg=_partsSearch?'No parts match your search':'No parts here yet';
+    list.innerHTML='<div class="no-results"><i class="ti ti-package"></i><p>'+msg+'</p></div>';
     return;
   }
   list.innerHTML=parts.map(p=>{
