@@ -3279,12 +3279,22 @@ function parseBattSpec(txt){
   if(r)mah=[+r[1],+r[2]];else{const m=t.match(/(\d{3,5})\s*mah/);if(m)mah=[+m[1],+m[1]];}
   return {conns,cells,mah};
 }
+// Battery capacity in mAh: "1300mAh" first, else a bare 3-5 digit number in the
+// name ("MiniStar 3S 350") that isn't a C-rating, kv, mm, voltage or year-like code.
+function battCapacity(pt){
+  const t=((pt.name||'')+' '+(pt.spec||'')).toLowerCase();
+  let m=t.match(/(\d{3,5})\s*mah/);if(m)return +m[1];
+  const nm=(pt.name||'').toLowerCase();
+  const re=/(?:^|[^\d.])(\d{3,5})(?![\d.]|\s*(?:c\b|kv|mm|v\b|w\b|g\b))/g;let r;
+  while((r=re.exec(nm))){const v=+r[1];if(v>=100&&v<=30000)return v;}
+  return 0;
+}
 function batteryFitsSpec(pt,spec){
   // Connector is ignored on purpose — adapters make any plug work.
   if(!spec.cells.length&&!spec.mah)return false;
   const hay=((pt.name||'')+' '+(pt.spec||'')+' '+(pt.connector||'')).toLowerCase();
   if(spec.cells.length){const pc=parseBattSpec(hay).cells;if(!pc.length||!pc.some(c=>spec.cells.includes(c)))return false;}
-  if(spec.mah){const m=hay.match(/(\d{3,5})\s*mah/);if(m){const v=+m[1];if(v<spec.mah[0]*0.8||v>spec.mah[1]*1.2)return false;}}
+  if(spec.mah){const v=battCapacity(pt);if(v&&(v<spec.mah[0]*0.8||v>spec.mah[1]*1.2))return false;}
   return true;
 }
 function renderPlaneBattRows(){
@@ -3874,22 +3884,63 @@ async function callClaudePhotoSearch(sys,usr,max){
   const d=await res.json();trackCall('claude');
   return (d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
 }
+// Each store's homepage share image is its generic "default" picture (usually the
+// logo). Any candidate matching it is junk. Cached per site so it's looked up once.
+const SITE_DEFAULT_IMG_KEY='rc_site_default_imgs';
+let _siteDefaults=null;
+function _normImg(u){return (u||'').split('#')[0].split('?')[0].replace(/^https?:\/\//,'').toLowerCase();}
+async function siteDefaultImage(host){
+  if(_siteDefaults===null){try{_siteDefaults=JSON.parse(localStorage.getItem(SITE_DEFAULT_IMG_KEY)||'{}');}catch(e){_siteDefaults={};}}
+  if(host in _siteDefaults)return _siteDefaults[host];
+  let img='';
+  try{
+    const r=await fetch('https://api.microlink.io/?url='+encodeURIComponent('https://'+host+'/'));
+    if(r.status===429){_photoQuotaHit=true;return '';}
+    const j=await r.json();
+    img=_normImg(j&&j.data&&j.data.image&&j.data.image.url);
+  }catch(e){return '';}
+  _siteDefaults[host]=img;
+  try{localStorage.setItem(SITE_DEFAULT_IMG_KEY,JSON.stringify(_siteDefaults));}catch(e){}
+  return img;
+}
+function _host(u){try{return new URL(u).hostname.replace(/^www\./,'');}catch(e){return '';}}
+async function isSiteDefault(imgUrl,pageUrl){
+  const n=_normImg(imgUrl);
+  const hosts=[_host(pageUrl||'')||_host(imgUrl)].filter(Boolean);
+  for(const h of hosts){const d=await siteDefaultImage(h);if(d&&d===n)return true;}
+  return false;
+}
+// Horizon Hobby's real product shots live in its catalog folder; everything else
+// on its domain (logo, banners) does not.
+function horizonOk(u){return !/horizonhobby\.com/i.test(u)||/Sites-horizon-master/i.test(u);}
 async function findProductPhotos(name,whatItIs){
   _photoQuotaHit=false;
   const sys="You find product photos for RC hobby items. Search the web for the exact product named. Return up to 3 candidates from 3 DIFFERENT websites, best first. Prefer hobby retailer product pages (e.g. motionrc.com, getfpv.com, rcplanet, modelhelicopters.co.uk, other Shopify hobby stores) and list horizonhobby.com last, because its pages don't expose a usable product photo. Only include pages for this exact model, not similar ones or category pages. Respond in EXACTLY this format, nothing else:\nPAGE: <product page URL>\nIMAGE: <direct URL of the main photo of the product itself if you saw one — never a site logo, icon or banner — otherwise none>\n(repeat the PAGE/IMAGE pair up to 3 times). If you can't find this exact product, respond with just: NONE";
   const usr=`Item: ${name}\nWhat it is: ${whatItIs}`;
   const text=await callClaudePhotoSearch(sys,usr,700);
-  const grab=(label)=>Array.from(text.matchAll(new RegExp('^\\s*'+label+':\\s*(\\S+)','gim'))).map(m=>m[1].replace(/[)\].,>]+$/,'')).filter(u=>/^https?:\/\//i.test(u));
-  const images=Array.from(new Set(grab('IMAGE'))),pages=Array.from(new Set(grab('PAGE')));
-  let thumbs=(await Promise.all(images.slice(0,3).map(goodThumb))).filter(Boolean);
-  if(thumbs.length<2&&pages.length){
-    const og=(await Promise.all(pages.slice(0,3).map(pageMainImage))).filter(u=>u&&!images.includes(u));
-    // An image returned by more than one page is a site-wide default, not the product.
-    const counts={};og.forEach(u=>counts[u]=(counts[u]||0)+1);
-    const uniq=Object.keys(counts).filter(u=>counts[u]===1);
-    thumbs=thumbs.concat((await Promise.all(uniq.map(goodThumb))).filter(Boolean));
+  // Keep PAGE/IMAGE pairs together so each image is checked against its own site.
+  const pairs=[];let cur=null;
+  text.split('\n').forEach(line=>{
+    const m=line.match(/^\s*(PAGE|IMAGE):\s*(\S+)/i);if(!m)return;
+    const u=m[2].replace(/[)\].,>]+$/,'');const ok=/^https?:\/\//i.test(u);
+    if(m[1].toUpperCase()==='PAGE'){cur={page:ok?u:'',image:''};pairs.push(cur);}
+    else if(cur&&ok)cur.image=u;
+  });
+  const check=async c=>{
+    if(!c.url||!horizonOk(c.url))return null;
+    if(await isSiteDefault(c.url,c.page))return null;
+    return await goodThumb(c.url);
+  };
+  const direct=pairs.filter(pr=>pr.image).slice(0,3).map(pr=>({url:pr.image,page:pr.page}));
+  let checked=await Promise.all(direct.map(check));
+  if(checked.filter(Boolean).length<2){
+    // Fall back to reading each store page's main image (skipping Horizon, whose is its logo).
+    const seen=new Set(direct.map(c=>_normImg(c.url)));
+    const og=await Promise.all(pairs.filter(pr=>pr.page&&!/horizonhobby\.com/i.test(pr.page)).slice(0,3).map(async pr=>({url:await pageMainImage(pr.page),page:pr.page})));
+    const more=og.filter(c=>c.url&&!seen.has(_normImg(c.url)));
+    checked=checked.concat(await Promise.all(more.map(check)));
   }
-  return Array.from(new Set(thumbs)).slice(0,3);
+  return Array.from(new Set(checked.filter(Boolean))).slice(0,3);
 }
 function photoNotFoundMsg(){return _photoQuotaHit?'Daily photo-lookup limit reached — try again tomorrow.':"Couldn't find a photo for this exact item. Try a fuller model name, or take one yourself.";}
 function photoThumbsHTML(photos,onclickFn,selected){
