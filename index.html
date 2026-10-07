@@ -747,6 +747,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   </div>
   <div id="hangar-list"></div>
   <button class="abtn" id="hangar-add-btn" onclick="openPlaneEditor(null)"><i class="ti ti-plus"></i> Add a plane</button>
+  <button class="abtn" onclick="bulkFillPhotos('plane')" style="margin-top:8px;background:transparent"><i class="ti ti-photo"></i> Fill missing photos</button>
 </div>
 
 <!-- PARTS -->
@@ -786,6 +787,7 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font
   <div class="toggle-row" id="parts-filter-row" style="flex-wrap:wrap"></div>
   <div id="parts-list"></div>
   <button class="abtn bbtn" id="parts-add-btn" onclick="openPartEditor(null)"><i class="ti ti-plus"></i> Add a part</button>
+  <button class="abtn" onclick="bulkFillPhotos('part')" style="margin-top:8px;background:transparent"><i class="ti ti-photo"></i> Fill missing photos</button>
 </div>
 
 <!-- MATCH -->
@@ -3044,6 +3046,8 @@ function openPlaneEditor(id){
         <i class="ti ti-photo u-icon"></i><div class="u-title">Gallery</div>
       </div>
     </div>
+    <button class="abtn" id="pe-photo-btn" onclick="findPhotoForEditor('plane')" style="margin-bottom:8px;padding:8px 12px;font-size:11px"><i class="ti ti-world-search"></i> Find photo online</button>
+    <div id="pe-photo-results" style="display:none;margin-bottom:12px"></div>
     <div class="slabel">Name</div>
     <input class="row-input" id="pe-name" type="text" placeholder="e.g. Bixler 3, Wasp 250" value="${p?escHtml(p.name):''}" style="margin-bottom:8px" />
     <button class="abtn" id="pe-lookup-btn" onclick="lookupPlaneSpecs()" style="margin-bottom:12px;padding:8px 12px;font-size:11px"><i class="ti ti-search"></i> Look up specs for this plane</button>
@@ -3536,6 +3540,8 @@ function openPartEditor(id){
         <i class="ti ti-photo u-icon"></i><div class="u-title">Gallery</div>
       </div>
     </div>
+    <button class="abtn" id="pa-photo-btn" onclick="findPhotoForEditor('part')" style="margin-bottom:8px;padding:8px 12px;font-size:11px"><i class="ti ti-world-search"></i> Find photo online</button>
+    <div id="pa-photo-results" style="display:none;margin-bottom:12px"></div>
     <div id="pa-identify-results"></div>
     <button class="abtn" id="pa-identify-btn" onclick="identifyPartFromPhoto()" style="margin-bottom:12px;padding:8px 12px;font-size:11px"><i class="ti ti-sparkles"></i> Identify from photo</button>
     <div class="slabel">Category</div>
@@ -3815,6 +3821,156 @@ async function callClaudeWithSearch(sys,usr,max){
   return text;
 }
 
+// ── AUTO PHOTO LOOKUP ─────────────────────────────
+// Claude (web search) finds the exact product's pages / image URLs. Product sites
+// block apps from downloading their images directly, so images go through the
+// images.weserv.nl resizer (CORS-enabled) and come back as small ~400px JPEG
+// thumbnails that get stored like a normal photo (works offline, light on storage).
+// When Claude only has a page URL, microlink.io reads that page's main image.
+let _photoQuotaHit=false;
+async function thumbFromUrl(u){
+  try{
+    const r=await fetch('https://images.weserv.nl/?url='+encodeURIComponent(u)+'&w=400&h=400&fit=inside&output=jpg&q=70');
+    if(!r.ok)return null;
+    const b=await r.blob();
+    if(!b.type.startsWith('image/')||b.size<1500)return null;
+    return await new Promise(res=>{const fr=new FileReader();fr.onload=()=>res(fr.result);fr.onerror=()=>res(null);fr.readAsDataURL(b);});
+  }catch(e){return null;}
+}
+async function pageMainImage(page){
+  try{
+    const r=await fetch('https://api.microlink.io/?url='+encodeURIComponent(page));
+    if(r.status===429){_photoQuotaHit=true;return null;}
+    const j=await r.json();
+    return (j&&j.data&&j.data.image&&j.data.image.url)||null;
+  }catch(e){return null;}
+}
+async function findProductPhotos(name,whatItIs){
+  _photoQuotaHit=false;
+  const sys="You find product photos for RC hobby items. Search the web for the exact product named. Return up to 3 candidates, best first, from the manufacturer or major hobby retailers (e.g. horizonhobby.com, motionrc.com, getfpv.com, banggood, amazon). Only include pages for this exact model, not similar ones. Respond in EXACTLY this format, nothing else:\nPAGE: <product page URL>\nIMAGE: <direct URL of the main product image if you saw one, otherwise none>\n(repeat the PAGE/IMAGE pair up to 3 times). If you can't find this exact product, respond with just: NONE";
+  const usr=`Item: ${name}\nWhat it is: ${whatItIs}`;
+  const text=await callClaudeWithSearch(sys,usr,700);
+  const grab=(label)=>Array.from(text.matchAll(new RegExp('^\\s*'+label+':\\s*(\\S+)','gim'))).map(m=>m[1].replace(/[)\].,>]+$/,'')).filter(u=>/^https?:\/\//i.test(u));
+  const images=Array.from(new Set(grab('IMAGE'))),pages=Array.from(new Set(grab('PAGE')));
+  let thumbs=(await Promise.all(images.slice(0,3).map(thumbFromUrl))).filter(Boolean);
+  if(thumbs.length<2&&pages.length){
+    const og=(await Promise.all(pages.slice(0,3).map(pageMainImage))).filter(u=>u&&!images.includes(u));
+    thumbs=thumbs.concat((await Promise.all(Array.from(new Set(og)).map(thumbFromUrl))).filter(Boolean));
+  }
+  return Array.from(new Set(thumbs)).slice(0,3);
+}
+function photoNotFoundMsg(){return _photoQuotaHit?'Daily photo-lookup limit reached — try again tomorrow.':"Couldn't find a photo for this exact item. Try a fuller model name, or take one yourself.";}
+function photoThumbsHTML(photos,onclickFn,selected){
+  return `<div style="display:flex;gap:8px;flex-wrap:wrap">${photos.map((d,i)=>`<img src="${d}" onclick="${onclickFn(i)}" style="width:96px;height:96px;object-fit:cover;border-radius:var(--r);cursor:pointer;background:#fff;border:${selected===i?'3px solid var(--accent)':'1px solid var(--border2)'}" />`).join('')}</div>`;
+}
+
+// Single item, from inside the plane / part editor
+let _editorPhotoFound=[];
+async function findPhotoForEditor(kind){
+  const P=kind==='plane'?'pe':'pa';
+  const nameEl=document.getElementById(P+'-name');
+  const name=nameEl?nameEl.value.trim():'';
+  if(!name){alert('Enter the name first.');return;}
+  let what;
+  if(kind==='plane'){const t=document.getElementById('pe-type');what='RC '+((t&&t.value)||'aircraft');}
+  else{const c=document.getElementById('pa-category'),sp=document.getElementById('pa-spec');const first=sp&&sp.value?sp.value.split('\n')[0]:'';what='RC '+((c&&c.value)||'hobby')+' part'+(first?'; details: '+first:'');}
+  const btnLabel='<i class="ti ti-world-search"></i> Find photo online';
+  setBtn(P+'-photo-btn',true,btnLabel);
+  showEl(P+'-photo-results',ldHTML(P+'photo','Searching for photos...','g'));
+  const pi=tickP(P+'photo');
+  try{
+    const photos=await findProductPhotos(name,what);
+    stopP(pi,P+'photo');
+    _editorPhotoFound=photos;
+    if(!photos.length)showEl(P+'-photo-results',`<div class="hint" style="color:var(--danger)">${photoNotFoundMsg()}</div>`);
+    else showEl(P+'-photo-results',`<div class="hint" style="margin-bottom:6px">Tap the right photo to use it (saved when you hit Save):</div>${photoThumbsHTML(photos,i=>`useFoundPhoto('${kind}',${i})`)}<button class="abtn" style="margin-top:8px;padding:6px 10px;font-size:11px;background:var(--ddim)" onclick="hideEl('${P}-photo-results')"><i class="ti ti-x"></i> None of these</button>`);
+  }catch(e){
+    stopP(pi,P+'photo');
+    showEl(P+'-photo-results',`<div class="hint" style="color:var(--danger)">${escHtml(e.message||'Photo lookup failed.')}</div>`);
+  }
+  setBtn(P+'-photo-btn',false,btnLabel);
+}
+function useFoundPhoto(kind,i){
+  const d=_editorPhotoFound[i];if(!d)return;
+  const pre=kind==='plane'?'plane':'part';
+  if(kind==='plane')_pendingPlanePhoto=d;else _pendingPartPhoto=d;
+  const img=document.getElementById(pre+'-photo-img'),pv=document.getElementById(pre+'-photo-preview');
+  if(img)img.src=d;
+  if(pv)pv.style.display='block';
+  hideEl((kind==='plane'?'pe':'pa')+'-photo-results');
+}
+
+// Bulk: every plane / part that has no photo yet
+let _bulkPhoto={run:0};
+function _bulkOvOpen(){const o=document.getElementById('ov');return !!(o&&o.classList.contains('open'));}
+async function bulkFillPhotos(kind){
+  const isPlane=kind==='plane';
+  const items=(isPlane?loadHangar():loadParts()).filter(x=>!x.photo);
+  const noun=isPlane?'plane':'part';
+  if(!items.length){alert(`Every ${noun} already has a photo.`);return;}
+  if(!getCKey()){alert('Claude API key not set. Enter it in Learn tab API Keys.');return;}
+  if(!confirm(`Search for photos for ${items.length} ${noun}${items.length===1?'':'s'} without one?\n\nUses about ${items.length} Claude web-search lookup${items.length===1?'':'s'}. Nothing is saved until you pick the right photo for each.`))return;
+  const run=_bulkPhoto.run+1;
+  _bulkPhoto={run,kind,items,found:{},picks:{},done:0};
+  document.getElementById('ov-title').textContent='Fill missing photos';
+  document.getElementById('ov-badge').textContent='';
+  document.getElementById('ov-badge').className='dbadge';
+  document.getElementById('ov-body').innerHTML=`
+    <div class="hint" style="margin-bottom:10px">Tap the right photo for each ${noun}. Leave one blank to skip it. Closing this screen stops the search.</div>
+    <div class="mr-craft" id="bp-status" style="margin-bottom:10px">Searching 0 of ${items.length}…</div>
+    ${items.map((it,i)=>`<div class="results-wrap" style="margin-bottom:8px">
+      <div class="rhead"><i class="ti ${isPlane?'ti-plane':'ti-package'}"></i> ${escHtml(it.name)}${!isPlane&&it.category?` <span class="dbadge">${escHtml(it.category)}</span>`:''}</div>
+      <div id="bp-${i}" style="padding:10px"><span class="mr-craft" style="opacity:.6">Waiting…</span></div>
+    </div>`).join('')}
+    <button class="abtn" id="bp-save" style="position:sticky;bottom:8px" onclick="bulkSavePhotos()" disabled><i class="ti ti-check"></i> Save 0 photos</button>`;
+  document.getElementById('ov').classList.add('open');
+  document.body.style.overflow='hidden';
+  let next=0;
+  const worker=async()=>{
+    while(next<items.length){
+      if(_bulkPhoto.run!==run||!document.getElementById('bp-status'))return;
+      const i=next++,it=items[i];
+      const el=document.getElementById('bp-'+i);
+      if(el)el.innerHTML='<span class="mr-craft"><div class="spin" style="display:inline-block;vertical-align:middle"></div> Searching…</span>';
+      const what=isPlane?('RC '+(it.type||'aircraft')):('RC '+(it.category||'hobby')+' part'+(it.spec?'; details: '+it.spec.split('\n')[0]:''));
+      let photos=[],err='';
+      try{photos=await findProductPhotos(it.name,what);}catch(e){err=e.message||'Lookup failed';}
+      if(_bulkPhoto.run!==run)return;
+      _bulkPhoto.found[i]=photos;
+      _bulkPhoto.done++;
+      renderBulkPhotoRow(i,err);
+      const st=document.getElementById('bp-status');
+      if(st)st.textContent=_bulkPhoto.done<items.length?`Searching ${_bulkPhoto.done} of ${items.length}…`:`Done — searched ${items.length}. Pick photos, then Save.`;
+    }
+  };
+  await Promise.all([worker(),worker(),worker()]);
+}
+function renderBulkPhotoRow(i,err){
+  const el=document.getElementById('bp-'+i);if(!el)return;
+  const photos=_bulkPhoto.found[i]||[];
+  if(err){el.innerHTML=`<span class="hint" style="color:var(--danger)">${escHtml(err)}</span>`;return;}
+  if(!photos.length){el.innerHTML=`<span class="mr-craft" style="opacity:.7">${photoNotFoundMsg()}</span>`;return;}
+  el.innerHTML=photoThumbsHTML(photos,j=>`bulkPickPhoto(${i},${j})`,_bulkPhoto.picks[i]);
+}
+function bulkPickPhoto(i,j){
+  if(_bulkPhoto.picks[i]===j)delete _bulkPhoto.picks[i];else _bulkPhoto.picks[i]=j;
+  renderBulkPhotoRow(i,'');
+  const n=Object.keys(_bulkPhoto.picks).length,btn=document.getElementById('bp-save');
+  if(btn){btn.disabled=!n;btn.innerHTML=`<i class="ti ti-check"></i> Save ${n} photo${n===1?'':'s'}`;}
+}
+function bulkSavePhotos(){
+  const B=_bulkPhoto,isPlane=B.kind==='plane';
+  const byId={};
+  Object.keys(B.picks).forEach(i=>{const it=B.items[i],d=(B.found[i]||[])[B.picks[i]];if(it&&d)byId[it.id]=d;});
+  const n=Object.keys(byId).length;if(!n)return;
+  const list=(isPlane?loadHangar():loadParts()).map(x=>byId[x.id]&&!x.photo?{...x,photo:byId[x.id]}:x);
+  if(isPlane)saveHangar(list);else saveParts(list);
+  _bulkPhoto={run:B.run+1};
+  flushSyncNow();
+  closeOv();
+  renderHangar();renderParts();
+}
+
 // ── PLANE SPEC LOOKUP ─────────────────────────────
 let _pendingLookupSpecs=null;
 
@@ -3826,6 +3982,7 @@ async function lookupPlaneSpecs(){
   setBtn('pe-lookup-btn',true,'Look up specs for this plane');
   showEl('pe-lookup-results',ldHTML('pelookup','Searching for specs...','g'));
   const pi=tickP('pelookup');
+  if(!_pendingPlanePhoto){const pv=document.getElementById('plane-photo-preview');if(pv&&pv.style.display==='none')findPhotoForEditor('plane');}
   try{
     const sys="You are an RC hobbyist research assistant. Search the web for the real, documented specs of the exact RC plane named. Only report what you actually find — if you can't find reliable specs for this exact model, say so plainly instead of guessing or substituting a similar model's specs. Respond in EXACTLY this format, nothing else, no markdown headers:\nBATTERY: <connector type, cell count, mAh range, e.g. XT60, 3S 2200-2600mAh>\nMOTOR: <kv rating, size, e.g. 2306 2400kv brushless>\nESC: <current rating, e.g. 30A>\nSERVO: <size/torque, e.g. 9g micro>\nCONFIDENCE: <high|medium|low — high only if you found this exact model's specs from a real source>\nSOURCE: <brief note on where this came from, or 'not found' if confidence is low>";
     const usr=`Plane name: ${name}${type?`\nType/class given by owner: ${type}`:''}\n\nFind this exact RC plane's documented specs.`;
