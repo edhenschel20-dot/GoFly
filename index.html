@@ -2788,10 +2788,28 @@ setTimeout(function(){
 const HANGAR_KEY='rcfc_hangar';
 const PARTS_KEY='rcfc_parts';
 
-function loadHangar(){try{return JSON.parse(localStorage.getItem(HANGAR_KEY)||'[]');}catch(e){return [];}}
-function saveHangar(d){try{localStorage.setItem(HANGAR_KEY,JSON.stringify(d));}catch(e){console.log('hangar save err',e);}scheduleSync();}
-function loadParts(){try{return JSON.parse(localStorage.getItem(PARTS_KEY)||'[]');}catch(e){return [];}}
-function saveParts(d){try{localStorage.setItem(PARTS_KEY,JSON.stringify(d));}catch(e){console.log('parts save err',e);}scheduleSync();}
+// In-memory copies (JSON strings) so a full localStorage can never silently
+// drop a save — previously a quota error was swallowed and the new plane vanished.
+let _hangarRaw=null,_partsRaw=null,_storageFullWarned=false;
+function _storeWithFallback(key,str){
+  try{localStorage.setItem(key,str);return true;}catch(e){console.log('storage save err',key,e);}
+  // Lessons already live in memory + GitHub, so evict their local copy to make room.
+  if(typeof ghEnabled==='function'&&ghEnabled()&&_lessonsCache!==null){
+    try{localStorage.removeItem(LESSON_KEY);localStorage.setItem(key,str);return true;}catch(e2){console.log('storage retry err',key,e2);}
+  }
+  if(!_storageFullWarned){
+    _storageFullWarned=true;
+    const gh=(typeof ghEnabled==='function'&&ghEnabled());
+    setTimeout(()=>alert(gh
+      ?'Device storage is full. Your change is saved and syncing to GitHub, but the local copy could not be updated.'
+      :'Device storage is full, so this change is only held until you close the app. Turn on GitHub sync (Reference tab → Settings) to keep it.'),50);
+  }
+  return false;
+}
+function loadHangar(){try{return JSON.parse(_hangarRaw!==null?_hangarRaw:(localStorage.getItem(HANGAR_KEY)||'[]'));}catch(e){return [];}}
+function saveHangar(d){const str=JSON.stringify(d);_hangarRaw=str;_storeWithFallback(HANGAR_KEY,str);scheduleSync();}
+function loadParts(){try{return JSON.parse(_partsRaw!==null?_partsRaw:(localStorage.getItem(PARTS_KEY)||'[]'));}catch(e){return [];}}
+function saveParts(d){const str=JSON.stringify(d);_partsRaw=str;_storeWithFallback(PARTS_KEY,str);scheduleSync();}
 
 function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,8);}
 
@@ -2955,7 +2973,7 @@ function renderHangar(){
       <div class="mr-info">
         <div class="mr-name">${escHtml(p.name)}</div>
         <div class="mr-meta"><span class="dbadge" style="border-color:${sm.color};color:${sm.color}"><i class="ti ${sm.icon}"></i> ${sm.label}</span>${p.type?`<span class="mr-craft">${escHtml(p.type)}${p.class?' · '+escHtml(p.class):''}</span>`:''}</div>
-        <div class="mr-meta" style="margin-top:2px"><span class="dbadge" style="border-color:${lu.color};color:${lu.color}"><i class="ti ti-clock"></i> ${lu.text}</span></div>
+        <div class="mr-meta" style="margin-top:2px"><span class="dbadge" style="border-color:${lu.color};color:${lu.color}"><i class="ti ti-clock"></i> ${lu.text}</span>${(()=>{const n=batteriesForPlane(p.id).length;return n?`<span class="dbadge" style="border-color:var(--accent);color:var(--accent)"><i class="ti ti-battery-2"></i> ${n} batt</span>`:'';})()}</div>
       </div>
       <i class="ti ti-chevron-right mr-arr"></i>
     </div>`;
@@ -3007,6 +3025,7 @@ function openPlaneEditor(id){
   const p=id?planes.find(x=>x.id===id):null;
   _originalPowerSpec=p?(p.powerSpec||''):'';
   _planeAssignWorking=p?loadParts().filter(pt=>(pt.assigned||[]).some(a=>a.planeId===p.id)).map(pt=>({partId:pt.id,qty:(pt.assigned.find(a=>a.planeId===p.id)||{}).qty||1})):[];
+  _planeBattWorking=p?loadParts().filter(pt=>pt.category==='Battery'&&battWorksInList(pt).includes(p.id)).map(pt=>pt.id):[];
   document.getElementById('ov-title').textContent=p?'Edit Plane':'Add Plane';
   document.getElementById('ov-badge').textContent='';
   document.getElementById('ov-badge').className='dbadge';
@@ -3044,7 +3063,11 @@ function openPlaneEditor(id){
       ${PLANE_STATUSES.map(s=>`<button class="tbtn${p&&p.status===s.id?' ob':(!p&&s.id==='ready'?' ob':'')}" data-status="${s.id}" onclick="setPlaneStatusBtn(this)"><i class="ti ${s.icon}"></i> ${s.label}</button>`).join('')}
     </div>
     <div class="slabel">Battery connector / size needed</div>
-    <input class="row-input" id="pe-batt" type="text" placeholder="e.g. XT60, 3S 2200mAh, 4S 1300-1500mAh" value="${p?escHtml(p.battSpec||''):''}" style="margin-bottom:12px" />
+    <input class="row-input" id="pe-batt" type="text" placeholder="e.g. XT60, 3S 2200mAh, 4S 1300-1500mAh" value="${p?escHtml(p.battSpec||''):''}" oninput="renderPlaneBattRows()" style="margin-bottom:12px" />
+    <div class="slabel">Batteries that work with this plane</div>
+    <div id="pe-batt-list" style="margin-bottom:8px"></div>
+    <select class="row-input" id="pe-batt-add" onchange="addPlaneBatt(this.value);this.value=''" style="margin-bottom:6px"></select>
+    <button class="abtn" id="pe-batt-suggest" onclick="addSuggestedPlaneBatts()" style="padding:8px 12px;font-size:11px;margin-bottom:14px;display:none"><i class="ti ti-battery-charging"></i> <span id="pe-batt-suggest-txt">Add batteries that fit the spec</span></button>
     <div class="slabel">Motor / ESC / Servo specs</div>
     <div style="margin-bottom:12px">
       <textarea class="row-input" id="pe-power" rows="3" placeholder="e.g. Motor: 2306 2400kv · ESC: 30A · Servos: 9g micro" style="resize:vertical;margin-bottom:4px">${p?escHtml(p.powerSpec||''):''}</textarea>
@@ -3073,6 +3096,7 @@ function openPlaneEditor(id){
   document.getElementById('ov').classList.add('open');
   document.body.style.overflow='hidden';
   renderPlaneAssignRows();
+  renderPlaneBattRows();
 }
 
 function setPlaneStatusBtn(btn){
@@ -3227,11 +3251,84 @@ function savePlane(){
   }
   saveHangar(planes);
   if(savedPlaneId)applyPlaneAssignmentsToParts(savedPlaneId);
+  if(savedPlaneId)applyPlaneBattsToParts(savedPlaneId);
+  if(!_editingPlaneId){const hq=document.getElementById('hangar-q');if(hq&&hq.value){hq.value='';_hangarSearch='';}}
   flushSyncNow();
   closeOv();
   renderHangar();
   renderParts();
   populateMatchPlaneSelect();
+}
+
+// ── PLANE -> BATTERIES (reverse of the Battery "works in" field) ──
+let _planeBattWorking=[];
+function battWorksInList(pt){return (pt.worksIn&&pt.worksIn.length)?pt.worksIn.slice():(pt.assigned||[]).map(a=>a.planeId);}
+function batteriesForPlane(planeId){return loadParts().filter(pt=>pt.category==='Battery'&&battWorksInList(pt).includes(planeId));}
+// Reads connector / cell count / mAh out of the plane's battery spec text and
+// says whether a battery part fits it. Only checks what the spec actually lists.
+function parseBattSpec(txt){
+  const t=(txt||'').toLowerCase();
+  const conns=CONNECTOR_TYPES.filter(c=>{const k=c.toLowerCase().split(' ')[0];return k.length>=2&&k!=='other'&&k!=='bare'&&t.includes(k);});
+  const cells=Array.from(new Set((t.match(/(\d)\s*s(?![a-z])/g)||[]).map(m=>parseInt(m,10))));
+  let mah=null;
+  const r=t.match(/(\d{3,5})\s*(?:-|–|to)\s*(\d{3,5})\s*mah/);
+  if(r)mah=[+r[1],+r[2]];else{const m=t.match(/(\d{3,5})\s*mah/);if(m)mah=[+m[1],+m[1]];}
+  return {conns,cells,mah};
+}
+function batteryFitsSpec(pt,spec){
+  // Connector is ignored on purpose — adapters make any plug work.
+  if(!spec.cells.length&&!spec.mah)return false;
+  const hay=((pt.name||'')+' '+(pt.spec||'')+' '+(pt.connector||'')).toLowerCase();
+  if(spec.cells.length){const pc=parseBattSpec(hay).cells;if(!pc.length||!pc.some(c=>spec.cells.includes(c)))return false;}
+  if(spec.mah){const m=hay.match(/(\d{3,5})\s*mah/);if(m){const v=+m[1];if(v<spec.mah[0]*0.8||v>spec.mah[1]*1.2)return false;}}
+  return true;
+}
+function renderPlaneBattRows(){
+  const listEl=document.getElementById('pe-batt-list');
+  const sel=document.getElementById('pe-batt-add');
+  if(!listEl||!sel)return;
+  const batts=loadParts().filter(pt=>pt.category==='Battery');
+  const specEl=document.getElementById('pe-batt');
+  const spec=parseBattSpec(specEl?specEl.value:'');
+  const fits=batts.filter(b=>batteryFitsSpec(b,spec));
+  const chosen=_planeBattWorking.map(id=>batts.find(b=>b.id===id)).filter(Boolean);
+  listEl.innerHTML=chosen.length?chosen.map(b=>{
+    const ok=fits.includes(b);
+    return `<div class="toggle-row" style="margin-bottom:6px;align-items:center">
+      <div class="logo-icon" style="width:32px;height:32px;font-size:15px;flex:0 0 auto"><i class="ti ti-battery-2"></i></div>
+      <div style="flex:1;min-width:0">
+        <div class="mr-name" style="font-size:12px">${escHtml(b.name)}</div>
+        <div class="mr-meta" style="margin-top:2px">${b.connector?`<span class="dbadge">${escHtml(b.connector)}</span>`:''}<span class="mr-craft">x${b.qty||0} on hand</span>${ok?'<span class="dbadge" style="border-color:var(--accent);color:var(--accent)">fits spec</span>':''}</div>
+      </div>
+      <button class="abtn" style="flex:0 0 auto;width:auto;padding:6px 10px;background:var(--ddim);border-color:var(--danger);color:var(--danger)" onclick="removePlaneBatt('${b.id}')"><i class="ti ti-x"></i></button>
+    </div>`;}).join(''):'<div class="mr-craft" style="opacity:.6">No batteries linked yet</div>';
+  const rest=batts.filter(b=>!_planeBattWorking.includes(b.id)).sort((a,b)=>(fits.includes(b)?1:0)-(fits.includes(a)?1:0)||(a.name||'').localeCompare(b.name||''));
+  sel.innerHTML=`<option value="">＋ Add a battery…</option>`+rest.map(b=>`<option value="${b.id}">${fits.includes(b)?'✓ ':''}${escHtml(b.name)}${b.connector?' — '+escHtml(b.connector):''}</option>`).join('');
+  sel.style.display=rest.length?'':'none';
+  const newFits=fits.filter(b=>!_planeBattWorking.includes(b.id));
+  const sBtn=document.getElementById('pe-batt-suggest'),sTxt=document.getElementById('pe-batt-suggest-txt');
+  if(sBtn){sBtn.style.display=newFits.length?'':'none';if(sTxt)sTxt.textContent=`Add ${newFits.length} batter${newFits.length===1?'y that fits':'ies that fit'} the spec`;}
+}
+function addPlaneBatt(id){if(id&&!_planeBattWorking.includes(id))_planeBattWorking.push(id);renderPlaneBattRows();}
+function removePlaneBatt(id){_planeBattWorking=_planeBattWorking.filter(x=>x!==id);renderPlaneBattRows();}
+function addSuggestedPlaneBatts(){
+  const specEl=document.getElementById('pe-batt');
+  const spec=parseBattSpec(specEl?specEl.value:'');
+  loadParts().filter(pt=>pt.category==='Battery'&&batteryFitsSpec(pt,spec)).forEach(b=>{if(!_planeBattWorking.includes(b.id))_planeBattWorking.push(b.id);});
+  renderPlaneBattRows();
+}
+// Writes the plane's battery picks back onto each Battery part's worksIn list.
+function applyPlaneBattsToParts(planeId){
+  let changed=false;
+  const parts=loadParts().map(pt=>{
+    if(pt.category!=='Battery')return pt;
+    const cur=battWorksInList(pt);
+    const has=cur.includes(planeId),want=_planeBattWorking.includes(pt.id);
+    if(has===want)return pt;
+    changed=true;
+    return {...pt,worksIn:want?[...cur,planeId]:cur.filter(x=>x!==planeId)};
+  });
+  if(changed)saveParts(parts);
 }
 
 function deletePlane(){
@@ -3773,6 +3870,7 @@ function applyLookupSpecs(){
   if(!_pendingLookupSpecs)return;
   const {batt,motor,esc,servo}=_pendingLookupSpecs;
   if(batt)document.getElementById('pe-batt').value=batt;
+  renderPlaneBattRows();
   const powerEl=document.getElementById('pe-power');
   if(powerEl&&powerEl.hasAttribute('readonly')){
     hideEl('pe-lookup-results');
